@@ -1,0 +1,69 @@
+<div class="view">
+  <div class="view-nav">
+    <div class="view-nav-left">
+      <button class="af button tip tip-se" aria-label="Upload files from disk">{{{svg "add-file"}}}</button>
+      <button class="ad button tip tip-s" aria-label="Upload folder from disk">{{{svg "add-folder"}}}</button>
+      <button class="cf button tip tip-s" aria-label="Create file">{{{svg "create-file"}}}</button>
+      <button class="cd button tip tip-s" aria-label="Create folder">{{{svg "create-folder"}}}</button>
+    </div>
+    <div class="view-nav-right">
+      <div class="search toggled-off tip tip-s" aria-label="Search">
+        {{{svg "find"}}}
+        <input class="search-input" type="search" placeholder="Term" />
+      </div>
+      <button class="reload button tip tip-s" aria-label="Reload View">{{{svg "reload"}}}</button>
+      <button class="newview button tip tip-s" aria-label="Create new View">{{{svg "window"}}}</button>
+      <button class="prefs button tip tip-s" aria-label="Preferences">{{{svg "cog"}}}</button>
+      <button class="about button tip tip-s" aria-label="About">{{{svg "info"}}}</button>
+      <button class="logout button tip tip-sw" aria-label="Sign out">{{{svg "signout"}}}</button>
+    </div>
+  </div>
+  <ul class="path"></ul>
+  <div class="content-container">
+    <div class="content"></div>
+  </div>
+  <div class="dropzone">
+    <svg></svg>
+  </div>
+  <div class="info-box">
+    <div class="icon">{{{svg "link"}}}</div>
+    <span></span>
+    <div class="link-out mousetrap"></div>
+    <div class="link-options">
+      <div class="copy-link tip tip-nw" aria-label="Copy to clipboard">
+        {{{svg "copy"}}}<div>Copy</div>
+      </div>
+      <div class="dl-link checked tip tip-sw" aria-label="Trigger a download when opened">
+        {{{svg "check"}}}<div>Is DL</div>
+      </div>
+    </div>
+  </div>
+  <div class="paste-button">
+    {{{svg "paste"}}}
+    <span>Paste here</span>
+    {{{svg "triangle"}}}
+  </div>
+  <div class="audio-bar">
+    <div class="audio-icon volume">{{{svg "volume-medium"}}}</div>
+    <div class="volume-slider">
+      <div class="volume-slider-inner"></div>
+    </div>
+    <div class="audio-icon previous">{{{svg "previous"}}}</div>
+    <div class="audio-icon pause-play">{{{svg "pause"}}}</div>
+    <div class="audio-icon stop">{{{svg "stop"}}}</div>
+    <div class="audio-icon shuffle">{{{svg "shuffle"}}}</div>
+    <div class="audio-icon next">{{{svg "next"}}}</div>
+    <div class="audio-title"></div>
+    <div class="time">
+      <span class="time-cur"></span>
+      <span class="time-sep"> / </span>
+      <span class="time-max"></span>
+    </div>
+    <div class="seekbar">
+      <div class="seekbar-played"></div>
+      <div class="seekbar-loaded"></div>
+    </div>
+    <audio class="audio-player" preload="none"></audio>
+    <input type="file" class="file" class="hidden" multiple />
+  </div>
+</div>

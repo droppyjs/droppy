@@ -1,0 +1,71 @@
+{
+    "name": "@droppy-js/server",
+    "version": "0.0.0",
+    "description": "> TODO: description",
+    "author": "Mark Hughes <mark.hughes@leapdev.io>",
+    "homepage": "https://github.com/markhughes/droppy#readme",
+    "license": "ISC",
+    "main": "lib/index.js",
+    "directories": {
+        "lib": "lib",
+        "test": "__tests__"
+    },
+    "files": [
+        "lib"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/markhughes/droppy.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: run tests from root\" && exit 1"
+    },
+    "bugs": {
+        "url": "https://github.com/markhughes/droppy/issues"
+    },
+    "dependencies": {
+        "@droppy-js/client": "*",
+        "busboy": "0.3.1",
+        "chokidar": "3.4.2",
+        "colorette": "1.2.1",
+        "content-disposition": "0.5.3",
+        "daemonize-process": "3.0.0",
+        "escape-string-regexp": "4.0.0",
+        "etag": "1.8.1",
+        "image-size": "0.8.3",
+        "isbinaryfile": "4.0.6",
+        "json-buffer": "3.0.1",
+        "lodash.debounce": "4.0.8",
+        "lodash.throttle": "4.1.1",
+        "mime-types": "2.1.27",
+        "minimist": "1.2.5",
+        "mv": "2.1.1",
+        "original-url": "1.2.3",
+        "ps-node": "0.1.6",
+        "rfdc": "1.1.4",
+        "rrdir": "8.1.1",
+        "send": "0.17.1",
+        "strip-ansi": "6.0.0",
+        "untildify": "4.0.0",
+        "valid-filename": "3.1.0",
+        "which": "2.0.2",
+        "ws": "7.3.1",
+        "yazl": "2.5.1"
+    },
+    "devDependencies": {
+        "autoprefixer": "9.8.6",
+        "clean-css": "4.2.3",
+        "eslint": "7.7.0",
+        "eslint-config-silverwind": "18.0.2",
+        "eslint-plugin-unicorn": "21.0.0",
+        "html-minifier": "4.0.0",
+        "lerna": "^3.22.1",
+        "postcss": "7.0.32",
+        "stylelint": "13.6.1",
+        "stylelint-config-silverwind": "2.0.8",
+        "svgstore": "3.0.0-2",
+        "terser": "5.2.1",
+        "updates": "10.3.5",
+        "versions": "8.4.3"
+    }
+}

@@ -1,0 +1,61 @@
+<div class="file-header">
+  <span class="header-name {{sort.type}}" data-sort="type">Name {{{svg "triangle"}}}</span>
+  <span class="header-mtime {{sort.mtime}}" data-sort="mtime">Modified {{{svg "triangle"}}}</span>
+  <span class="header-size {{sort.size}}" data-sort="size">Size {{{svg "triangle"}}}</span>
+  <span class="header-line-buttons"></span>
+</div>
+{{#each entries}}
+{{#is type "f"}}
+<div class="data-row {{classes}}" data-type="file" data-id="{{id}}" data-name="{{sortname}}">
+  <span class="sprite sprite-{{sprite}}">
+    {{#if playable}}
+    <span class="icon-play">{{{svg "play"}}}</span>
+    {{else if viewableImage}}
+    <span class="icon-view">{{{svg "eye"}}}</span>
+    {{else if viewablePdf}}
+    <span class="icon-view">{{{svg "eye"}}}</span>
+    {{else if viewableVideo}}
+    <span class="icon-view">{{{svg "play"}}}</span>
+    {{/if}}
+  </span>
+  <a class="file-link entry-link" href="!/dl{{id}}" download="{{name}}">{{name}}</a>
+  <span class="mtime" data-timestamp="{{mtime}}">{{age}}</span>
+  <span class="size" data-size="{{size}}">{{psize}}</span>
+  <span class="line-buttons">
+    <span class="share-file tip tip-n" aria-label="Share">{{{svg "link"}}}</span>
+    <a class="download tip tip-n" href="!/dl{{id}}" download="{{name}}" aria-label="Download">{{{svg "download"}}}</a>
+    <span class="delete-file tip tip-nw" aria-label="Delete">{{{svg "trash"}}}</span>
+    <span class="entry-menu tip tip-nw" aria-label="Actions">{{{svg "menu"}}}</span>
+  </span>
+</div>
+{{/is}}
+{{#is type "d"}}
+<div class="data-row {{classes}}" data-type="folder" data-id="{{id}}" data-name="{{sortname}}">
+  <span class="sprite sprite-folder"></span>
+  <a class="folder-link entry-link">{{name}}</a>
+  <span class="mtime" data-timestamp="{{mtime}}">{{age}}</span>
+  <span class="size" data-size="{{size}}">{{psize}}</span>
+  <span class="line-buttons">
+    <span class="share-file tip tip-n" aria-label="Share">{{{svg "link"}}}</span>
+    <a class="zip tip tip-n" href="!/zip{{id}}" download="{{name}}" aria-label="Download zip">{{{svg "download"}}}</a>
+    <span class="delete-file tip tip-nw" aria-label="Delete">{{{svg "trash"}}}</span>
+    <span class="entry-menu tip tip-nw" aria-label="Actions">{{{svg "menu"}}}</span>
+  </span>
+</div>
+{{/is}}
+{{#is type "e"}}
+<div class="data-row {{classes}}" data-type="error" data-id="{{id}}" data-name="{{sortname}}">
+  <span class="{{sprite}}"></span>
+  <a class="error-link entry-link">{{name}}</a>
+</div>
+{{/is}}
+{{else}}
+{{#if isSearch}}
+<div class="noresults">No results</div>
+{{else}}
+<div id="empty" class="empty">
+  {{{svg "upload-cloud"}}}
+  <div class="text">Add files</div>
+</div>
+{{/if}}
+{{/each}}

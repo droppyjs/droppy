@@ -1,0 +1,6 @@
+0 silly argv { _: [ 'link' ], lernaVersion: '3.22.1', '$0': 'lerna' }
+1 notice cli v3.22.1
+2 verbose rootPath /Users/markhughes/Projects/droppy
+3 error JSONError: Unexpected token } in JSON at position 317 while parsing near '...oppy-js/server"    },    "directories"...' in packages/cli/package.json
+3 error     at module.exports (/Users/markhughes/.nvm/versions/node/v12.2.0/lib/node_modules/lerna/node_modules/parse-json/index.js:26:19)
+3 error     at parse (/Users/markhughes/.nvm/versions/node/v12.2.0/lib/node_modules/lerna/node_modules/load-json-file/index.js:15:9)

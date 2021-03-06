@@ -11,7 +11,7 @@
         "node": ">= 12.10.0"
     },
     "scripts": {
-        "start": "lerna run start --streamlerna run start --stream",
+        "start": "lerna run start --stream",
         "test": "make test"
     },
     "dependencies": {

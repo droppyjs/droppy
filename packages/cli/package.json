@@ -4,7 +4,7 @@
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
     "homepage": "https://github.com/markhughes/droppy#readme",
-    "license": "ISC",
+    "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
         "@droppy-js/server": "*"

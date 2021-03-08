@@ -54,15 +54,6 @@ jquery:
 	cat /tmp/jquery/dist/jquery.min.js | perl -pe 's|"3\..+?"|"3"|' > $(CURDIR)/client/jquery-custom.min.js
 	rm -rf /tmp/jquery
 
-ver-patch:
-	yarn -s run versions -C patch
-
-ver-minor:
-	yarn -s run versions -C minor
-
-ver-major:
-	yarn -s run versions -C major
-
 patch: test build ver-patch docker publish
 minor: test build ver-minor docker publish
 major: test build ver-major docker publish

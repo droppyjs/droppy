@@ -65,7 +65,6 @@
         "stylelint-config-silverwind": "2.0.8",
         "svgstore": "3.0.0-2",
         "terser": "5.2.1",
-        "updates": "10.3.5",
-        "versions": "8.4.3"
+        "updates": "10.3.5"
     }
 }

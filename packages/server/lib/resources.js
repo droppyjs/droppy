@@ -14,9 +14,9 @@ const log = require("./log.js");
 const paths = require("./paths.js").get();
 const utils = require("./utils.js");
 
-const themesPath = path.join(paths.mod, "/node_modules/codemirror/theme");
-const modesPath = path.join(paths.mod, "/node_modules/codemirror/mode");
-const cachePath = path.join(paths.mod, "dist", "cache.json");
+const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
+const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
+const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
 
 const gzipEncode = (data) => promisify(gzip)(data, { level: constants.Z_BEST_COMPRESSION });
 const brotliEncode = (data) => promisify(brotliCompress)(data, {
@@ -401,6 +401,7 @@ function templates() {
 resources.compileJS = async function() {
     let js = "";
     resources.files.js.forEach(file => {
+        console.log(path.join(paths.client, file));
         if (fs.existsSync(path.join(paths.client, file))) {
             js += `${fs.readFileSync(path.join(paths.client, file), "utf8")};`;
         } else {

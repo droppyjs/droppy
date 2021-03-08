@@ -52,31 +52,10 @@ To make droppy run in the background, you can use the `--daemon` option, thought
 
 ### Docker installation :whale:
 
-The [`silverwind/droppy`](https://hub.docker.com/r/silverwind/droppy/) multi-arch images supports `amd64`, `arm64`, `arm/v7` and `arm/v6` architectures. To pull and run, use:
-
-```sh
-$ docker run --name droppy -p 127.0.0.1:8989:8989 silverwind/droppy
-```
-
-This method uses automatic volumes for `/config` and `/files` which can be overridden through `-v /srv/droppy/config:/config` and `-v /srv/droppy/files:/files`. If you're using existing files, it's advisable to use `-e UID=1000 -e GID=1000` to get new files written with correct ownership.
-
-To update a docker installation, run
-
-```sh
-$ docker pull silverwind/droppy
-$ docker stop droppy && docker rm droppy
-$ docker run --name droppy -p 127.0.0.1:8989:8989 silverwind/droppy
-```
-
+**Note: The current Dockerfile is broken. Please do not use this yet.**
 ### docker-compose
-Alternatively, you can use the example [`docker-compose.yml`](https://github.com/silverwind/droppy/blob/master/examples/docker-compose.yml):
 
-```sh
-$ curl -O https://raw.githubusercontent.com/silverwind/droppy/master/examples/docker-compose.yml
-$ docker-compose up
-```
-This example `docker-compose.yml` uses the subdirectories `config` and `files` of the current working directory for storing data.
-
+**Note: The current Dockerfile is broken. Please do not use this yet.**
 ### Caddy
 
 See the example [Caddyfile](examples/Caddyfile).
@@ -178,10 +157,10 @@ $ wget --content-disposition url
 # Development
 To start a live-reloading dev server:
 ````sh
-$ git clone https://github.com/silverwind/droppy && cd droppy
-$ npm i
-$ node droppy start --dev
+$ git clone https://github.com/droppy-js/droppy && cd droppy
+$ lerna bootstrap
+$ yarn start
 ````
-The [Makefile](https://github.com/silverwind/droppy/blob/master/Makefile) has a few tasks for updating dependencies, pushing docker images, see the comment above for dependencies of those tasks.
+The [Makefile](https://github.com/droppy-js/droppy/blob/master/Makefile) has a few old tasks for updating dependencies, pushing docker images, see the comment above for dependencies of those tasks. This should not be required anymore, but is left as a reference.
 
-© [silverwind](https://github.com/silverwind), distributed under BSD licence.
+© [Mark Hughes](https://github.com/droppy-js), [silverwind](https://github.com/silverwind), distributed under BSD licence.

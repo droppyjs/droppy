@@ -5,13 +5,19 @@ const fs = require("fs");
 const path = require("path");
 const untildify = require("untildify");
 
-let configDir = "~/.droppy/config";
-let filesDir = "~/.droppy/files";
+const os = require('os');
+
+const homedir = os.homedir()
+
+let configDir = resolve(homedir, "/.droppy/config");
+let filesDir = resolve(homedir, "/.droppy/files");
 
 const clientPath = path.normalize(path.dirname(require.resolve('@droppy-js/client')) + '/../');
 
 paths.get = function() {
     return {
+        homedir,
+
         files: resolve(filesDir),
         config: resolve(configDir),
 

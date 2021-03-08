@@ -1,10 +1,11 @@
 FROM node:alpine
-MAINTAINER silverwind
+LABEL maintainer="https://github.com/droppy-js/droppy"
 
 # Copy files
 COPY ["node_modules", "/droppy/node_modules"]
-COPY ["client", "/droppy/client"]
-COPY ["server", "/droppy/server"]
+COPY ["packages/client", "/droppy/client"]
+COPY ["packages/server", "/droppy/server"]
+COPY ["packages/cli", "/droppy/cli"]
 COPY ["dist", "/droppy/dist"]
 COPY ["droppy.js", "docker-start.sh", "README.md", "LICENSE", "package.json", "/droppy/"]
 

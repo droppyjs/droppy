@@ -108,6 +108,7 @@ resources.files = {
         paths.client + "/lib/style.css",
         paths.client + "/lib/sprites.css",
         paths.client + "/lib/tooltips.css",
+        paths.client + "/lib/clienttheme.css",
     ],
     js: [
         "node_modules/handlebars/dist/handlebars.runtime.min.js",

@@ -1,0 +1,99 @@
+@charset "UTF-8";
+
+/* ================================== View ================================= */
+
+[theme=dark] .view.right .content.directory {
+    border-left-color: #282828
+}
+
+[theme=dark] .content.directory {
+    background: #333;
+}
+
+/* ========================= File/Folder Display =========================== */
+
+[theme=dark] .file-header {
+    color: #ccc;
+    border-bottom-color: #282828;
+    background: #555;
+}
+
+[theme=dark] .file-header .active {
+    color: #fff
+}
+
+[theme=dark] .line-buttons svg {
+    fill: #bbb;
+}
+
+[theme=dark] .line-buttons span:hover svg,
+[theme=dark] .line-buttons a:hover svg {
+    fill: #fff
+}
+
+[theme=dark] .data-row.editing.invalid input {
+    color: #e88
+}
+
+[theme=dark] .data-row,
+[theme=dark] .data-row a {
+    color: #eee
+}
+
+[theme=dark] .data-row:not(.playing):not(.animating):not(.editing):hover,
+[theme=dark] .data-row:not(.playing):not(.animating):not(.editing).active {
+    background: #111;
+}
+
+/* ============================= Empty Folder ============================== */
+
+[theme=dark] .empty:hover svg {
+    fill: #eee
+}
+
+[theme=dark] .empty:hover .text {
+    color: #eee
+}
+
+/* ============================= View Nav ============================== */
+
+[theme=dark] .view[data-type="directory"] .content-container {
+    background: #333;
+}
+
+/* ============================ Entry Menu ============================ */
+
+[theme=dark] #entry-menu {
+    background: #333;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+}
+
+[theme=dark] #entry-menu a {
+    color: #eee;
+}
+
+/* ================================= Prefs ================================ */
+
+[theme=dark] #prefs-box {
+    background: #333;
+    color: #eee;
+}
+
+[theme=dark] #prefs-box li:hover {
+    background: #444;
+    color: #fff;
+}
+
+[theme=dark] #prefs-box select {
+    color: #ccc;
+    background-color: #222;
+}
+
+[theme=dark] #prefs-box li:hover select {
+    color: #e8e8e8
+}
+
+[theme=dark] .list-user:before {
+    border-bottom-color: #aaa;
+    color: #fff;
+}

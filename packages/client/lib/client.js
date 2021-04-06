@@ -147,6 +147,7 @@ if (droppy.detects.webp) {
 let prefs, doSave;
 const defaults = {
     volume: .5,
+    interfaceTheme: "default",
     theme: "droppy",
     editorFontSize: droppy.detects.mobile ? 12 : 16,
     indentWithTabs: false,
@@ -634,6 +635,8 @@ function initMainPage() {
             }
         });
     }
+
+    $("body").attr('theme',droppy.get('interfaceTheme'))
 
     screenfull.on("change", () => {
         // unfocus the fullscreen button so the space key won't un-toggle fullscreen
@@ -2237,6 +2240,7 @@ function showPrefs() {
     const box = $("#prefs-box");
     box.empty().append(() => {
         const opts = [
+            { name: "interfaceTheme", label: "Interface theme" },
             { name: "theme", label: "Editor theme" },
             { name: "editorFontSize", label: "Editor font size" },
             { name: "indentWithTabs", label: "Editor indent type" },
@@ -2250,12 +2254,13 @@ function showPrefs() {
             opts[i].values = {};
             opts[i].selected = droppy.get(opts[i].name);
         });
-        droppy.themes.forEach((t) => { opts[0].values[t] = t; });
-        for (i = 10; i <= 30; i += 2) opts[1].values[String(i)] = String(i);
-        opts[2].values = { "Tabs": true, "Spaces": false };
-        for (i = 1; i <= 8; i *= 2) opts[3].values[String(i)] = String(i);
-        opts[4].values = { "Wrap": true, "No Wrap": false };
-        opts[5].values = { "Default On": true, "Default Off": false };
+        for (const interfaceTheme of ['default','dark']) { opts[0].values[interfaceTheme] = interfaceTheme; };
+        droppy.themes.forEach((t) => { opts[1].values[t] = t; });
+        for (i = 10; i <= 30; i += 2) opts[2].values[String(i)] = String(i);
+        opts[3].values = { "Tabs": true, "Spaces": false };
+        for (i = 1; i <= 8; i *= 2) opts[4].values[String(i)] = String(i);
+        opts[5].values = { "Wrap": true, "No Wrap": false };
+        opts[6].values = { "Default On": true, "Default Off": false };
         return Handlebars.templates.options({ opts });
     });
 
@@ -2271,6 +2276,12 @@ function showPrefs() {
 
     $("select.editorFontSize").off("change").on("change", function() {
         setEditorFontSize(this.value);
+    });
+
+    $("select.interfaceTheme").off("change").on("change", function() {
+        const interfaceTheme = this.value;
+        droppy.set("interfaceTheme", interfaceTheme);
+        $("body").attr('theme', interfaceTheme);
     });
 
     setTimeout(() => {

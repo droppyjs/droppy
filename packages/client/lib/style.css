@@ -1685,7 +1685,7 @@ video {
     position: fixed;
     transition: .15s, visibility 0s .15s;
     transform: translate(-50%, -50%);
-    width: 300px;
+    width: 400px;
     text-align: center;
     z-index: 64;
 }
@@ -1713,7 +1713,7 @@ video {
     bottom: 0;
     font-size: .7em;
     margin-bottom: .2em;
-    width: 300px;
+    width: 100%;
     position: absolute;
 }
 

@@ -448,7 +448,7 @@ function onWebSocketRequest(ws, req) {
                 vId,
                 settings: {
                     priv,
-                    version: pkg.version,
+                    version: pkg.tag && (pkg.tag !== pkg.version) ? `${pkg.version} (${pkg.tag})` : pkg.version,
                     dev: config.dev,
                     public: config.public,
                     readOnly: config.readOnly,

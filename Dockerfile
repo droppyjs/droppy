@@ -1,24 +1,28 @@
+FROM node:alpine as builder
+
+RUN apk add --no-cache make gcc g++ python git
+RUN git clone https://github.com/droppy-js/droppy /droppy
+RUN rm -rf /droppy/node_modules && \
+    cd /droppy && \
+    yarn && \
+    yarn bootstrap
+
 FROM node:alpine
 LABEL maintainer="https://github.com/droppy-js/droppy"
 
 # Copy files
-COPY ["node_modules", "/droppy/node_modules"]
-COPY ["packages/client", "/droppy/client"]
-COPY ["packages/server", "/droppy/server"]
-COPY ["packages/cli", "/droppy/cli"]
-COPY ["dist", "/droppy/dist"]
-COPY ["droppy.js", "docker-start.sh", "README.md", "LICENSE", "package.json", "/droppy/"]
+COPY --from=builder ["/droppy/node_modules", "/droppy/node_modules"]
+COPY --from=builder ["/droppy/packages/client", "/droppy/client"]
+COPY --from=builder ["/droppy/packages/server", "/droppy/server"]
+COPY --from=builder ["/droppy/packages/cli", "/droppy/cli"]
+COPY --from=builder ["/droppy/docker-start.sh", "/droppy/README.md", "/droppy/LICENSE", "/droppy/"]
 
 # Install build dependencies and and build modules
 RUN cd /droppy && \
-  find /droppy -type d -exec chmod 0755 {} + && \
-  find /droppy -type f -exec chmod 0644 {} + && \
   chmod 0755 /droppy/docker-start.sh && \
-  chmod 0755 /droppy/droppy.js && \
   mkdir -p /root/.droppy && \
   ln -s /config /root/.droppy/config && \
   ln -s /files /root/.droppy/files && \
-  ln -s /droppy/droppy.js /usr/bin/droppy && \
   rm -rf \
     /root/.config \
     /root/.node-gyp \

@@ -54,6 +54,12 @@ jquery:
 	cat /tmp/jquery/dist/jquery.min.js | perl -pe 's|"3\..+?"|"3"|' > $(CURDIR)/client/jquery-custom.min.js
 	rm -rf /tmp/jquery
 
+Dockerfile-dev: Dockerfile
+	cat Dockerfile | sed -e 's/^RUN git clone.*/COPY [ ".", "\/droppy" ]/' > Dockerfile-dev
+
+docker-dev: Dockerfile-dev
+	docker build -t localhost/local/droppy-dev -f Dockerfile-dev .
+
 patch: test build ver-patch docker publish
 minor: test build ver-minor docker publish
 major: test build ver-major docker publish

@@ -3,637 +3,637 @@
 /* ============================ Main Page Layout =========================== */
 
 [theme=default] nav {
-    background: #181818;
+  background: #181818;
 }
 
 /* ================================== View ================================= */
 
 [theme=default] .view.right .content.directory {
-    border-left-color: #ccc
+  border-left-color: #ccc
 }
 
 [theme=default] .content.directory {
-    background: #eee;
+  background: #eee;
 }
 
 [theme=default] .content.media,
 [theme=default] .content.document {
-    background: #0a0a0a;
+  background: #0a0a0a;
 }
 
 /* ================================== Path ================================= */
 
 [theme=default] .path {
-    box-shadow: 0 0 .5em rgba(0, 0, 0, .15);
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .15);
 }
 
 [theme=default] .path li {
-    color: #ccc;
+  color: #ccc;
 }
 
 [theme=default] .path li:hover .home {
-    fill: #fff
+  fill: #fff
 }
 
 [theme=default] .path li:nth-child(odd) {
-    background: #404040
+  background: #404040
 }
 
 [theme=default] .path li:nth-child(odd) .triangle {
-    fill: #404040
+  fill: #404040
 }
 
 [theme=default] .path li:nth-child(even) {
-    background: #2d2d2d
+  background: #2d2d2d
 }
 
 [theme=default] .path li:nth-child(even) .triangle {
-    fill: #2d2d2d
+  fill: #2d2d2d
 }
 
 [theme=default] .path li:nth-child(odd):hover {
-    background: #812;
-    color: #fff
+  background: #812;
+  color: #fff
 }
 
 [theme=default] .path li:nth-child(odd):hover .triangle {
-    fill: #812
+  fill: #812
 }
 
 [theme=default] .path li:nth-child(even):hover {
-    background: #25a;
-    color: #fff
+  background: #25a;
+  color: #fff
 }
 
 [theme=default] .path li:nth-child(even):hover .triangle {
-    fill: #25a
+  fill: #25a
 }
 
 [theme=default] .path li.dirty {
-    color: #f71
+  color: #f71
 }
 
 [theme=default] .path li.saved {
-    background: #361
+  background: #361
 }
 
 [theme=default] .path li.saved svg {
-    fill: #361 !important
+  fill: #361 !important
 }
 
 [theme=default] .path li.save-failed {
-    background: #b44
+  background: #b44
 }
 
 [theme=default] .path li.save-failed svg {
-    fill: #b44 !important
+  fill: #b44 !important
 }
 
 /* ========================= File/Folder Display =========================== */
 
 [theme=default] .paste-button {
-    background: #333;
-    color: #bbb;
+  background: #333;
+  color: #bbb;
 }
 
 [theme=default] .paste-button .triangle {
-    fill: #333;
+  fill: #333;
 }
 
 [theme=default] .paste-button:hover svg.triangle {
-    fill: #25a
+  fill: #25a
 }
 
 [theme=default] .paste-button:hover {
-    background: #25a;
-    color: #fff
+  background: #25a;
+  color: #fff
 }
 
 [theme=default] .paste-button .filename {
-    color: #fff
+  color: #fff
 }
 
 [theme=default] #overlay {
-    background: #000;
+  background: #000;
 }
 
 [theme=default] .file-header {
-    color: #555;
-    border-bottom-color: #bbb;
-    background: #e0e0e0;
+  color: #555;
+  border-bottom-color: #bbb;
+  background: #e0e0e0;
 }
 
 [theme=default] .file-header .active {
-    color: #000
+  color: #000
 }
 
 [theme=default] .line-buttons svg {
-    fill: #555;
+  fill: #555;
 }
 
 [theme=default] .line-buttons span:hover svg,
 [theme=default] .line-buttons a:hover svg {
-    fill: #000
+  fill: #000
 }
 
 [theme=default] .data-row.editing.invalid input {
-    color: #d22
+  color: #d22
 }
 
 [theme=default] .data-row,
 [theme=default] .data-row a {
-    color: #333
+  color: #333
 }
 
 [theme=default] .data-row:not(.playing):not(.animating):not(.editing):hover,
 [theme=default] .data-row:not(.playing):not(.animating):not(.editing).active {
-    background: #e3e3e3;
+  background: #e3e3e3;
 }
 
 [theme=default] .data-row.playing {
-    background: #05a;
+  background: #05a;
 }
 
 [theme=default] .data-row.playing a.entry-link,
 [theme=default] .playing span {
-    color: #fff
+  color: #fff
 }
 
 [theme=default] .data-row.playing svg {
-    fill: #ccc !important
+  fill: #ccc !important
 }
 
 [theme=default] .data-row.playing svg:hover {
-    fill: #fff !important
+  fill: #fff !important
 }
 
 [theme=default] .data-row.editing {
-    background: #f8f8f8 !important
+  background: #f8f8f8 !important
 }
 
 [theme=default] .error-link {
-    color: #f44 !important;
+  color: #f44 !important;
 }
 
 /* ============================= Empty Folder ============================== */
 
 [theme=default] .noresults {
-    color: #333
+  color: #333
 }
 
 [theme=default] .empty {
-    color: #666
+  color: #666
 }
 
 [theme=default] .empty:hover svg {
-    fill: #333
+  fill: #333
 }
 
 [theme=default] .empty:hover .text {
-    color: #333
+  color: #333
 }
 
 
 /* ================================= Icons ================================= */
 
 [theme=default] .spinner {
-    fill: #bbb;
+  fill: #bbb;
 }
 
 /* ============================= View Nav ============================== */
 
 [theme=default] .button {
-    color: #ccc;
+  color: #ccc;
 }
 
 [theme=default] .view[data-type="directory"] .content-container {
-    background: #eee;
+  background: #eee;
 }
 
 [theme=default] .search input {
-    color: #fff;
+  color: #fff;
 }
 
 [theme=default] .search.toggled-on input {
-    border-bottom-color: #ccc;
+  border-bottom-color: #ccc;
 }
 
 [theme=default] .search:hover svg,
 [theme=default] .search input:hover+svg,
 [theme=default] .search input:focus+svg,
 [theme=default] .search input:active+svg {
-    fill: #fff;
+  fill: #fff;
 }
 
 [theme=default] .button.disabled {
-    color: #444 !important;
+  color: #444 !important;
 }
 
 [theme=default] .button.disabled:hover {
-    color: #444 !important;
+  color: #444 !important;
 }
 
 [theme=default] .button.disabled:hover svg {
-    fill: #444 !important
+  fill: #444 !important
 }
 
 
 /* ============================ Entry Menu ============================ */
 
 [theme=default] #entry-menu {
-    background: #eee;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  background: #eee;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
 }
 
 [theme=default] html:not(.mobile) #entry-menu a:hover,
 [theme=default] html:not(.mobile) #entry-menu a.active {
-    background: #05a;
-    color: #fff;
+  background: #05a;
+  color: #fff;
 }
 
 [theme=default] #entry-menu a {
-    color: #333;
+  color: #333;
 }
 
 /* ============================ Media View ============================ */
 
 [theme=default] .pswp__bg {
-    background: #0a0a0a !important;
+  background: #0a0a0a !important;
 }
 
 [theme=default] .pswp__top-bar {
-    background: rgba(0, 0, 0, .6) !important;
-    color: #e6e6e6;
+  background: rgba(0, 0, 0, .6) !important;
+  color: #e6e6e6;
 }
 
 [theme=default] .pswp__button--zoom:hover {
-    color: #f82
+  color: #f82
 }
 
 [theme=default] .pswp__button--close:hover {
-    color: #d44
+  color: #d44
 }
 
 [theme=default] .pswp__button--fs:hover {
-    color: #ff4
+  color: #ff4
 }
 
 [theme=default] .fit-h:hover {
-    color: #18f
+  color: #18f
 }
 
 [theme=default] .fit-v:hover {
-    color: #5c5
+  color: #5c5
 }
 
 [theme=default] .autonext,
 [theme=default] .loop {
-    color: #666
+  color: #666
 }
 
 [theme=default] .on {
-    color: #fff
+  color: #fff
 }
 
 [theme=default] .pswp__button--arrow--left,
 [theme=default] .pswp__button--arrow--right {
-    color: rgba(255, 255, 255, .5);
-    stroke: rgba(0, 0, 0, .5);
+  color: rgba(255, 255, 255, .5);
+  stroke: rgba(0, 0, 0, .5);
 }
 
 [theme=default] .pswp__button--arrow--left:hover svg {
-    color: #fff;
-    stroke: #000
+  color: #fff;
+  stroke: #000
 }
 
 [theme=default] .pswp__button--arrow--right:hover svg {
-    color: #fff;
-    stroke: #000
+  color: #fff;
+  stroke: #000
 }
 
 /* ============================ Document  ============================ */
 
 [theme=default] .view[data-type="document"] ::-webkit-scrollbar-thumb {
-    background: rgba(128, 128, 128, .5) !important;
+  background: rgba(128, 128, 128, .5) !important;
 }
 
 [theme=default] .view[data-type="document"] ::-webkit-scrollbar-thumb:hover {
-    background: #18f !important;
+  background: #18f !important;
 }
 
 [theme=default] .CodeMirror-dialog-top {
-    border-bottom-color: #383838;
+  border-bottom-color: #383838;
 }
 
 [theme=default] .CodeMirror-dialog-bottom {
-    border-top-color: #383838;
+  border-top-color: #383838;
 }
 
 [theme=default] .CodeMirror-dialog {
-    background: #282828;
-    color: #aaa;
+  background: #282828;
+  color: #aaa;
 }
 
 [theme=default] .CodeMirror-dialog input {
-    color: #eee;
+  color: #eee;
 }
 
 [theme=default] .CodeMirror-dialog button {
-    background: #181818;
-    color: #eee;
+  background: #181818;
+  color: #eee;
 }
 
 [theme=default] .CodeMirror-dialog button:hover {
-    background: #383838;
+  background: #383838;
 }
 
 [theme=default] .sidebar>li:hover span {
-    color: #fff;
+  color: #fff;
 }
 
 [theme=default] .sidebar>.exit:hover svg {
-    fill: #d44
+  fill: #d44
 }
 
 [theme=default] .sidebar>.save:hover svg {
-    fill: #5c5
+  fill: #5c5
 }
 
 [theme=default] .sidebar>.dl:hover svg {
-    fill: #71f
+  fill: #71f
 }
 
 [theme=default] .sidebar>.ww:hover svg {
-    fill: #18f
+  fill: #18f
 }
 
 [theme=default] .sidebar>.syntax:hover svg,
 [theme=default] .sidebar>.syntax.in svg {
-    fill: #f82
+  fill: #f82
 }
 
 [theme=default] .sidebar>.syntax.in span {
-    color: #fff;
+  color: #fff;
 }
 
 [theme=default] .sidebar>.find:hover svg {
-    fill: #a4c
+  fill: #a4c
 }
 
 [theme=default] .sidebar>.full:hover svg {
-    fill: #ff4
+  fill: #ff4
 }
 
 [theme=default] .mode-select {
-    background: #282828;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, .6);
-    color: #ccc;
+  background: #282828;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, .6);
+  color: #ccc;
 }
 
 /* ============================ Upload Progress ============================ */
 
 [theme=default] .upload-info {
-    background: #181818;
-    color: #eee;
+  background: #181818;
+  color: #eee;
 }
 
 [theme=default] .upload-bar {
-    background: #05a;
+  background: #05a;
 }
 
 [theme=default] .upload-cancel:hover {
-    color: #f44
+  color: #f44
 }
 
 [theme=default] .upload-cancel:hover svg.remove {
-    fill: #f44
+  fill: #f44
 }
 
 /* =============================== Audio Panel =============================== */
 
 [theme=default] .audio-bar {
-    background: #181818;
-    box-shadow: 0 0 .5em rgba(0, 0, 0, .2);
+  background: #181818;
+  box-shadow: 0 0 .5em rgba(0, 0, 0, .2);
 }
 
 [theme=default] .audio-icon svg {
-    fill: rgba(255, 255, 255, .55);
+  fill: rgba(255, 255, 255, .55);
 }
 
 [theme=default] .audio-icon:hover svg {
-    fill: #fff
+  fill: #fff
 }
 
 [theme=default] .audio-icon.active svg {
-    fill: #fff;
-    background: rgba(255, 255, 255, .3);
+  fill: #fff;
+  background: rgba(255, 255, 255, .3);
 }
 
 [theme=default] .volume-slider-inner {
-    background: #eee;
+  background: #eee;
 }
 
 [theme=default] .audio-title {
-    color: #fff;
+  color: #fff;
 }
 
 [theme=default] .seekbar-played {
-    background: #05a;
+  background: #05a;
 }
 
 [theme=default] .seekbar-loaded {
-    background: #282d38;
+  background: #282d38;
 }
 
 [theme=default] .audio-bar .time {
-    color: #999;
+  color: #999;
 }
 
 [theme=default] .time-cur,
 [theme=default] .time-max {
-    color: #fff
+  color: #fff
 }
 
 /* =============================== About box =============================== */
 
 [theme=default] #about-box {
-    background: #eee;
-    color: #333;
+  background: #eee;
+  color: #333;
 }
 
 [theme=default] #about-copy a {
-    color: #000;
+  color: #000;
 }
 
 [theme=default] #about-fork:hover,
 [theme=default] #about-fork:hover svg,
 [theme=default] #about-copy a:hover {
-    color: #05a;
-    fill: #05a;
+  color: #05a;
+  fill: #05a;
 }
 
 /* ================================= Prefs ================================ */
 
 [theme=default] #prefs-box {
-    background: #eee;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
-    color: #555;
+  background: #eee;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  color: #555;
 }
 
 [theme=default] #prefs-box li:hover {
-    background: #ddd;
-    color: #000;
+  background: #ddd;
+  color: #000;
 }
 
 [theme=default] #prefs-box select {
-    color: #555;
-    background-color: #fff;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgNjQwIDY0MCI+PHBhdGggc3R5bGU9ImZpbGw6ICM5OTkiIGQ9Ik0zMjAgMGwtMTQ3LjIgMjMzLjZoMjk0LjM2OGwtMTQ3LjE2OC0yMzMuNnpNMzIwLjAzMiA2NDBsMTQ3LjE2OC0yMzMuNi0yOTQuNC0wLjAzMiAxNDcuMjMyIDIzMy42MzJ6Ij48L3BhdGg+PC9zdmc+");
+  color: #555;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgNjQwIDY0MCI+PHBhdGggc3R5bGU9ImZpbGw6ICM5OTkiIGQ9Ik0zMjAgMGwtMTQ3LjIgMjMzLjZoMjk0LjM2OGwtMTQ3LjE2OC0yMzMuNnpNMzIwLjAzMiA2NDBsMTQ3LjE2OC0yMzMuNi0yOTQuNC0wLjAzMiAxNDcuMjMyIDIzMy42MzJ6Ij48L3BhdGg+PC9zdmc+");
 }
 
 [theme=default] #prefs-box li:hover select {
-    color: #000
+  color: #000
 }
 
 [theme=default] .list-user:before {
-    border-bottom-color: #aaa;
-    color: #333;
+  border-bottom-color: #aaa;
+  color: #333;
 }
 
 [theme=default] .delete-user:hover {
-    color: #f44
+  color: #f44
 }
 
 /* ============================== Login Form =============================== */
 
 [theme=default] #login-box {
-    color: #aaa;
-    background: #181818;
-    box-shadow: 0 .25rem 1rem #000;
-    border-color: #333;
+  color: #aaa;
+  background: #181818;
+  box-shadow: 0 .25rem 1rem #000;
+  border-color: #333;
 }
 
 [theme=default] #login-info-box {
-    background: #202020;
-    color: #ddd;
-    border-bottom-color: #333;
+  background: #202020;
+  color: #ddd;
+  border-bottom-color: #333;
 }
 
 [theme=default] #login-info-box.error {
-    background: #911;
-    color: #fff
+  background: #911;
+  color: #fff
 }
 
 [theme=default] #fields input {
-    background: #202020;
-    color: #fff;
-    border-color: #383838;
+  background: #202020;
+  color: #fff;
+  border-color: #383838;
 }
 
 [theme=default] #fields input::placeholder {
-    color: #666;
+  color: #666;
 }
 
 [theme=default] #fields input:focus {
-    background: #282828;
-    border: 1px solid #404040;
+  background: #282828;
+  border: 1px solid #404040;
 }
 
 [theme=default] #login-box .bottom {
-    background: #202020;
-    border-top-color: #333;
+  background: #202020;
+  border-top-color: #333;
 }
 
 [theme=default] #remember:hover,
 [theme=default] #remember:focus,
 [theme=default] #submit:hover,
 [theme=default] #submit:focus {
-    color: #fff
+  color: #fff
 }
 
 /* =============================== Info Box ================================ */
 
 [theme=default] .info-box {
-    color: #333;
-    background: #eee;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  color: #333;
+  background: #eee;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
 }
 
 [theme=default] .info-box .icon {
-    color: #fff;
+  color: #fff;
 }
 
 [theme=default] .info-box.link .icon {
-    background: #05a
+  background: #05a
 }
 
 [theme=default] .info-box.error .icon {
-    background: #f44
+  background: #f44
 }
 
 [theme=default] .info-box span,
 [theme=default] .link-out {
-    color: #444;
+  color: #444;
 }
 
 [theme=default] .link-out:after {
-    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1))
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1))
 }
 
 [theme=default] .link-options {
-    background: #05a;
-    color: #fff;
+  background: #05a;
+  color: #fff;
 }
 
 [theme=default] .link-options>div:hover {
-    background: rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, .2);
 }
 
 /* =========================== Drop Select Menu ============================ */
 
 [theme=default] #drop-select {
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
 }
 
 [theme=default] html:not(.mobile) #drop-select span:hover,
 [theme=default] html:not(.mobile) #drop-select span.active {
-    background: #05a;
-    color: #fff;
+  background: #05a;
+  color: #fff;
 }
 
 /* ============================= Misc Elements ============================= */
 
 [theme=default] .dropzone svg {
-    fill: #fff;
+  fill: #fff;
 }
 
 [theme=default] .tip:after {
-    color: #fff;
-    background: rgba(0, 0, 0, .85);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, .25);
+  color: #fff;
+  background: rgba(0, 0, 0, .85);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, .25);
 }
 
 [theme=default] .tip:before {
-    color: rgba(0, 0, 0, .85);
+  color: rgba(0, 0, 0, .85);
 }
 
 [theme=default] .tip-s:before,
 [theme=default] .tip-se:before,
 [theme=default] .tip-sw:before {
-    border-bottom-color: rgba(0, 0, 0, .85);
+  border-bottom-color: rgba(0, 0, 0, .85);
 }
 
 [theme=default] .tip-n:before,
 [theme=default] .tip-ne:before,
 [theme=default] .tip-nw:before {
-    border-top-color: rgba(0, 0, 0, .85);
+  border-top-color: rgba(0, 0, 0, .85);
 }
 
 [theme=default] .tip-w:before {
-    border-left-color: rgba(0, 0, 0, .85);
+  border-left-color: rgba(0, 0, 0, .85);
 }
 
 [theme=default] .tip-e:before {
-    border-right-color: rgba(0, 0, 0, .85);
+  border-right-color: rgba(0, 0, 0, .85);
 }

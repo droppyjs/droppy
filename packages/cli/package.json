@@ -7,7 +7,12 @@
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
-        "@droppy-js/server": "*"
+        "@droppy-js/server": "*",
+        "daemonize-process": "^3.0.0",
+        "minimist": "^1.2.5",
+        "ps-node": "^0.1.6",
+        "untildify": "^4.0.0",
+        "which": "^2.0.2"
     },
     "directories": {
         "lib": "lib",

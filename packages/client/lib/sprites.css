@@ -21,341 +21,341 @@
 */
 
 .sprite {
-    background-image: url("sprites.png")
+  background-image: url("sprites.png")
 }
 
 .sprite-7zip {
-    background-position: 0 0
+  background-position: 0 0
 }
 
 .sprite-ace {
-    background-position: -24px 0
+  background-position: -24px 0
 }
 
 .sprite-archive {
-    background-position: -48px 0
+  background-position: -48px 0
 }
 
 .sprite-audio {
-    background-position: -72px 0
+  background-position: -72px 0
 }
 
 .sprite-authors {
-    background-position: -96px 0
+  background-position: -96px 0
 }
 
 .sprite-bak {
-    background-position: -120px 0
+  background-position: -120px 0
 }
 
 .sprite-bin {
-    background-position: -144px 0
+  background-position: -144px 0
 }
 
 .sprite-bmp {
-    background-position: -168px 0
+  background-position: -168px 0
 }
 
 .sprite-c {
-    background-position: -192px 0
+  background-position: -192px 0
 }
 
 .sprite-calc {
-    background-position: 0 -24px
+  background-position: 0 -24px
 }
 
 .sprite-cd {
-    background-position: -24px -24px
+  background-position: -24px -24px
 }
 
 .sprite-copying {
-    background-position: -48px -24px
+  background-position: -48px -24px
 }
 
 .sprite-cpp {
-    background-position: -72px -24px
+  background-position: -72px -24px
 }
 
 .sprite-css {
-    background-position: -96px -24px
+  background-position: -96px -24px
 }
 
 .sprite-cue {
-    background-position: -120px -24px
+  background-position: -120px -24px
 }
 
 .sprite-deb {
-    background-position: -144px -24px
+  background-position: -144px -24px
 }
 
 .sprite-default {
-    background-position: -168px -24px
+  background-position: -168px -24px
 }
 
 .sprite-dia {
-    background-position: -192px -24px
+  background-position: -192px -24px
 }
 
 .sprite-diff {
-    background-position: 0 -48px
+  background-position: 0 -48px
 }
 
 .sprite-doc {
-    background-position: -24px -48px
+  background-position: -24px -48px
 }
 
 .sprite-draw {
-    background-position: -48px -48px
+  background-position: -48px -48px
 }
 
 .sprite-encrypted {
-    background-position: -72px -48px
+  background-position: -72px -48px
 }
 
 .sprite-eps {
-    background-position: -96px -48px
+  background-position: -96px -48px
 }
 
 .sprite-exe {
-    background-position: -120px -48px
+  background-position: -120px -48px
 }
 
 .sprite-flash {
-    background-position: -144px -48px
+  background-position: -144px -48px
 }
 
 .sprite-folder {
-    background-position: -216px -24px
+  background-position: -216px -24px
 }
 
 .sprite-folder-open {
-    background-position: -216px -48px
+  background-position: -216px -48px
 }
 
 .sprite-font {
-    background-position: -168px -48px
+  background-position: -168px -48px
 }
 
 .sprite-gif {
-    background-position: -192px -48px
+  background-position: -192px -48px
 }
 
 .sprite-glade {
-    background-position: 0 -72px
+  background-position: 0 -72px
 }
 
 .sprite-gzip {
-    background-position: -24px -72px
+  background-position: -24px -72px
 }
 
 .sprite-h {
-    background-position: -48px -72px
+  background-position: -48px -72px
 }
 
 .sprite-hpp {
-    background-position: -72px -72px
+  background-position: -72px -72px
 }
 
 .sprite-html {
-    background-position: -96px -72px
+  background-position: -96px -72px
 }
 
 .sprite-ico {
-    background-position: -120px -72px
+  background-position: -120px -72px
 }
 
 .sprite-image {
-    background-position: -144px -72px
+  background-position: -144px -72px
 }
 
 .sprite-install {
-    background-position: -168px -72px
+  background-position: -168px -72px
 }
 
 .sprite-jar {
-    background-position: -192px -72px
+  background-position: -192px -72px
 }
 
 .sprite-java {
-    background-position: 0 -96px
+  background-position: 0 -96px
 }
 
 .sprite-jpg {
-    background-position: -24px -96px
+  background-position: -24px -96px
 }
 
 .sprite-js {
-    background-position: -48px -96px
+  background-position: -48px -96px
 }
 
 .sprite-json {
-    background-position: -72px -96px
+  background-position: -72px -96px
 }
 
 .sprite-log {
-    background-position: -96px -96px
+  background-position: -96px -96px
 }
 
 .sprite-makefile {
-    background-position: -120px -96px
+  background-position: -120px -96px
 }
 
 .sprite-markdown {
-    background-position: -144px -96px
+  background-position: -144px -96px
 }
 
 .sprite-message {
-    background-position: -168px -96px
+  background-position: -168px -96px
 }
 
 .sprite-mp3 {
-    background-position: -192px -96px
+  background-position: -192px -96px
 }
 
 .sprite-ogg {
-    background-position: 0 -120px
+  background-position: 0 -120px
 }
 
 .sprite-package {
-    background-position: -24px -120px
+  background-position: -24px -120px
 }
 
 .sprite-pdf {
-    background-position: -48px -120px
+  background-position: -48px -120px
 }
 
 .sprite-pgp {
-    background-position: -72px -120px
+  background-position: -72px -120px
 }
 
 .sprite-php {
-    background-position: -96px -120px
+  background-position: -96px -120px
 }
 
 .sprite-playlist {
-    background-position: -120px -120px
+  background-position: -120px -120px
 }
 
 .sprite-png {
-    background-position: -144px -120px
+  background-position: -144px -120px
 }
 
 .sprite-pres {
-    background-position: -168px -120px
+  background-position: -168px -120px
 }
 
 .sprite-ps {
-    background-position: -192px -120px
+  background-position: -192px -120px
 }
 
 .sprite-psd {
-    background-position: 0 -144px
+  background-position: 0 -144px
 }
 
 .sprite-py {
-    background-position: -24px -144px
+  background-position: -24px -144px
 }
 
 .sprite-rar {
-    background-position: -48px -144px
+  background-position: -48px -144px
 }
 
 .sprite-rb {
-    background-position: -72px -144px
+  background-position: -72px -144px
 }
 
 .sprite-readme {
-    background-position: -96px -144px
+  background-position: -96px -144px
 }
 
 .sprite-rpm {
-    background-position: -120px -144px
+  background-position: -120px -144px
 }
 
 .sprite-rss {
-    background-position: -144px -144px
+  background-position: -144px -144px
 }
 
 .sprite-rtf {
-    background-position: -168px -144px
+  background-position: -168px -144px
 }
 
 .sprite-script {
-    background-position: -192px -144px
+  background-position: -192px -144px
 }
 
 .sprite-source {
-    background-position: 0 -168px
+  background-position: 0 -168px
 }
 
 .sprite-sql {
-    background-position: -24px -168px
+  background-position: -24px -168px
 }
 
 .sprite-svg {
-    background-position: -48px -168px
+  background-position: -48px -168px
 }
 
 .sprite-tar {
-    background-position: -72px -168px
+  background-position: -72px -168px
 }
 
 .sprite-tex {
-    background-position: -96px -168px
+  background-position: -96px -168px
 }
 
 .sprite-tex-bib {
-    background-position: -120px -168px
+  background-position: -120px -168px
 }
 
 .sprite-text {
-    background-position: -144px -168px
+  background-position: -144px -168px
 }
 
 .sprite-theme {
-    background-position: -168px -168px
+  background-position: -168px -168px
 }
 
 .sprite-tiff {
-    background-position: -192px -168px
+  background-position: -192px -168px
 }
 
 .sprite-torrent {
-    background-position: 0 -192px
+  background-position: 0 -192px
 }
 
 .sprite-unknown {
-    background-position: -24px -192px
+  background-position: -24px -192px
 }
 
 .sprite-vcal {
-    background-position: -48px -192px
+  background-position: -48px -192px
 }
 
 .sprite-video {
-    background-position: -72px -192px
+  background-position: -72px -192px
 }
 
 .sprite-wav {
-    background-position: -96px -192px
+  background-position: -96px -192px
 }
 
 .sprite-wma {
-    background-position: -120px -192px
+  background-position: -120px -192px
 }
 
 .sprite-xcf {
-    background-position: -144px -192px
+  background-position: -144px -192px
 }
 
 .sprite-xhtml {
-    background-position: -168px -192px
+  background-position: -168px -192px
 }
 
 .sprite-xml {
-    background-position: -192px -192px
+  background-position: -192px -192px
 }
 
 .sprite-zip {
-    background-position: -216px 0
+  background-position: -216px 0
 }

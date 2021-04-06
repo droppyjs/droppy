@@ -1,9 +1,9 @@
 "use strict";
 
 const fs = require("fs");
-const { red, blue, yellow, green, cyan, magenta, reset } = require("colorette");
+const {red, blue, yellow, green, cyan, magenta, reset} = require("colorette");
 const stripAnsi = require("strip-ansi");
-const { isIPv6 } = require("net");
+const {isIPv6} = require("net");
 
 const utils = require("./utils.js");
 
@@ -12,10 +12,10 @@ const logLabels = ["", "ERROR", "INFO", "DEBG"];
 let opts, logfile;
 
 const log = module.exports = function(req, res, logLevel, ...elems) {
-        if (opts && opts.logLevel < logLevel) return;
-        let statusCode;
+  if (opts && opts.logLevel < logLevel) return;
+  let statusCode;
 
-        if (req && req.time) elems.unshift(`[${magenta(`${Date.now() - req.time}ms`)}]`);
+  if (req && req.time) elems.unshift(`[${magenta(`${Date.now() - req.time}ms`)}]`);
 
   if (res) {
     if (res.statusCode) {

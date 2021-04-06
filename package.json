@@ -52,7 +52,7 @@
         "eslint-config-silverwind": "18.0.2",
         "eslint-plugin-unicorn": "21.0.0",
         "html-minifier": "4.0.0",
-        "lerna": "^3.22.1",
+        "lerna": "^4.0.0",
         "postcss": "7.0.32",
         "stylelint": "13.6.1",
         "stylelint-config-silverwind": "2.0.8",

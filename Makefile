@@ -9,8 +9,8 @@ run:
 	node droppy.js start
 
 lint:
-	yarn -s run eslint server client/client.js droppy.js
-	yarn -s run stylelint client/*.css
+	yarn -s run eslint packages
+	yarn -s run stylelint packages/*.css
 
 test: lint
 

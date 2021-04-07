@@ -2793,11 +2793,6 @@ file-entry-cache@^5.0.1:
   dependencies:
     flat-cache "^2.0.1"
 
-file-extension@4.0.5:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/file-extension/-/file-extension-4.0.5.tgz#ae6cef34c28e7313a92baa4aa955755cacdf0ce3"
-  integrity sha512-l0rOL3aKkoi6ea7MNZe6OHgqYYpn48Qfflr8Pe9G9JPPTx5A+sfboK91ZufzIs59/lPqh351l0eb6iKU9J5oGg==
-
 filename-reserved-regex@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/filename-reserved-regex/-/filename-reserved-regex-2.0.0.tgz#abf73dfab735d045440abfea2d91f389ebbfa229"

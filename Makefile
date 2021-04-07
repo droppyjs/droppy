@@ -15,7 +15,7 @@ lint:
 test:
 	yarn 
 	yarn bootstrap
-	lint
+	make lint
 
 build:
 	@touch client/client.js

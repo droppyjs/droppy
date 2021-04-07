@@ -12,7 +12,9 @@ lint:
 	yarn -s run eslint packages
 	yarn -s run stylelint packages/**/*.css
 
-test: lint
+test:
+    yarn && yarn bootstrap
+    lint
 
 build:
 	@touch client/client.js

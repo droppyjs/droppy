@@ -13,7 +13,8 @@ lint:
 	yarn -s run stylelint packages/**/*.css
 
 test:
-    yarn && yarn bootstrap
+    yarn 
+	yarn bootstrap
     lint
 
 build:

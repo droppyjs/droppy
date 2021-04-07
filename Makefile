@@ -13,9 +13,9 @@ lint:
 	yarn -s run stylelint packages/**/*.css
 
 test:
-    yarn 
+	yarn 
 	yarn bootstrap
-    lint
+	lint
 
 build:
 	@touch client/client.js

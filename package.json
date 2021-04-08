@@ -14,7 +14,8 @@
     "scripts": {
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
-        "test": "make test"
+        "test": "make test",
+        "dev": "lerna run --stream dev"
     },
     "dependencies": {
         "busboy": "0.3.1",

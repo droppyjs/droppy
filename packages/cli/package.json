@@ -2,8 +2,8 @@
     "name": "@droppy-js/cli",
     "version": "0.0.0",
     "description": "> TODO: description",
-    "author": "Mark Hughes <mark.hughes@leapdev.io>",
-    "homepage": "https://github.com/markhughes/droppy#readme",
+    "author": "Mark Hughes <m@rkhugh.es>",
+    "homepage": "https://github.com/droppy-js/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
@@ -23,12 +23,13 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/markhughes/droppy.git"
+        "url": "git+https://github.com/droppy-js/droppy.git"
     },
     "scripts": {
-        "start": "node ./lib/cli.js start"
+        "start": "node ./lib/cli.js start",
+        "dev": "node ./lib/cli.js start --dev"
     },
     "bugs": {
-        "url": "https://github.com/markhughes/droppy/issues"
+        "url": "https://github.com/droppy-js/droppy/issues"
     }
 }

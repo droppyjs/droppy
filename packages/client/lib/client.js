@@ -2506,16 +2506,17 @@ function initAudio(view) {
     event.stopPropagation();
   });
 
-  function setVolume(view, volume) {
+  function setVolume(volume) {
     if (volume > 1) volume = 1;
     if (volume < 0) volume = 0;
+
     player.volume = volume;
     droppy.set("volume", volume);
     if (player.volume === 0) volumeIcon.html(svg("volume-mute"));
     else if (player.volume <= 0.33) volumeIcon.html(svg("volume-low"));
     else if (player.volume <= 0.67) volumeIcon.html(svg("volume-medium"));
     else volumeIcon.html(svg("volume-high"));
-    view.find(".volume-slider-inner")[0].style.width = `${volume * 100}%`;
+    document.querySelector('.volume-slider-inner').style.width = `${volume * 100}%`;
   }
 
   function onWheel(event) {

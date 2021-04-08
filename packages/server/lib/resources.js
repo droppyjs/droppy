@@ -96,7 +96,7 @@ let autoprefixer, cleanCSS, postcss, terser, htmlMinifier, svg, handlebars;
 try {
   autoprefixer = require("autoprefixer");
   cleanCSS = new (require("clean-css"))(opts.cleanCSS);
-//  handlebars = require("handlebars");
+  handlebars = require("handlebars");
   htmlMinifier = require("html-minifier");
   postcss = require("postcss");
   terser = require("terser");

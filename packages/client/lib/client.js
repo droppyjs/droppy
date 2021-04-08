@@ -2516,7 +2516,7 @@ function initAudio(view) {
     else if (player.volume <= 0.33) volumeIcon.html(svg("volume-low"));
     else if (player.volume <= 0.67) volumeIcon.html(svg("volume-medium"));
     else volumeIcon.html(svg("volume-high"));
-    document.querySelector('.volume-slider-inner').style.width = `${volume * 100}%`;
+    document.querySelector(".volume-slider-inner").style.width = `${volume * 100}%`;
   }
 
   function onWheel(event) {

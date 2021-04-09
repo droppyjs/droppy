@@ -14,7 +14,8 @@
     "scripts": {
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
-        "test": "make test"
+        "test": "make test",
+        "postinstall": "yarn bootstrap"
     },
     "dependencies": {
         "busboy": "0.3.1",
@@ -80,5 +81,9 @@
         "self",
         "hosted"
     ],
-    "browserslist": "defaults"
+    "browserslist": "defaults",
+    "volta": {
+        "node": "14.16.1",
+        "yarn": "1.22.10"
+    }
 }

@@ -23,7 +23,7 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 
 import useStyles from './DroppyHeader.styles';
 
-export function DroppyHeader() {
+export function DroppyHeader({ handleAbout }) {
   const classes = useStyles();
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
 
@@ -31,10 +31,12 @@ export function DroppyHeader() {
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
+    return true;
   };
 
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
+    return true;
   };
 
   const menuId = 'droppy-primary-header';
@@ -71,7 +73,7 @@ export function DroppyHeader() {
         <p>Settings</p>
       </MenuItem>
 
-      <MenuItem>
+      <MenuItem onClick={() => handleMobileMenuClose() && handleAbout()}>
         <IconButton aria-label="information about droppy" color="inherit">
           <InfoIcon />
         </IconButton>
@@ -166,7 +168,7 @@ export function DroppyHeader() {
             </Tooltip>
 
             <Tooltip TransitionComponent={Zoom}  title="About">
-              <IconButton className={classes.menuIcons} aria-label="about" color="inherit">
+              <IconButton className={classes.menuIcons} aria-label="about" color="inherit" onClick={() => handleAbout()}>
                 <InfoIcon />
               </IconButton>
             </Tooltip>

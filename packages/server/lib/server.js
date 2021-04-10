@@ -160,6 +160,11 @@ function onRequest(req, res) {
     res.setHeader(key, value);
   }
 
+  // TODO: derive portal/port for referal
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   if (ready) {
     if (!utils.isPathSane(req.url, true)) {
       res.statusCode = 400;
@@ -170,6 +175,9 @@ function onRequest(req, res) {
       handleGETandHEAD(req, res);
     } else if (req.method === "POST") {
       handlePOST(req, res);
+    } else if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end()
     } else {
       res.statusCode = 405;
       res.end();

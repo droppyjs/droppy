@@ -1,8 +1,15 @@
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 
 import { DataGrid } from '@material-ui/data-grid';
 
 import { DroppyHeader } from '../components'
+import { getToken } from '../services/auth/getToken';
+import React, { useEffect, useState } from 'react';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography } from '@material-ui/core';
+import { useSocket } from '../hooks/useSocket';
+import DroppyAbout from '../components/Dialog/DroppyAbout/DroppyAbout';
+import { useSettings } from '../hooks/useSettings';
 
 const columns = [
   { field: 'id', headerName: 'Name' },
@@ -10,8 +17,60 @@ const columns = [
   { field: 'added', headerName: 'Added' },
   { field: 'size', headerName: 'Size' },
 ];
-export default function Home() {
 
+export default function Home() {  
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(true);
+
+  const [aboutOpen, setAboutOpen] = useState(false);
+
+  const [listener, sendMessage, setToken] = useSocket();
+
+  const [settings, setSettings] = useSettings();
+
+  listener.subscribe((message) => {
+    console.log('Incoming Message:', message);
+    switch (message.type) {
+      case 'SETTINGS':
+        setSettings(message.settings);
+        break;
+    }
+  });
+
+  useEffect(() => {
+    getToken().then(token => {
+      console.log('got', token);
+      
+      if (!token) {
+         router.push('/auth/login')
+      } else {
+        setToken(token);
+        setLoading(false);
+      }
+    })
+  }, [])
+
+  useEffect(() => sendMessage({ type: 'REQUEST_SETTINGS'}));
+
+  if (loading) {
+    return (
+      <Grid
+        container
+        spacing={0}
+        direction="column"
+        alignItems="center"
+        justify="center"
+        style={{ minHeight: '100vh' }}
+      >
+        <Grid item xs={3}>
+          <CircularProgress />
+        </Grid>
+      </Grid>
+    )
+  }
+
+  
   const rows = [
     { id: 'example.txt', modified: '1 month ago', added: '3 days ago', size: '35kb' },
     { id: 'example2.txt', modified: '1 month ago', added: '3 days ago', size: '35kb' },
@@ -53,13 +112,15 @@ export default function Home() {
         <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMyNmIiIHJ4PSI2NCIgcnk9IjY0Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM4MSAyOThoLTg0VjE2N2gtNjZMMzM5IDM1bDEwOCAxMzJoLTY2em0tMTY4LTg0aC04NHYxMzFINjNsMTA4IDEzMiAxMDgtMTMyaC02NnoiLz48L3N2Zz4=" />
       </Head>
 
-      <DroppyHeader />
+      <DroppyHeader handleAbout={() => setAboutOpen(true)} />
       
       <div style={{ height: '85vh', width: '100%' }}>
         <DataGrid rows={rows} columns={columns} />
       </div>
 
-      
+    
+      <DroppyAbout settings={settings} open={aboutOpen} handleClose={() => setAboutOpen(false)} />
+
     </>
   )
 }

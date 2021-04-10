@@ -13,9 +13,10 @@
     },
     "scripts": {
         "start": "lerna run --stream start --",
+        "start:dev": "lerna run --stream dev --",
+        "build": "lerna run --stream build --",
         "bootstrap": "lerna bootstrap",
         "test": "make test",
-        "dev": "lerna run --stream dev",
         "postinstall": "yarn bootstrap"
     },
     "dependencies": {

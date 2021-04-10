@@ -1,20 +1,55 @@
-FROM node:alpine as builder
+# Droppy Dockerfile
+#
+#           .:.
+#    :::  .:::::.    Droppy
+#  ..:::..  :::      Made with love <3 
+#   ':::'   :::      
+#
 
-RUN apk add --no-cache make gcc g++ python git
-RUN git clone https://github.com/droppy-js/droppy /droppy
+# -------------------------------------------------- #
+# BASE
+# -------------------------------------------------- #
+
+FROM debian:10.9 as base
+
+SHELL ["/bin/bash", "-c"]
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV BASH_ENV ~/.bashrc
+ENV VOLTA_HOME /root/.volta
+ENV PATH $VOLTA_HOME/bin:$PATH
+
+RUN apt-get -y update
+RUN apt-get -y install aria2 gnupg software-properties-common \
+                       python3 git curl bash openssl
+ 
+RUN curl https://get.volta.sh | bash
+RUN volta setup
+RUN volta --version
+
+# -------------------------------------------------- #
+# BUILDER
+# -------------------------------------------------- #
+
+FROM base as builder
+
+RUN apt-get -y install -y make gcc g++ 
+RUN git clone --depth=1  https://github.com/droppy-js/droppy /droppy
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \
-    yarn && \
-    yarn bootstrap
+    yarn 
 
-FROM node:alpine
+
+# -------------------------------------------------- #
+# APPLICATION
+# -------------------------------------------------- #
+
+FROM base as application
 LABEL maintainer="https://github.com/droppy-js/droppy"
 
 # Copy files
 COPY --from=builder ["/droppy/node_modules", "/droppy/node_modules"]
-COPY --from=builder ["/droppy/packages/client", "/droppy/client"]
-COPY --from=builder ["/droppy/packages/server", "/droppy/server"]
-COPY --from=builder ["/droppy/packages/cli", "/droppy/cli"]
+COPY --from=builder ["/droppy/packages", "/droppy/packages"]
 COPY --from=builder ["/droppy/docker-start.sh", "/droppy/README.md", "/droppy/LICENSE", "/droppy/"]
 
 # Install build dependencies and and build modules
@@ -31,6 +66,28 @@ RUN cd /droppy && \
     /usr/lib/node_modules \
     /usr/local/lib/node_modules \
     /usr/local/share/.cache
+
+
+## Lets slim the image down!
+
+# systemd uses 26.6 MB of space! 
+RUN apt-get -y remove --purge --auto-remove systemd
+
+# remove our cache from apt-get
+RUN rm -rf /var/cache/apt/archives/
+
+# apt-get update cache (17 MB)
+RUN rm -rf /var/lib/apt/lists/
+
+# man page ~6 MB
+RUN rm -rf /usr/share/man/
+
+# unused locale data ~31 MB 
+RUN rm -rf /usr/share/locale/
+
+# unused mandocs ~11 MB
+RUN rm -rf /usr/share/doc/
+
 
 EXPOSE 8989
 VOLUME ["/config", "/files"]

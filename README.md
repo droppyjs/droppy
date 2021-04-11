@@ -157,10 +157,10 @@ $ wget --content-disposition url
 # Development
 To start a live-reloading dev server:
 ````sh
-$ git clone https://github.com/droppy-js/droppy && cd droppy
+$ git clone https://github.com/droppyjs/droppy && cd droppy
 $ lerna bootstrap
 $ yarn start
 ````
-The [Makefile](https://github.com/droppy-js/droppy/blob/master/Makefile) has a few old tasks for updating dependencies, pushing docker images, see the comment above for dependencies of those tasks. This should not be required anymore, but is left as a reference.
+The [Makefile](https://github.com/droppyjs/droppy/blob/master/Makefile) has a few old tasks for updating dependencies, pushing docker images, see the comment above for dependencies of those tasks. This should not be required anymore, but is left as a reference.
 
-© [Mark Hughes](https://github.com/droppy-js), [silverwind](https://github.com/silverwind), distributed under BSD licence.
+© [Mark Hughes](https://github.com/droppyjs), [silverwind](https://github.com/silverwind), distributed under BSD licence.

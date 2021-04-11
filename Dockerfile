@@ -34,7 +34,7 @@ RUN volta --version
 FROM base as builder
 
 RUN apt-get -y install -y make gcc g++ 
-RUN git clone --depth=1  https://github.com/droppy-js/droppy /droppy
+RUN git clone --depth=1  https://github.com/droppyjs/droppy /droppy
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \
     yarn 
@@ -45,7 +45,7 @@ RUN rm -rf /droppy/node_modules && \
 # -------------------------------------------------- #
 
 FROM base as application
-LABEL maintainer="https://github.com/droppy-js/droppy"
+LABEL maintainer="https://github.com/droppyjs/droppy"
 
 # Copy files
 COPY --from=builder ["/droppy/node_modules", "/droppy/node_modules"]

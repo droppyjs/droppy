@@ -1,7 +1,5 @@
-"use strict";
-
-const pkg = require("../package.json");
-const originalUrl = require("original-url");
+const pkg = require("../package.json")
+const originalUrl = require("original-url")
 
 module.exports = function manifest(req) {
   return JSON.stringify({
@@ -18,7 +16,7 @@ module.exports = function manifest(req) {
       {src: "logo128.png", sizes: "128x128", type: "image/png"},
       {src: "logo152.png", sizes: "152x152", type: "image/png"},
       {src: "logo180.png", sizes: "180x180", type: "image/png"},
-      {src: "logo192.png", sizes: "192x192", type: "image/png"}
-    ]
-  });
-};
+      {src: "logo192.png", sizes: "192x192", type: "image/png"},
+    ],
+  })
+}

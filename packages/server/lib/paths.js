@@ -1,20 +1,18 @@
-"use strict";
+const paths = (module.exports = {})
+const fs = require("fs")
+const path = require("path")
+const untildify = require("untildify")
 
-const paths = module.exports = {};
-const fs = require("fs");
-const path = require("path");
-const untildify = require("untildify");
+const os = require("os")
 
-const os = require("os");
+const homedir = os.homedir()
 
-const homedir = os.homedir();
+let configDir = resolve(homedir, "/.droppy/config")
+let filesDir = resolve(homedir, "/.droppy/files")
 
-let configDir = resolve(homedir, "/.droppy/config");
-let filesDir = resolve(homedir, "/.droppy/files");
+const clientPath = path.normalize(`${path.dirname(require.resolve("@droppy-js/client"))}/../`)
 
-const clientPath = path.normalize(`${path.dirname(require.resolve("@droppy-js/client"))}/../`);
-
-paths.get = function() {
+paths.get = function () {
   return {
     homedir,
 
@@ -33,20 +31,20 @@ paths.get = function() {
     server: resolve(__dirname, "..", "server"),
     client: clientPath,
     templates: resolve(clientPath, "lib", "templates"),
-    svg: resolve(clientPath, "lib", "svg")
-  };
-};
+    svg: resolve(clientPath, "lib", "svg"),
+  }
+}
 
-paths.seed = function(config, files) {
-  if (config) configDir = config;
-  if (files) filesDir = files;
-};
+paths.seed = function (config, files) {
+  if (config) configDir = config
+  if (files) filesDir = files
+}
 
 function resolve(...args) {
-  let p = path.join.apply(null, args);
-  p = path.resolve(p.startsWith("~") ? untildify(p) : p);
+  let p = path.join.apply(null, args)
+  p = path.resolve(p.startsWith("~") ? untildify(p) : p)
   try {
-    p = fs.realpathSync(p);
+    p = fs.realpathSync(p)
   } catch {}
-  return p;
+  return p
 }

@@ -1,21 +1,10 @@
-import Head from "next/head";
-import { useRouter } from "next/router";
-
-import { DataGrid } from "@material-ui/data-grid";
-
-import React, { useEffect, useState } from "react";
-import { Button, CircularProgress, Grid, Input } from "@material-ui/core";
-import { LoginForm } from "../../components/LoginForm/LoginForm";
-
-const columns = [
-  { field: "id", headerName: "Name" },
-  { field: "modified", headerName: "Modified" },
-  { field: "added", headerName: "Added" },
-  { field: "size", headerName: "Size" },
-];
+import Head from "next/head"
+//import React, { useEffect, useState } from "react";
+import {Grid} from "@material-ui/core"
+import {LoginForm} from "../../components/LoginForm/LoginForm"
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
 
   return (
     <>
@@ -39,7 +28,7 @@ export default function Home() {
           direction="column"
           alignItems="center"
           justify="center"
-          style={{ minHeight: "100vh" }}
+          style={{minHeight: "100vh"}}
         >
           <Grid item xs={3}>
             <LoginForm />
@@ -47,5 +36,5 @@ export default function Home() {
         </Grid>
       </div>
     </>
-  );
+  )
 }

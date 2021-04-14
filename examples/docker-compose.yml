@@ -2,7 +2,7 @@ version: '2'
 services:
   droppy:
     container_name: droppy
-    image: ghcr.io/droppy-js/droppy
+    image: ghcr.io/droppyjs/droppy
     ports:
       - '127.0.0.1:8989:8989'
     volumes:

@@ -5,7 +5,9 @@
 #    :::  .:::::.    Droppy
 #  ..:::..  :::      Made with love <3 
 #   ':::'   :::      
+#     '
 #
+
 
 # Determine a UID/GID otherwise default to 0
 [ -z "$UID" ] && UID=0
@@ -38,4 +40,3 @@ chown droppy:droppy /files
 export HOME=/home/droppy
 
 exec /bin/sudo -u droppy node /droppy/cli/lib/cli.js start
-

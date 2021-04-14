@@ -4,6 +4,7 @@
 #    :::  .:::::.    Droppy
 #  ..:::..  :::      Made with love <3 
 #   ':::'   :::      
+#     '
 #
 
 # -------------------------------------------------- #
@@ -19,13 +20,11 @@ ENV BASH_ENV ~/.bashrc
 ENV VOLTA_HOME /root/.volta
 ENV PATH $VOLTA_HOME/bin:$PATH
 
-RUN apt-get -y update
-RUN apt-get -y install aria2 gnupg software-properties-common \
-                       python3 git curl bash openssl
- 
-RUN curl https://get.volta.sh | bash
-RUN volta setup
-RUN volta --version
+RUN apt-get -y update && \
+    apt-get -y install aria2 gnupg software-properties-common \
+        python3 git curl bash openssl && \
+    curl https://get.volta.sh | bash 
+
 
 # -------------------------------------------------- #
 # BUILDER
@@ -33,9 +32,9 @@ RUN volta --version
 
 FROM base as builder
 
-RUN apt-get -y install -y make gcc g++ 
-RUN git clone --depth=1  https://github.com/droppyjs/droppy /droppy
-RUN rm -rf /droppy/node_modules && \
+RUN apt-get -y install -y make gcc g++ && \
+    git clone --depth=1  https://github.com/droppyjs/droppy /droppy && \
+    rm -rf /droppy/node_modules && \
     cd /droppy && \
     yarn 
 
@@ -65,28 +64,13 @@ RUN cd /droppy && \
     /tmp/* \
     /usr/lib/node_modules \
     /usr/local/lib/node_modules \
-    /usr/local/share/.cache
-
-
-## Lets slim the image down!
-
-# systemd uses 26.6 MB of space! 
-RUN apt-get -y remove --purge --auto-remove systemd
-
-# remove our cache from apt-get
-RUN rm -rf /var/cache/apt/archives/
-
-# apt-get update cache (17 MB)
-RUN rm -rf /var/lib/apt/lists/
-
-# man page ~6 MB
-RUN rm -rf /usr/share/man/
-
-# unused locale data ~31 MB 
-RUN rm -rf /usr/share/locale/
-
-# unused mandocs ~11 MB
-RUN rm -rf /usr/share/doc/
+    /usr/local/share/.cache && \ 
+  apt-get -y remove --purge --auto-remove systemd && \
+  rm -rf /var/cache/apt/archives/ \  
+    /var/lib/apt/lists/ \
+    /usr/share/man/ \
+    /usr/share/locale/ \
+    /usr/share/doc/
 
 
 EXPOSE 8989

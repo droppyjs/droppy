@@ -3,7 +3,7 @@
     "version": "0.0.2-alpha.0",
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
-    "homepage": "https://github.com/markhughes/droppy#readme",
+    "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/client.js",
     "dependencies": {
@@ -27,13 +27,13 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/markhughes/droppy.git"
+        "url": "git+https://github.com/droppyjs/droppy.git"
     },
     "scripts": {
         "test": "echo \"Error: run tests from root\" && exit 1"
     },
     "bugs": {
-        "url": "https://github.com/markhughes/droppy/issues"
+        "url": "https://github.com/droppyjs/droppy/issues"
     },
     "publishConfig": {
         "access": "public"

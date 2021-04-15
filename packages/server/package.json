@@ -1,6 +1,6 @@
 {
     "name": "@droppy-js/server",
-    "version": "0.0.0",
+    "version": "0.0.1-alpha.0",
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
     "homepage": "https://github.com/markhughes/droppy#readme",
@@ -24,7 +24,7 @@
         "url": "https://github.com/markhughes/droppy/issues"
     },
     "dependencies": {
-        "@droppy-js/client": "*",
+        "@droppy-js/client": "^0.0.1-alpha.0",
         "busboy": "0.3.1",
         "chokidar": "3.4.2",
         "colorette": "1.2.1",

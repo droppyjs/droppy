@@ -2,7 +2,7 @@
     "packages": [
         "packages/*"
     ],
-    "version": "0.0.1-alpha.0",
+    "version": "0.0.2-alpha.0",
     "npmClient": "yarn",
     "useWorkspaces": false,
     "command": {
@@ -11,9 +11,11 @@
         },
         "publish": {
             "npmClient": "npm",
-            "allowBranch": ["master", "canary"],
+            "allowBranch": [
+                "master",
+                "canary"
+            ],
             "registry": "https://registry.npmjs.org/"
         }
-      }
-    
+    }
 }

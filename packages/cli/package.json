@@ -1,13 +1,13 @@
 {
     "name": "@droppyjs/cli",
-    "version": "0.0.1-alpha.3+9a92894a",
+    "version": "0.0.2-alpha.0",
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
     "homepage": "https://github.com/markhughes/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
-        "@droppyjs/server": "0.0.1-alpha.3+9a92894a",
+        "@droppyjs/server": "0.0.2-alpha.0",
         "daemonize-process": "^3.0.0",
         "minimist": "^1.2.5",
         "ps-node": "^0.1.6",

@@ -66,13 +66,21 @@ First, remove old droppy.
 If you used `yarn` to install it:
 
 ```sh
-yarn global remove @droppyjs/cli
+yarn global remove droppy
 ```
 
 or, if you used `npm` to install it:
 
 ```sh
-npm remove -g @droppyjs/cli
+npm remove -g droppy
+```
+
+Now install as normal:
+
+```sh
+$ yarn global add @droppyjs/cli
+# or, for NPM users:
+$ npm install -g @droppyjs/cli
 ```
 
 ### Docker installation :whale:

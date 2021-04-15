@@ -3,7 +3,7 @@ Description=droppy
 After=network.target
 
 [Service]
-ExecStart=droppy start -c /srv/droppy/config -f /srv/droppy/files
+ExecStart=droppy start -c "/srv/droppy/config" -f "/srv/droppy/files"
 WorkingDirectory=/srv/droppy
 Environment="NODE_ENV=production"
 AmbientCapabilities=CAP_NET_BIND_SERVICE

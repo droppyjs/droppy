@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/markhughes/droppy/client/images/readme-logo.svg"/>
+  <img src="https://cdn.jsdelivr.net/gh/droppyjs/droppy/client/images/readme-logo.svg"/>
 </p>
 <p align="center">
-  <a href="https://www.npmjs.org/package/droppy"><img src="https://img.shields.io/npm/v/droppy.svg"></a>
-  <a href="https://raw.githubusercontent.com/markhughes/droppy/master/LICENSE"><img src="https://img.shields.io/badge/licence-bsd-blue.svg"></a>
+  <a href="https://www.npmjs.org/package/@droppyjs/cli"><img src="https://img.shields.io/npm/v/@droppyjs/cli.svg"></a>
+  <a href="https://raw.githubusercontent.com/droppyjs/droppy/master/LICENSE"><img src="https://img.shields.io/badge/licence-bsd-blue.svg"></a>
   <a href="https://www.npmjs.org/package/droppy"><img src="https://img.shields.io/npm/dm/droppy.svg"></a>
 </p>
 
@@ -39,8 +39,16 @@ droppy maintains an in-memory representation of the `files` directory. If you're
 With [`Node.js`](https://nodejs.org) >= 12.10.0 installed, run:
 
 ```sh
-$ npm install -g droppy
+$ yarn global add @droppyjs/cli
+# or, for NPM users:
+$ npm install -g @droppyjs/cli
+```
+
+Then start your server with your configuration options: 
+
+```sh
 $ droppy start -c /srv/droppy/config -f /srv/droppy/files
+
 ```
 
 To make droppy run in the background, you can use the `--daemon` option, thought it is adviced that you install it as a persistent service in your system. For Linux, see these guides:
@@ -49,6 +57,24 @@ To make droppy run in the background, you can use the `--daemon` option, thought
 - [Debian (Pre-Jessie)](https://github.com/silverwind/droppy/wiki/Debian-Installation-(Pre-Jessie))
 - [Nginx reverse proxy](https://github.com/silverwind/droppy/wiki/Nginx-reverse-proxy)
 - [Apache reverse proxy](https://github.com/silverwind/droppy/wiki/Apache-reverse-proxy)
+
+### Upgrading from legacy droppy
+
+To upgrade from the legacy droppy there is no work on your part. Although you're unlikely to have issues, you should make a backup of your files anyway.
+
+First, remove old droppy.
+
+If you used `yarn` to install it:
+
+```sh
+yarn global remove @droppyjs/cli
+```
+
+or, if you used `npm` to install it:
+
+```sh
+npm remove -g @droppyjs/cli
+```
 
 ### Docker installation :whale:
 

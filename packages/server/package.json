@@ -51,7 +51,8 @@
         "valid-filename": "3.1.0",
         "which": "2.0.2",
         "ws": "7.3.1",
-        "yazl": "2.5.1"
+        "yazl": "2.5.1",
+        "svgstore": "3.0.0-2"
     },
     "devDependencies": {
         "autoprefixer": "9.8.6",
@@ -64,7 +65,6 @@
         "postcss": "7.0.32",
         "stylelint": "13.6.1",
         "stylelint-config-silverwind": "2.0.8",
-        "svgstore": "3.0.0-2",
         "terser": "5.2.1",
         "updates": "10.3.5"
     },

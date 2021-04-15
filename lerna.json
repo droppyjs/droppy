@@ -4,5 +4,10 @@
     ],
     "version": "0.0.0",
     "npmClient": "yarn",
-    "useWorkspaces": false
+    "useWorkspaces": false,
+    "publish": {
+        "npmClient": "npm",
+        "allowBranch": ["canary"],
+        "registry": "https://registry.npmjs.org/"
+      }  
 }

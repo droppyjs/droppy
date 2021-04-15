@@ -2,7 +2,7 @@
     "name": "@droppyjs/cli",
     "version": "0.0.4-alpha.0",
     "description": "> TODO: description",
-    "author": "Mark Hughes <mark.hughes@leapdev.io>",
+    "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",

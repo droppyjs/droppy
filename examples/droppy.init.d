@@ -12,7 +12,7 @@
 
 PROCESS="droppy"
 RUNAS="droppy:droppy"
-CMD="/usr/bin/env droppy start -c /srv/droppy/config -f /srv/droppy/files"
+CMD="/usr/bin/env droppy start -c \"/srv/droppy/config\" -f \"/srv/droppy/files\""
 
 do_start() {
     start-stop-daemon --start --background -c $RUNAS --name $PROCESS --exec $CMD 

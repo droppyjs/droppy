@@ -21,6 +21,9 @@
     "files": [
         "lib"
     ],
+    "bin": {
+        "droppy": "bin/droppy"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/droppyjs/droppy.git"

@@ -15,7 +15,9 @@
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
         "test": "make test",
-        "postinstall": "yarn bootstrap"
+        "postinstall": "yarn bootstrap",
+        "pub:canary": "lerna publish --c",
+        "pub": "lerna publish"
     },
     "dependencies": {
         "busboy": "0.3.1",

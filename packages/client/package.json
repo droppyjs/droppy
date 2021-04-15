@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/client",
-    "version": "0.0.1-alpha.2+28ab505a",
+    "version": "0.0.1-alpha.3+9a92894a",
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
     "homepage": "https://github.com/markhughes/droppy#readme",
@@ -35,5 +35,7 @@
     "bugs": {
         "url": "https://github.com/markhughes/droppy/issues"
     },
-    "gitHead": "28ab505abcbd47ec755406b7707912e41ae3aaa1"
+    "publishConfig": {
+        "access": "public"
+    }
 }

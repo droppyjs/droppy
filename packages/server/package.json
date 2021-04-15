@@ -1,6 +1,6 @@
 {
     "name": "@droppy-js/server",
-    "version": "0.0.1-alpha.0+b610a3b7",
+    "version": "0.0.1-alpha.1+407b1e3c",
     "description": "> TODO: description",
     "author": "Mark Hughes <mark.hughes@leapdev.io>",
     "homepage": "https://github.com/markhughes/droppy#readme",
@@ -24,7 +24,7 @@
         "url": "https://github.com/markhughes/droppy/issues"
     },
     "dependencies": {
-        "@droppy-js/client": "^0.0.1-alpha.0+b610a3b7",
+        "@droppy-js/client": "^0.0.1-alpha.1+407b1e3c",
         "busboy": "0.3.1",
         "chokidar": "3.4.2",
         "colorette": "1.2.1",
@@ -68,5 +68,5 @@
         "terser": "5.2.1",
         "updates": "10.3.5"
     },
-    "gitHead": "b610a3b7681c78fc73472717f3c0b896298bd16c"
+    "gitHead": "407b1e3c514841169df7d2a8763d0db86181748c"
 }

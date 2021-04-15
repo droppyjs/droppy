@@ -4,7 +4,6 @@
 <p align="center">
   <a href="https://www.npmjs.org/package/@droppyjs/cli"><img src="https://img.shields.io/npm/v/@droppyjs/cli.svg"></a>
   <a href="https://raw.githubusercontent.com/droppyjs/droppy/master/LICENSE"><img src="https://img.shields.io/badge/licence-bsd-blue.svg"></a>
-  <a href="https://www.npmjs.org/package/droppy"><img src="https://img.shields.io/npm/dm/droppy.svg"></a>
 </p>
 
 **droppy** is a self-hosted file storage server with a web interface and capabilities to edit files and view media directly in the browser. It is particularly well-suited to be run on low-end hardware like the Raspberry Pi.

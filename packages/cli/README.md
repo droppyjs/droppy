@@ -1,11 +1,3 @@
-# `cli`
+# `@droppyjs/cli`
 
-> TODO: description
-
-## Usage
-
-```
-const cli = require('cli');
-
-// TODO: DEMONSTRATE API
-```
+> Command Line Interface for droppy. Read more at https://github.com/droppyjs/droppy

@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/server",
-    "version": "0.0.4-alpha.0",
+    "version": "0.0.4",
     "description": "> TODO: description",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
@@ -24,7 +24,7 @@
         "url": "https://github.com/droppyjs/droppy/issues"
     },
     "dependencies": {
-        "@droppyjs/client": "0.0.3-alpha.0",
+        "@droppyjs/client": "0.0.4",
         "busboy": "0.3.1",
         "chokidar": "3.4.2",
         "colorette": "1.2.1",

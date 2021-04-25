@@ -4,12 +4,13 @@ import {useRouter} from "next/router"
 import {DataGrid} from "@material-ui/data-grid"
 
 import {DroppyHeader} from "../components"
-import {getToken} from "../services/auth/getToken"
 import React, {useEffect, useState} from "react"
 import {CircularProgress, Grid} from "@material-ui/core"
 import {useSocket} from "../hooks/useSocket"
-import DroppyAbout from "../components/Dialog/DroppyAbout/DroppyAbout"
+import DroppyAboutDialog from "../components/Dialog/DroppyAbout/DroppyAbout"
 import {useSettings} from "../hooks/useSettings"
+import {useToken} from "../hooks/useToken"
+import TokenStatus from "../models/token/TokenStatus"
 
 const columns = [
   {field: "id", headerName: "Name"},
@@ -21,12 +22,9 @@ const columns = [
 export default function Home() {
   const router = useRouter()
 
-  const [loading, setLoading] = useState(true)
-
   const [aboutOpen, setAboutOpen] = useState(false)
-
   const [listener, sendMessage, setToken] = useSocket()
-
+  const [tokenData] = useToken()
   const [settings, setSettings] = useSettings()
 
   listener.subscribe((message) => {
@@ -39,19 +37,17 @@ export default function Home() {
   })
 
   useEffect(() => {
-    void getToken().then(async (token) => {
-      if (!token) {
-        await router.push("/auth/login")
-      } else {
-        setToken(token)
-        setLoading(false)
-      }
-    })
-  })
+    if (tokenData.status === TokenStatus.Invalid) {
+      void router.push("/auth/login")
+      return
+    }
 
-  useEffect(() => sendMessage({type: "REQUEST_SETTINGS"}))
+    setToken(tokenData)
+  }, [tokenData, router, setToken])
 
-  if (loading) {
+  useEffect(() => sendMessage({type: "REQUEST_SETTINGS"}), [sendMessage, tokenData])
+
+  if (tokenData.status !== TokenStatus.Valid) {
     return (
       <Grid
         container
@@ -121,7 +117,11 @@ export default function Home() {
         <DataGrid rows={rows} columns={columns} />
       </div>
 
-      <DroppyAbout settings={settings} open={aboutOpen} handleClose={() => setAboutOpen(false)} />
+      <DroppyAboutDialog
+        settings={settings}
+        open={aboutOpen}
+        handleClose={() => setAboutOpen(false)}
+      />
     </>
   )
 }

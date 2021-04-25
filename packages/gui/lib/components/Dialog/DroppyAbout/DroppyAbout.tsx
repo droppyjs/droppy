@@ -8,7 +8,7 @@ import {DialogTitle} from "../DialogTitle/DialogTitle"
 import {DialogContent} from "../DialogContent/DialogContent"
 import {DialogActions} from "../DialogActions/DialogActions"
 
-export default function DroppyAbout({open, handleClose, settings}: DroppyAboutProps) {
+export default function DroppyAboutDialog({open, handleClose, settings}: DroppyAboutProps) {
   return (
     <div>
       <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>

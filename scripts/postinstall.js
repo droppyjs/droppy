@@ -9,6 +9,9 @@
 
 const {execSync} = require("child_process")
 const path = require("path")
+const ciDetect = require("@npmcli/ci-detect")
+
+const inCI = ciDetect()
 
 const consoleLog = require("./helpers/consoleLog")
 
@@ -22,4 +25,6 @@ log("info", "Calling lerna bootstrap.")
 execSync("yarn bootstrap", {cwd: rootDirectory})
 
 // Install husky hooks that might be missing
-execSync("yarn husky install", {cwd: rootDirectory})
+if (inCI === false) {
+  execSync("yarn husky install", {cwd: rootDirectory})
+}

@@ -20,3 +20,6 @@ log("info", "Calling lerna bootstrap.")
 
 // Execute yarn bootstrap to ensure lerna is up to date
 execSync("yarn bootstrap", {cwd: rootDirectory})
+
+// Install husky hooks that might be missing
+execSync("yarn husky install", {cwd: rootDirectory})

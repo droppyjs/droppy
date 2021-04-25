@@ -10,7 +10,7 @@ const homedir = os.homedir()
 let configDir = resolve(homedir, "/.droppy/config")
 let filesDir = resolve(homedir, "/.droppy/files")
 
-const clientPath = path.normalize(`${path.dirname(require.resolve("@droppy-js/client"))}/../`)
+const clientPath = path.normalize(`${path.dirname(require.resolve("@droppyjs/client"))}/../`)
 
 paths.get = function () {
   return {

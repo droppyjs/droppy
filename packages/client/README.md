@@ -1,11 +1,3 @@
 # `client`
 
-> TODO: description
-
-## Usage
-
-```
-const client = require('client');
-
-// TODO: DEMONSTRATE API
-```
+> Client for droppy. Read more at https://github.com/droppyjs/droppy

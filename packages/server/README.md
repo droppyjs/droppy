@@ -1,11 +1,3 @@
 # `server`
 
-> TODO: description
-
-## Usage
-
-```
-const server = require('server');
-
-// TODO: DEMONSTRATE API
-```
+> Server for droppy. Read more at https://github.com/droppyjs/droppy

@@ -8,7 +8,7 @@ const util = require("util")
 
 const pkg = require("../package.json")
 
-const {server, paths, resources, log, cfg, db} = require("@droppy-js/server")
+const {server, paths, resources, log, cfg, db} = require("@droppyjs/server")
 
 util.inspect.defaultOptions.depth = 4
 

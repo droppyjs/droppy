@@ -596,6 +596,11 @@ function initMainPage() {
 
   // handle pasting text and images in directory view
   window.addEventListener("paste", async (e) => {
+    if (e.target.nodeName && e.target.nodeName === "INPUT") {
+      // Pasting into an input element, so don't continue.
+      return
+    }
+
     const view = getActiveView()
     if (view[0].dataset.type !== "directory") return
     if (e.clipboardData && e.clipboardData.items) {
@@ -2582,7 +2587,6 @@ function onNewAudio(view) {
   view.find(".audio-bar").addClass("in")
   view.find(".audio-title")[0].textContent = title
   setTitle(title)
-
   ;(function updateBuffer() {
     let progress
     if (player.buffered.length) {

@@ -1,0 +1,18 @@
+[Unit]
+Description=droppy
+After=network.target
+
+[Service]
+ExecStart=droppy start -c "/srv/droppy/config" -f "/srv/droppy/files"
+WorkingDirectory=/srv/droppy
+Environment="NODE_ENV=production"
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+Restart=always
+User=droppy
+Group=droppy
+SyslogIdentifier=droppy
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

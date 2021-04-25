@@ -68,6 +68,19 @@
         "terser": "5.2.1",
         "updates": "10.3.5"
     },
+    "keywords": [
+        "self-hosted",
+        "personal",
+        "file",
+        "server",
+        "http",
+        "https",
+        "media",
+        "cloud",
+        "storage",
+        "self",
+        "hosted"
+    ],
     "publishConfig": {
         "access": "public"
     }

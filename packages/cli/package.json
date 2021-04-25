@@ -21,6 +21,19 @@
     "files": [
         "lib"
     ],
+    "keywords": [
+        "self-hosted",
+        "personal",
+        "file",
+        "server",
+        "http",
+        "https",
+        "media",
+        "cloud",
+        "storage",
+        "self",
+        "hosted"
+    ],
     "bin": {
         "droppy": "bin/droppy"
     },

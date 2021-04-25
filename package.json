@@ -17,7 +17,7 @@
     "build": "lerna run --stream build --",
     "bootstrap": "lerna bootstrap",
     "test": "make test",
-    "postinstall": "yarn bootstrap"
+    "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "busboy": "0.3.1",

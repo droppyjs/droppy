@@ -1,4 +1,0 @@
-extends: stylelint-config-silverwind
-
-rules:
-  max-empty-lines: 2

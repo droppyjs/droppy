@@ -10,7 +10,6 @@ run:
 
 lint:
 	yarn -s run eslint packages
-	yarn -s run stylelint packages/**/*.css
 
 test:
 	yarn 

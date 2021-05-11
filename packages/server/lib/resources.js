@@ -18,6 +18,8 @@ const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
 const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
 const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
 
+const pkg = require("../package.json");
+
 const gzipEncode = (data) => promisify(gzip)(data, {level: constants.Z_BEST_COMPRESSION});
 const brotliEncode = (data) => promisify(brotliCompress)(data, {
   [constants.BROTLI_PARAM_QUALITY]: constants.BROTLI_MAX_QUALITY
@@ -178,8 +180,14 @@ resources.load = function(dev, cb) {
       log.info(err.code, " ", cachePath, ", ", "building cache ...");
       return compile(true, cb);
     }
+
     try {
-      cb(null, jb.parse(data));
+      const json = jb.parse(data);
+      if (!json || !json.meta || !json.meta.version || json.meta.version !== pkg.version) {
+        log.info("Cache outdated. ", cachePath, ", building cache ...");
+        return compile(true, cb);
+      }
+      cb(null, json);
     } catch (err2) {
       log.error(err2);
       compile(false, cb);
@@ -254,7 +262,9 @@ async function compile(write, cb) {
             "please reinstall or run `npm install --only=dev` inside the project directory"));
   }
 
-  const cache = {res: {}, themes: {}, modes: {}, lib: {}};
+  const cache = {
+    res: {}, themes: {}, modes: {}, lib: {}
+  };
 
   cache.res = await compileAll();
 
@@ -283,11 +293,17 @@ async function compile(write, cb) {
   }
 
   for (const entries of Object.values(cache)) {
-    await Promise.all(Object.values(entries).map(async props => {
-      props.gzip = await gzipEncode(props.data);
-      props.brotli = await brotliEncode(props.data);
-    }));
+    if (!entries.version) {
+      await Promise.all(Object.values(entries).map(async props => {
+        props.gzip = await gzipEncode(props.data);
+        props.brotli = await brotliEncode(props.data);
+      }));
+    }
   }
+
+  cache["meta"] = {
+    version: pkg.version
+  };
 
   if (write) {
     await mkdir(path.dirname(cachePath), {recursive: true});

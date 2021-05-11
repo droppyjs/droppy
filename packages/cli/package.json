@@ -1,13 +1,13 @@
 {
     "name": "@droppyjs/cli",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "> TODO: description",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
-        "@droppyjs/server": "0.0.4",
+        "@droppyjs/server": "0.0.5",
         "daemonize-process": "^3.0.0",
         "minimist": "^1.2.5",
         "ps-node": "^0.1.6",

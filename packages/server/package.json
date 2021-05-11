@@ -63,7 +63,7 @@
         "eslint-plugin-unicorn": "21.0.0",
         "html-minifier": "4.0.0",
         "lerna": "^3.22.1",
-        "postcss": "7.0.32",
+        "postcss": "8.2.10",
         "stylelint": "13.6.1",
         "stylelint-config-silverwind": "2.0.8",
         "terser": "5.2.1",

@@ -7,9 +7,9 @@
     "license": "BSD-2-Clause",
     "main": "lib/client.js",
     "dependencies": {
-        "codemirror": "5.57.0",
+        "codemirror": "5.61.0",
         "file-extension": "4.0.5",
-        "handlebars": "4.7.6",
+        "handlebars": "4.7.7",
         "jquery": "3.6.x",
         "mousetrap": "1.6.5",
         "pdfjs-dist": "2.4.456",

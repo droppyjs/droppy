@@ -55,7 +55,7 @@
         "eslint-plugin-unicorn": "21.0.0",
         "html-minifier": "4.0.0",
         "lerna": "^4.0.0",
-        "postcss": "7.0.32",
+        "postcss": "8.2.10",
         "stylelint": "13.6.1",
         "stylelint-config-silverwind": "2.0.8",
         "svgstore": "3.0.0-2",

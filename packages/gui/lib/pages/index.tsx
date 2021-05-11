@@ -11,13 +11,19 @@ import DroppyAboutDialog from "../components/Dialog/DroppyAbout/DroppyAbout"
 import {useSettings} from "../hooks/useSettings"
 import {useToken} from "../hooks/useToken"
 import TokenStatus from "../models/token/TokenStatus"
+import {useFilters} from "../hooks/useFilters"
+import Breadcrumbs from "@material-ui/core/Breadcrumbs"
+import Link from "@material-ui/core/Link"
+import HomeIcon from "@material-ui/icons/Home"
+import {FolderSpecialOutlined} from "@material-ui/icons"
+import {DroppyTable} from "../components/DroppyTable/DroppyTable"
 
-const columns = [
-  {field: "id", headerName: "Name"},
-  {field: "modified", headerName: "Modified"},
-  {field: "added", headerName: "Added"},
-  {field: "size", headerName: "Size"},
-]
+const columns = {
+  id: "Name",
+  modified: "Modified",
+  added: "Added",
+  size: "Size",
+}
 
 export default function Home() {
   const router = useRouter()
@@ -26,12 +32,24 @@ export default function Home() {
   const [listener, sendMessage, setToken] = useSocket()
   const [tokenData] = useToken()
   const [settings, setSettings] = useSettings()
+  const [filters, setSearchString, setSortColumn] = useFilters()
+  const [directory, setDirectory] = useState("/")
+  const [rows, setRows] = useState(null)
 
   listener.subscribe((message) => {
-    console.log("Incoming Message:", message)
+    //    console.log("Incoming Message:", message)
     switch (message.type) {
       case "SETTINGS":
         setSettings(message.settings)
+        break
+      case "UPDATE_DIRECTORY":
+        let newRows = []
+
+        for (const name in message.data) {
+          const [type, modified, size, created] = message.data[name].split("|")
+          newRows.push({id: name, modified, added: created, size: size, type})
+        }
+        setRows(newRows)
         break
     }
   })
@@ -41,11 +59,36 @@ export default function Home() {
       void router.push("/auth/login")
       return
     }
-
     setToken(tokenData)
   }, [tokenData, router, setToken])
 
-  useEffect(() => sendMessage({type: "REQUEST_SETTINGS"}), [sendMessage, tokenData])
+  useEffect(() => {
+    if (rows === null) {
+      sendMessage({type: "REQUEST_UPDATE", data: directory})
+    }
+  }, [rows, directory, sendMessage])
+
+  useEffect(() => {
+    sendMessage({type: "REQUEST_UPDATE", data: directory})
+  }, [directory])
+
+  const handleHashChange = () => {
+    const path = window.location.hash.substr(1)
+    if (path) {
+      console.log("set path to " + path)
+      setDirectory(path)
+    } else {
+      setDirectory("/")
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener("hashchange", handleHashChange)
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange)
+    }
+  }, [])
 
   if (tokenData.status !== TokenStatus.Valid) {
     return (
@@ -64,37 +107,11 @@ export default function Home() {
     )
   }
 
-  const rows = [
-    {id: "example.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example2.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example3.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example4.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example5.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example6.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example7.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example8.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example9.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example0.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example11.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example.12txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example.t13xt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example.t14xt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example.tx15t", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "example.16txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exampl17e.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "examp1le.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam1ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam2ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam3ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam4ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam5ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam6ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam7ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam8ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam9ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exam0ple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-    {id: "exa1mple.txt", modified: "1 month ago", added: "3 days ago", size: "35kb"},
-  ]
+  const handleRowClick = (row) => {
+    if (row.type === "d") {
+      setDirectory(directory + row.id)
+    }
+  }
 
   return (
     <>
@@ -113,8 +130,29 @@ export default function Home() {
 
       <DroppyHeader handleAbout={() => setAboutOpen(true)} />
 
+      <Breadcrumbs aria-label="breadcrumb">
+        {directory.split("/").map((part, i) => {
+          if (i === 0) {
+            return (
+              <Link color="inherit" key={i} href={"/#/"} onClick={() => setDirectory("/")}>
+                <HomeIcon />
+              </Link>
+            )
+          }
+          if (part === "") {
+            return <span key={i}></span>
+          }
+          return (
+            <Link color="inherit" href="/getting-started/installation/" key={i}>
+              <FolderSpecialOutlined />
+              {part}
+            </Link>
+          )
+        })}
+      </Breadcrumbs>
+
       <div style={{height: "85vh", width: "100%"}}>
-        <DataGrid rows={rows} columns={columns} />
+        <DroppyTable rows={rows} columns={columns} onRowClick={handleRowClick} />
       </div>
 
       <DroppyAboutDialog

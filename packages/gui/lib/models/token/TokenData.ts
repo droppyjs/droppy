@@ -1,6 +1,8 @@
 import TokenStatus from "./TokenStatus"
 
-export default interface TokenData {
+interface TokenData {
   token?: string
   status: TokenStatus
 }
+
+export default TokenData

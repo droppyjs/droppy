@@ -1,0 +1,7 @@
+.ReactVirtualized__Table__row {
+  cursor: pointer;
+}
+
+.ReactVirtualized__Table__row:hover {
+  background: #f5f5f5;
+}

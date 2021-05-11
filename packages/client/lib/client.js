@@ -6,7 +6,7 @@ function promisify(fn) {
   }
 }
 
-const droppy = Object.create(null)
+const droppy = {}
 
 /* {{ templates }} */
 

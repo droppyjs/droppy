@@ -164,6 +164,7 @@ function updateDirInCache(root, stat, readDirs, readFiles) {
       files: {},
       size: 0,
       mtime: readDirObj[path].mtime.getTime() || 0,
+      created: readDirObj[path].birthtime.getTime() || 0,
     }
   })
 
@@ -176,7 +177,9 @@ function updateDirInCache(root, stat, readDirs, readFiles) {
       const parentDir = normalize(utils.removeFilesPath(path.dirname(f.path)))
       const size = f.stats && f.stats.size ? f.stats.size : 0
       const mtime = f.stats && f.stats.mtime && f.stats.mtime.getTime ? f.stats.mtime.getTime() : 0
-      dirs[parentDir].files[normalize(path.basename(f.path))] = {size, mtime}
+      const created =
+        f.stats && f.stats.birthtime && f.stats.birthtime.getTime ? f.stats.birthtime.getTime() : 0
+      dirs[parentDir].files[normalize(path.basename(f.path))] = {size, mtime, created}
       dirs[parentDir].size += size
     })
 
@@ -394,14 +397,14 @@ function entries(files, folders, relativePaths, base) {
     const f = dirs[path.dirname(file)].files[path.basename(file)]
     const mtime = Math.round(f.mtime / 1e3)
     const name = relativePaths ? path.relative(base, file) : path.basename(file)
-    entries[name] = ["f", mtime, f.size].join("|")
+    entries[name] = ["f", mtime, f.size, f.created].join("|")
   })
   folders.forEach((folder) => {
     if (dirs[folder]) {
       const d = dirs[folder]
       const mtime = Math.round(d.mtime / 1e3)
       const name = relativePaths ? path.relative(base, folder) : path.basename(folder)
-      entries[name] = ["d", mtime, d.size].join("|")
+      entries[name] = ["d", mtime, d.size, d.created].join("|")
     }
   })
   return entries

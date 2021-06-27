@@ -406,7 +406,7 @@ function openSocket() {
           droppy[setting] = msg.settings[setting];
         });
 
-        $("#about-title")[0].textContent = `droppy ${droppy.version}`;
+        $("#about-version")[0].textContent = `v${droppy.version}`;
         $("#about-engine")[0].textContent = droppy.engine;
 
         droppy.themes = droppy.themes.split("|");

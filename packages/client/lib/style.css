@@ -1676,7 +1676,7 @@ video {
   border-radius: 6px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
   color: #333;
-  height: 150px;
+  height: auto;
   top: 50%;
   left: 50%;
   opacity: 0;
@@ -1698,6 +1698,14 @@ video {
 #about-title {
   font-size: 1.3em;
   padding: .5em 0 .25em;
+}
+
+#about-version {
+  font-size: .8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: .25em;
 }
 
 #about-engine {
@@ -1723,6 +1731,14 @@ video {
 }
 
 #about-fork {
+  display:  block;
+  font-size: .7em;
+  color: #333;
+  border-radius: .4em;
+}
+
+#about-website {
+  display:  block;
   font-size: .7em;
   color: #333;
   border-radius: .4em;
@@ -1736,6 +1752,7 @@ video {
 }
 
 #about-fork:hover,
+#about-website:hover,
 #about-fork:hover svg,
 #about-copy a:hover {
   color: #05a;

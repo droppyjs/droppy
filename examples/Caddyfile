@@ -1,7 +1,7 @@
 droppy.your.domain {
   proxy / 127.0.0.1:8989 {
     websocket
-    transparent
+    #transparent # Uncommong this line if you're using Caddy v1, in caddy v2 you do not require this.
   }
   timeouts none
 }

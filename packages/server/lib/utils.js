@@ -34,6 +34,10 @@ utils.mkdir = async function(dir, cb) {
 };
 
 utils.rm = function(p, cb) {
+  fs.unlink(p, cb);
+};
+
+utils.rmdir = function(p, cb) {
   fs.rmdir(p, {recursive: true}, cb);
 };
 

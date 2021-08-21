@@ -70,6 +70,14 @@ jobs:
                   docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:latest"
                   docker push "${{ env.IMAGE_NAME }}:latest"
 
+            - name: Build Changelog
+              id: github_release
+              uses: mikepenz/release-changelog-builder-action@v1
+              with:
+                configuration: "changelog.json"
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
             - name: "Create release"
               if: "contains(github.ref, 'refs/tags')"
               id: "create_release"
@@ -81,4 +89,6 @@ jobs:
                   release_name: "Release ${{ github.ref }}"
                   draft: false
                   prerelease: false
+                  body: ${{steps.github_release.outputs.changelog}}
+
 

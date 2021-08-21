@@ -214,7 +214,7 @@ filetree.unlink = function(dir) {
 
 filetree.unlinkdir = function(dir) {
   lookAway();
-  utils.rm(utils.addFilesPath(dir), err => {
+  utils.rmdir(utils.addFilesPath(dir), err => {
     if (err) log.error(err);
     delete dirs[dir];
     Object.keys(dirs).forEach(d => {

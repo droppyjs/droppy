@@ -17,7 +17,7 @@
         "test": "make test",
         "postinstall": "yarn bootstrap",
         "pub:canary": "lerna publish --c",
-        "pub": "lerna publish "
+        "pub": "lerna publish && git push"
     },
     "resolutions": {
         "hosted-git-info": "^4.0.2",

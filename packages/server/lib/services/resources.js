@@ -18,7 +18,7 @@ const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
 const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
 const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
 
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 
 const gzipEncode = (data) => promisify(gzip)(data, {level: constants.Z_BEST_COMPRESSION});
 const brotliEncode = (data) => promisify(brotliCompress)(data, {

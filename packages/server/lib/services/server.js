@@ -10,9 +10,7 @@ const {readFile} = require("fs").promises;
 const throttle = require("lodash.throttle");
 const Busboy = require("busboy");
 const {red, blue, green, cyan, magenta} = require("colorette");
-const escRe = require("escape-string-regexp");
 const etag = require("etag");
-const imgSize = require("image-size");
 const rrdir = require("rrdir");
 const sendFile = require("send");
 const ut = require("untildify");
@@ -27,9 +25,11 @@ const filetree = require("./filetree.js");
 const log = require("./log.js");
 const manifest = require("./manifest.js");
 const paths = require("./paths.js").get();
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 const resources = require("./resources.js");
 const utils = require("./utils.js");
+
+const commands = require("../commands");
 
 let cache = {};
 const clients = {};
@@ -38,6 +38,10 @@ let config = null;
 let firstRun = null;
 let ready = false;
 let dieOnError = true;
+
+const setView = (sid, vId, view) => {
+  clients[sid].views[vId] = view;
+};
 
 module.exports = async function droppy(opts, isStandalone, dev, callback) {
   if (isStandalone) {
@@ -442,241 +446,17 @@ function onWebSocketRequest(ws, req) {
     const vId = msg.vId;
     const priv = Boolean((db.get("sessions")[cookie] || {}).privileged);
 
-    if (msg.type === "REQUEST_SETTINGS") {
-      sendObj(sid, {
-        type: "SETTINGS",
-        vId,
-        settings: {
-          priv,
-          version: pkg.tag && (pkg.tag !== pkg.version) ? `${pkg.version} (${pkg.tag})` : pkg.version,
-          dev: config.dev,
-          public: config.public,
-          readOnly: config.readOnly,
-          watch: config.watch,
-          engine: `node ${process.version.substring(1)}`,
-          platform: process.platform,
-          caseSensitive: process.platform === "linux", // TODO: actually test the filesystem
-          themes: Object.keys(cache.themes).sort().join("|"),
-          modes: Object.keys(cache.modes).sort().join("|"),
-        }
-      });
-    } else if (msg.type === "REQUEST_UPDATE") {
-      if (!validatePaths(msg.data, msg.type, ws, sid, vId)) return;
-      if (!clients[sid]) clients[sid] = {views: [], ws}; // This can happen when the server restarts
-      fs.stat(utils.addFilesPath(msg.data), (err, stats) => {
-        let clientDir, clientFile;
-        if (err) { // Send client back to root when the requested path doesn't exist
-          clientDir = "/";
-          clientFile = null;
-          log.error(err);
-          log.info(ws, null, `Non-existing update request, sending client to / : ${msg.data}`);
-        } else if (stats.isFile()) {
-          clientDir = path.dirname(msg.data);
-          clientFile = path.basename(msg.data);
-          sendObj(sid, {type: "UPDATE_BE_FILE", file: clientFile, folder: clientDir, isFile: true, vId});
-        } else {
-          clientDir = msg.data;
-          clientFile = null;
-        }
-        clients[sid].views[vId] = {file: clientFile, directory: clientDir};
-        if (!clientFile) {
-          updateClientLocation(clientDir, sid, vId);
-          sendFiles(sid, vId);
-        }
-      });
-    } else if (msg.type === "RELOAD_DIRECTORY") {
-      if (!validatePaths(msg.data.dir, msg.type, ws, sid, vId)) return;
-      filetree.updateDir(msg.data.dir).then(() => {
-        sendFiles(sid, vId);
-      });
-    } else if (msg.type === "DESTROY_VIEW") {
-      clients[sid].views[vId] = null;
-    } else if (msg.type === "REQUEST_SHARELINK") {
-      if (!validatePaths(msg.data.location, msg.type, ws, sid, vId)) return;
-      const links = db.get("links");
-
-            // Check if we already have a link for that file
-      const hadLink = Object.keys(links).some(link => {
-        if (msg.data.location === links[link].location && msg.data.attachement === links[link].attachement) {
-          const ext = links[link].ext || path.extname(links[link].location);
-          sendObj(sid, {
-            type: "SHARELINK",
-            vId,
-            link: (config.linkExtensions && ext) ? (link + ext) : link,
-            attachement: msg.data.attachement,
-          });
-          return true;
-        }
-      });
-      if (hadLink) return;
-
-      const link = utils.getLink(links, config.linkLength);
-      const ext = path.extname(msg.data.location);
-      log.info(ws, null, `Share link created: ${link} -> ${msg.data.location}`);
-
-      links[link] = {
-        location: msg.data.location,
-        attachement: msg.data.attachement,
-        ext,
+    // Ensure our client object exists, it can be lost between server restarts.
+    if (!clients[sid]) {
+      clients[sid] = {
+        views: [], ws
       };
-      db.set("links", links);
-      sendObj(sid, {
-        type: "SHARELINK",
-        vId,
-        link: config.linkExtensions ? (link + ext) : link,
-        attachement: msg.data.attachement
-      });
-    } else if (msg.type === "DELETE_FILE") {
-      log.info(ws, null, `Deleting: ${msg.data}`);
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data, msg.type, ws, sid, vId)) return;
-      filetree.del(msg.data);
-    } else if (msg.type === "SAVE_FILE") {
-      log.info(ws, null, `Saving: ${msg.data.to}`);
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data.to, msg.type, ws, sid, vId)) return;
-      filetree.save(msg.data.to, msg.data.value, err => {
-        if (err) {
-          sendError(sid, vId, `Error saving: ${err.message}`);
-          log.error(err);
-        } else sendObj(sid, {type: "SAVE_STATUS", vId, status: err ? 1 : 0});
-      });
-    } else if (msg.type === "CLIPBOARD") {
-      const src = msg.data.src;
-      const dst = msg.data.dst;
-      const type = msg.data.type;
-      log.info(ws, null, `Clipboard ${type}: ${src} -> ${dst}`);
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths([src, dst], msg.type, ws, sid, vId)) return;
-      if (new RegExp(`^${escRe(msg.data.src)}/`).test(msg.data.dst)) {
-        return sendError(sid, vId, "Can't copy directory into itself");
-      }
+    }
 
-      fs.stat(utils.addFilesPath(msg.data.dst), async (err, stats) => {
-        if (!err && stats || msg.data.src === msg.data.dst) {
-          utils.getNewPath(utils.addFilesPath(msg.data.dst), newDst => {
-            filetree.clipboard(msg.data.src, utils.removeFilesPath(newDst), msg.data.type);
-          });
-        } else {
-          filetree.clipboard(msg.data.src, msg.data.dst, msg.data.type);
-        }
-      });
-    } else if (msg.type === "CREATE_FOLDER") {
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data, msg.type, ws, sid, vId)) return;
-      filetree.mkdir(msg.data, err => {
-        if (err) sendError(sid, vId, `Error creating folder: ${err.message}`);
-      });
-    } else if (msg.type === "CREATE_FILE") {
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data, msg.type, ws, sid, vId)) return;
-      filetree.mk(msg.data, err => {
-        if (err) sendError(sid, vId, `Error creating file: ${err.message}`);
-      });
-    } else if (msg.type === "RENAME") {
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      const rSrc = msg.data.src;
-      const rDst = msg.data.dst;
-            // Disallow whitespace-only and empty strings in renames
-      if (!validatePaths([rSrc, rDst], msg.type, ws, sid, vId) ||
-                /^\s*$/.test(rDst) || rDst === "" || rSrc === rDst) {
-        log.info(ws, null, `Invalid rename request: ${rSrc}-> ${rDst}`);
-        sendError(sid, vId, "Invalid rename request");
-        return;
-      }
-      filetree.move(rSrc, rDst);
-
-            // update sharelinks to new destination
-      const links = db.get("links");
-      for (const link of Object.keys(links)) {
-        if (links[link].location === rSrc) {
-          links[link].location = rDst;
-          log.info(ws, null, `Share link updated: ${link} -> ${rDst}`);
-        }
-      }
-      db.set("links", links);
-    } else if (msg.type === "GET_USERS") {
-      if (priv && !config.public) sendUsers(sid);
-    } else if (msg.type === "UPDATE_USER") {
-      const name = msg.data.name;
-      const pass = msg.data.pass;
-      if (!priv) return;
-      if (pass === "") {
-        if (!db.get("users")[name]) return;
-        if ((db.get("sessions")[cookie] || {}).username === name) {
-          return sendError(sid, null, "Cannot delete yourself");
-        }
-        if (db.delUser(name)) log.info(ws, null, "Deleted user: ", magenta(name));
-      } else {
-        const isNew = !db.get("users")[name];
-        db.addOrUpdateUser(name, pass, msg.data.priv || false);
-        log.info(ws, null, `${isNew ? "Added" : "Updated"} user: `, magenta(name));
-      }
-      sendUsers(sid);
-    } else if (msg.type === "CREATE_FILES") {
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data.files, msg.type, ws, sid, vId)) return;
-
-      await Promise.all(msg.data.files.map(file => {
-        return new Promise(resolve => {
-          filetree.mkdir(utils.addFilesPath(path.dirname(file)), (err) => {
-            if (err) log.error(ws, null, err);
-            filetree.mk(utils.addFilesPath(file), (err) => {
-              if (err) log.error(ws, null, err);
-              resolve();
-            });
-          });
-        });
-      }));
-    } else if (msg.type === "CREATE_FOLDERS") {
-      if (config.readOnly) return sendError(sid, vId, "Files are read-only");
-      if (!validatePaths(msg.data.folders, msg.type, ws, sid, vId)) return;
-
-      await Promise.all(msg.data.folders.map(folder => {
-        return new Promise(resolve => {
-          filetree.mkdir(utils.addFilesPath(folder), (err) => {
-            if (err) log.error(ws, null, err);
-            resolve();
-          });
-        });
-      }));
-    } else if (msg.type === "GET_MEDIA") {
-      const dir = msg.data.dir;
-      const exts = msg.data.exts;
-      if (!validatePaths(dir, msg.type, ws, sid, vId)) return;
-      const allExts = exts.img.concat(exts.vid).concat(exts.pdf);
-      const files = filetree.lsFilter(dir, utils.extensionRe(allExts));
-      if (!files) return sendError(sid, vId, "No displayable files in directory");
-
-      const mediaFiles = await Promise.all(files.map(file => {
-        return new Promise(resolve => {
-          if (utils.extensionRe(exts.pdf).test(file)) {
-            resolve({pdf: true, src: file});
-          } else if (utils.extensionRe(exts.img).test(file)) {
-            imgSize(path.join(utils.addFilesPath(dir), file), (err, dims) => {
-              if (err) log.error(err);
-              resolve({
-                src: file,
-                w: dims && dims.width ? dims.width : 0,
-                h: dims && dims.height ? dims.height : 0,
-              });
-            });
-          } else {
-            resolve({video: true, src: file});
-          }
-        });
-      }));
-      sendObj(sid, {type: "MEDIA_FILES", vId, files: mediaFiles});
-    } else if (msg.type === "SEARCH") {
-      const query = msg.data.query;
-      const dir = msg.data.dir;
-      if (!validatePaths(dir, msg.type, ws, sid, vId)) return;
-      sendObj(sid, {
-        type: "SEARCH_RESULTS",
-        vId,
-        folder: dir,
-        results: filetree.search(query, dir)
-      });
+    if (commands[msg.type]) {
+      commands[msg.type].handler({priv, msg, sendObj, sid, updateClientLocation, sendFiles, sendError, validatePaths, sendUsers, pkg, config, cache, ws, setView, vId, cookie});
+    } else {
+      // TODO: invalid command, handle?
     }
   });
 

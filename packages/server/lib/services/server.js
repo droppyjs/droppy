@@ -78,15 +78,10 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
       }
     })();
 
-    await promisify((cb) => {
-      cfg.init(opts, (err, conf) => {
-        if (!err) {
-          config = conf;
-          if (dev) config.dev = dev;
-        }
-        cb(err);
-      });
-    })();
+    config = await cfg.init(opts);
+    if (dev) {
+      config.dev = dev;
+    }
 
     await promisify((cb) => {
       db.load(() => {

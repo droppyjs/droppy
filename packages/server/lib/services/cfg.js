@@ -1,8 +1,12 @@
 "use strict";
 
-const cfg = module.exports = {};
 const fs = require("fs");
 const {dirname} = require("path");
+const {promisify} = require("util");
+
+const stat = promisify(fs.stat);
+const readFile = promisify(fs.readFile);
+const mkdir = promisify(fs.mkdir);
 
 const configFile = require("./paths.js").get().cfgFile;
 
@@ -31,59 +35,67 @@ const defaults = {
 
 const hiddenOpts = ["dev"];
 
-cfg.init = function(config, callback) {
+const cfg = module.exports = {};
+
+cfg.init = (config) => new Promise(async (resolve, reject) => {
   if (typeof config === "object" && config !== null) {
     config = Object.assign({}, defaults, config);
-    callback(null, config);
+    return resolve(config);
   } else {
-    fs.stat(configFile, err => {
-      if (err) {
-        if (err.code === "ENOENT") {
-          config = defaults;
-          fs.mkdir(dirname(configFile), {recursive: true}, (err) => {
-            if (err) return callback(err);
-            write(config, err => {
-              callback(err || null, config);
-            });
-          });
-        } else {
-          callback(err);
-        }
+    try {
+      await stat(configFile);
+    } catch (err) {
+      if (err.code === "ENOENT") {
+        config = defaults;
+        await mkdir(dirname(configFile), {recursive: true});
+
+        await write(config);
+        resolve(config);
       } else {
-        fs.readFile(configFile, (err, data) => {
-          if (err) return callback(err);
+        return reject(err);
+      }
+      return;
+    }
 
-          try {
-            config = JSON.parse(String(data));
-          } catch (err2) {
-            return callback(err2);
-          }
+    try {
+      const data = await readFile(configFile);
+      if (data) {
+        config = JSON.parse(String(data));
+      }
+      if (!config) {
+        config = {};
+      }
 
-          if (!config) config = {};
+      config = Object.assign({}, defaults, config);
 
-          config = Object.assign({}, defaults, config);
+      // TODO: validate more options
+      if (typeof config.pollingInterval !== "number") {
+        return reject(new TypeError("Expected a number for the 'pollingInterval' option"));
+      }
 
-                    // TODO: validate more options
-          if (typeof config.pollingInterval !== "number") {
-            return callback(new TypeError("Expected a number for the 'pollingInterval' option"));
-          }
+      // Remove options no longer present
+      Object.keys(config).forEach(key => {
+        if (defaults[key] === undefined && !hiddenOpts.includes(key)) {
+          delete config[key];
+        }
+      });
+      await write(config);
+      return resolve(config);
+    } catch (err) {
+      // TODO: can we print helpful information here?
+      return reject(err);
+    }
+  }
+});
 
-                    // Remove options no longer present
-          Object.keys(config).forEach(key => {
-            if (defaults[key] === undefined && !hiddenOpts.includes(key)) {
-              delete config[key];
-            }
-          });
-
-          write(config, err => {
-            callback(err || null, config);
-          });
-        });
+function write(config) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(configFile, JSON.stringify(config, null, 2), (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
     });
-  }
-};
-
-function write(config, callback) {
-  fs.writeFile(configFile, JSON.stringify(config, null, 2), callback);
+  });
 }

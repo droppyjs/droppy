@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-TODO
+**TODO**: as this project is still being refined we're only supporting the latest version. 
 
 ## Reporting a Vulnerability
 

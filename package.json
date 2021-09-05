@@ -25,7 +25,7 @@
         "lodash": "4.17.21",
         "cheerio": "1.0.0-rc.10",
         "trim-newlines": "4.0.2",
-        "normalize-url": "7.0.1",
+        "normalize-url": "6.1.0",
         "glob-parent": "6.0.1",
         "pacote": "11.3.5",
         "conventional-changelog-core": "4.2.3",

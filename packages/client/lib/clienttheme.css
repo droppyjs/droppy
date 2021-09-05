@@ -97,3 +97,19 @@
   border-bottom-color: #aaa;
   color: #fff;
 }
+
+[theme=dark] #prefs-box button {
+  padding: 0 15px 0 15px;
+  margin: 2px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  display: inline-block;
+  cursor: pointer;
+  background: #444;
+
+}
+
+[theme=dark] #prefs-box button:hover {
+  background: #eee;
+  color: #444;
+}

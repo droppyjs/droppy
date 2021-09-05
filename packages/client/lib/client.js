@@ -1159,9 +1159,13 @@ function openDirectory(view, data, isSearch) {
     });
 
     view.find(".delete-file").off("click").on("click", function() {
-      if (droppy.socketWait) return;
-      showSpinner(view);
-      sendMessage(view[0].vId, "DELETE_FILE", $(this).parents(".data-row")[0].dataset.id);
+      const dataset = $(this).parents(".data-row")[0].dataset;
+
+      showConfirmation(`Are you sure you want to delete the ${dataset.type} "${dataset.name}"?`, () => {
+        if (droppy.socketWait) return;
+        showSpinner(view);
+        sendMessage(view[0].vId, "DELETE_FILE", dataset.id);
+      });
     });
 
     view.find(".icon-play, .icon-view").off("click").on("click", function() {
@@ -1632,14 +1636,18 @@ function initEntryMenu() {
     // Delete a file/folder
   $("#entry-menu .delete").off("click").on("click", (event) => {
     event.stopPropagation();
-    if (droppy.socketWait) return;
-
-    const entry = $(`.data-row[data-id="${droppy.menuTargetId}"]`);
-    const view = entry.parents(".view");
-
     toggleCatcher(false);
-    showSpinner(view);
-    sendMessage(view[0].vId, "DELETE_FILE", entry[0].dataset.id);
+    const entry = $(`.data-row[data-id="${droppy.menuTargetId}"]`);
+    const dataset = entry[0].dataset;
+
+    showConfirmation(`Are you sure you want to delete the ${dataset.type} "${dataset.name}"?`, () => {
+      if (droppy.socketWait) return;
+
+      const view = entry.parents(".view");
+
+      showSpinner(view);
+      sendMessage(view[0].vId, "DELETE_FILE", entry[0].dataset.id);
+    });
   });
 }
 
@@ -2313,6 +2321,48 @@ function showPrefs() {
           }
         });
       });
+    });
+  }, 0);
+}
+
+function showConfirmation(message, callback) {
+  const box = $("#prefs-box");
+  box.empty().append(() => {
+    const content = document.createElement("div");
+
+    const confirm = document.createElement("button");
+    confirm.textContent = "Yes";
+    confirm.addEventListener("click", () => {
+      callback();
+      toggleCatcher(false);
+    });
+
+    const decline = document.createElement("button");
+    decline.textContent = "Cancel";
+    decline.addEventListener("click", () => {
+      toggleCatcher(false);
+    });
+
+    content.append(
+      document.createTextNode("Confirmation"),
+      document.createElement("br"),
+      document.createTextNode(message),
+      document.createElement("br"),
+      document.createElement("br"),
+      confirm,
+      decline,
+    );
+
+    return content;
+  });
+
+  setTimeout(() => {
+    box.addClass("in").transitionend(function() {
+      this.removeAttribute("style");
+    });
+    toggleCatcher(true);
+    $("#overlay").one("click", () => {
+      // todo
     });
   }, 0);
 }

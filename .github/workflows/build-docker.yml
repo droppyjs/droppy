@@ -30,9 +30,9 @@ jobs:
                   username: ${{ secrets.CR_USER }}
                   password: ${{ secrets.CR_PAT }}
 
-            - name: Make Dockerfile-dev
+            - name: Create Dockerfile-dev
               run: |
-                  make Dockerfile-dev
+                  cat Dockerfile | sed -e 's/^RUN git clone.*/COPY [ ".", "\/droppy" ]/' > Dockerfile-dev
 
             - name: Set the tag name in package.json if tag
               if: "contains(github.ref, 'refs/tags')"

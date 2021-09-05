@@ -5,7 +5,6 @@
 const fs = require("fs");
 const untildify = require("untildify");
 const path = require("path");
-
 const util = require("util");
 
 const pkg = require("../package.json");
@@ -84,15 +83,21 @@ if (!argv._.length) {
 const cmd = argv._[0];
 const args = argv._.slice(1);
 
-if (cmds[cmd]) {
-  if (cmd === "start") {
+switch (cmd) {
+  default:
+    printHelp();
+    break;
+
+  case "start":
     server(null, true, argv.dev, err => {
       if (err) {
         log.error(err);
         process.exit(1);
       }
     });
-  } else if (cmd === "stop") {
+    break;
+
+  case "stop": {
     const ps = require("ps-node");
     ps.lookup({command: pkg.name}, async (err, procs) => {
       if (err) {
@@ -123,9 +128,14 @@ if (cmds[cmd]) {
         process.exit(0);
       }
     });
-  } else if (cmd === "version") {
+    break;
+  }
+
+  case "version":
     console.info(pkg.version);
-  } else if (cmd === "config") {
+    break;
+
+  case "config": {
     const ourPaths = paths.get();
     const edit = function() {
       findEditor(editor => {
@@ -145,27 +155,37 @@ if (cmds[cmd]) {
         edit();
       }
     });
-  } else if (cmd === "list") {
+    break;
+  }
+  case "list":
     db.load(() => {
       printUsers(db.get("users"));
     });
-  } else if (cmd === "add") {
-    if (args.length !== 2 && args.length !== 3) printHelp();
-    db.load(() => {
-      db.addOrUpdateUser(args[0], args[1], args[2] === "p", () => {
-        printUsers(db.get("users"));
+    break;
+  case "add":
+    if (args.length !== 2 && args.length !== 3) {
+      printHelp();
+    } else {
+      db.load(() => {
+        db.addOrUpdateUser(args[0], args[1], args[2] === "p", () => {
+          printUsers(db.get("users"));
+        });
       });
-    });
-  } else if (cmd === "del") {
-    if (args.length !== 1) printHelp();
-    db.load(() => {
-      db.delUser(args[0], () => {
-        printUsers(db.get("users"));
+    }
+    break;
+
+  case "del":
+    if (args.length !== 1) {
+      printHelp();
+    } else {
+      db.load(() => {
+        db.delUser(args[0], () => {
+          printUsers(db.get("users"));
+        });
       });
-    });
-  }
-} else {
-  printHelp();
+    }
+
+    break;
 }
 
 function printHelp() {

@@ -3,7 +3,6 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const qs = require("querystring");
 const {promisify} = require("util");
 const {readFile} = require("fs").promises;
 
@@ -907,7 +906,7 @@ function handleUploadRequest(req, res) {
   if (req.connection.setTimeout) req.connection.setTimeout(config.uploadTimeout);
   if (res.setTimeout) res.setTimeout(config.uploadTimeout);
 
-  req.query = qs.parse(req.url.substring("/!/upload?".length));
+  req.query = Object.fromEntries(new URLSearchParams(req.url.substring("/!/upload?".length)));
   const vId = req.query.vId;
 
   if (!req.query || !req.query.to) {

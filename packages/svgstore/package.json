@@ -27,8 +27,7 @@
     "symbols"
   ],
   "dependencies": {
-    "cheerio": "1.0.0-rc.10",
-    "object-assign": "^4.1.1"
+    "cheerio": "1.0.0-rc.10"
   },
   "devDependencies": {
     "ava": "0.25.0",

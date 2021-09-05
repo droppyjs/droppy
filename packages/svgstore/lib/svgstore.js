@@ -1,7 +1,5 @@
 "use strict";
 
-const assign = require("object-assign");
-
 const copyAttributes = require("./utils/copy-attributes");
 const loadXml = require("./utils/load-xml");
 const removeAttributes = require("./utils/remove-attributes");
@@ -27,7 +25,7 @@ const DEFAULT_OPTIONS = {
 };
 
 function svgstore(options) {
-  const svgstoreOptions = assign({}, DEFAULT_OPTIONS, options);
+  const svgstoreOptions = Object.assign({}, DEFAULT_OPTIONS, options);
 
   // <svg>
   const parent = loadXml(TEMPLATE_SVG);
@@ -39,7 +37,7 @@ function svgstore(options) {
 
     add(id, file, options) {
       const child = loadXml(file);
-      const addOptions = assign({}, svgstoreOptions, options);
+      const addOptions = Object.assign({}, svgstoreOptions, options);
 
       // <defs>
       const childDefs = child(SELECTOR_DEFS);
@@ -99,7 +97,7 @@ function svgstore(options) {
     toString(options) {
       // Create a clone so we don't modify the parent document.
       const clone = loadXml(parent.xml());
-      const toStringOptions = assign({}, svgstoreOptions, options);
+      const toStringOptions = Object.assign({}, svgstoreOptions, options);
 
       // <svg>
       const svg = clone(SELECTOR_SVG);

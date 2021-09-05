@@ -1,6 +1,6 @@
 "use strict";
 
-const svgstore = require("svgstore");
+const svgstore = require("@droppyjs/svgstore");
 const fs = require("fs");
 const path = require("path");
 const paths = require("./paths.js").get();

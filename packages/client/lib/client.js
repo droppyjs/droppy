@@ -1377,7 +1377,7 @@ function bindDropEvents(view) {
     upload(view, fd, files);
   });
 
-    // drag between views
+  // drag between views
   view.off("drop").on("drop", (e) => {
     const view = $(e.target).parents(".view");
     let dragData = e.originalEvent.dataTransfer.getData("text");
@@ -2699,7 +2699,7 @@ function initVideo(el) {
       const player = new Plyr(el, {
         controls: ["play", "volume", "progress", "current-time", "mute", "captions"],
         iconUrl: "!/res/lib/plyr.svg",
-        blankUrl: "!/res/lib/blank.mp4",
+        blankVideo: "!/res/lib/blank.mp4",
         autoplay: !droppy.detects.mobile,
         volume: droppy.get("volume"),
         muted: droppy.get("volume") === 0,

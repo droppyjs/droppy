@@ -1,54 +1,51 @@
 {
-    "name": "@droppyjs/client",
-    "version": "0.1.0",
-    "description": "> TODO: description",
-    "author": "droppyjs <hello@droppyjs.com>",
-    "homepage": "https://github.com/droppyjs/droppy#readme",
-    "license": "BSD-2-Clause",
-    "main": "lib/client.js",
-    "dependencies": {
-        "codemirror": "5.61.0",
-        "file-extension": "4.0.5",
-        "handlebars": "4.7.7",
-        "jquery": "3.6.x",
-        "mousetrap": "1.6.5",
-        "pdfjs-dist": "2.4.456",
-        "photoswipe": "4.1.3",
-        "plyr": "3.6.2",
-        "screenfull": "5.0.2",
-        "uppie": "1.1.3"
-    },
-    "directories": {
-        "lib": "lib",
-        "test": "__tests__"
-    },
-    "files": [
-        "lib"
-    ],
-    "keywords": [
-        "self-hosted",
-        "personal",
-        "file",
-        "server",
-        "http",
-        "https",
-        "media",
-        "cloud",
-        "storage",
-        "self",
-        "hosted"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/droppyjs/droppy.git"
-    },
-    "scripts": {
-        "test": "echo \"Error: run tests from root\" && exit 1"
-    },
-    "bugs": {
-        "url": "https://github.com/droppyjs/droppy/issues"
-    },
-    "publishConfig": {
-        "access": "public"
-    }
+	"name": "@droppyjs/client",
+	"version": "0.1.0",
+	"description": "> TODO: description",
+	"author": "droppyjs <hello@droppyjs.com>",
+	"homepage": "https://github.com/droppyjs/droppy#readme",
+	"license": "BSD-2-Clause",
+	"main": "lib/client.js",
+	"dependencies": {
+		"codemirror": "5.61.0",
+		"file-extension": "4.0.5",
+		"handlebars": "4.7.7",
+		"jquery": "3.6.x",
+		"mousetrap": "1.6.5",
+		"pdfjs-dist": "2.9.359",
+		"photoswipe": "4.1.3",
+		"plyr": "3.6.8",
+		"screenfull": "5.0.2",
+		"uppie": "1.1.4"
+	},
+	"directories": {
+		"lib": "lib",
+		"test": "__tests__"
+	},
+	"files": [
+		"lib"
+	],
+	"keywords": [
+		"self-hosted",
+		"personal",
+		"file",
+		"server",
+		"http",
+		"https",
+		"media",
+		"cloud",
+		"storage",
+		"self",
+		"hosted"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/droppyjs/droppy.git"
+	},
+	"bugs": {
+		"url": "https://github.com/droppyjs/droppy/issues"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

@@ -1,6 +1,5 @@
 {
     "name": "droppy",
-    "version": "13.0.0-beta.1",
     "description": "Self-hosted file storage",
     "author": "droppyjs <hello@droppyjs.com>",
     "repository": "https://github.com/droppyjs/droppy",
@@ -23,7 +22,6 @@
     "resolutions": {
         "hosted-git-info": "^4.0.2",
         "lodash": "4.17.21",
-        "cheerio": "1.0.0-rc.10",
         "trim-newlines": "4.0.2",
         "normalize-url": "6.1.0",
         "glob-parent": "6.0.1",
@@ -71,7 +69,6 @@
         "lint-staged": "^11.1.2",
         "postcss": "8.3.6",
         "prettier": "^2.3.2",
-        "svgstore": "3.0.0-2",
         "terser": "5.7.2",
         "updates": "12.1.0",
         "uppie": "1.1.4"

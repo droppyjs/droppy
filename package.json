@@ -16,7 +16,7 @@
         "bootstrap": "lerna bootstrap",
         "lint": "eslint packages",
         "test": "yarn lint",
-        "postinstall": "yarn bootstrap",
+        "postinstall": "husky install && yarn bootstrap",
         "pub:canary": "lerna publish --c",
         "pub": "lerna publish && git push"
     },
@@ -66,8 +66,11 @@
         "eslint-config-silverwind": "18.0.2",
         "eslint-plugin-unicorn": "21.0.0",
         "html-minifier": "4.0.0",
+        "husky": "^7.0.2",
         "lerna": "^4.0.0",
+        "lint-staged": "^11.1.2",
         "postcss": "8.3.6",
+        "prettier": "^2.3.2",
         "svgstore": "3.0.0-2",
         "terser": "5.7.2",
         "updates": "12.1.0",
@@ -97,5 +100,11 @@
     "volta": {
         "node": "14.16.1",
         "yarn": "1.22.10"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx}": [
+            "prettier --write",
+            "eslint --fix"
+        ]
     }
 }

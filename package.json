@@ -14,7 +14,7 @@
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
         "lint": "eslint packages",
-        "test": "yarn lint",
+        "test": "jest",
         "postinstall": "husky install && yarn bootstrap",
         "pub:canary": "lerna publish --c",
         "pub": "lerna publish && git push"
@@ -59,12 +59,14 @@
     },
     "devDependencies": {
         "autoprefixer": "10.3.4",
+        "babel-jest": "^27.1.1",
         "clean-css": "5.1.5",
         "eslint": "7.32.0",
         "eslint-config-silverwind": "18.0.2",
         "eslint-plugin-unicorn": "21.0.0",
         "html-minifier": "4.0.0",
         "husky": "^7.0.2",
+        "jest": "^27.1.1",
         "lerna": "^4.0.0",
         "lint-staged": "^11.1.2",
         "postcss": "8.3.6",

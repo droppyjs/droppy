@@ -24,7 +24,7 @@ function copyAttributes(a, b, attrs) {
     const bAttr = b.attr(attr);
 
     if (bAttr !== null) {
-      a.attr(attr, b.attr(attr));
+      a.attr(attr, bAttr);
     }
   });
 

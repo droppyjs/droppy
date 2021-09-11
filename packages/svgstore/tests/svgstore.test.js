@@ -1,5 +1,4 @@
-import test from "ava";
-import svgstore from "../lib/svgstore";
+const svgstore = require("../lib/svgstore");
 
 const doctype = '<?xml version="1.0" encoding="UTF-8"?>' +
   '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
@@ -16,24 +15,25 @@ const FIXTURE_SVGS = {
   quux: '<svg viewBox="0 0 200 200" aria-labelledby="titleId" role="img"><title id="titleId">A boxy shape</title><rect/></svg>',
   corge: '<svg viewBox="0 0 200 200" aria-labelledby="titleId" role="img" preserveAspectRatio="xMinYMax" take-me-too="foo" count-me-out="bar">' +
     '<title id="titleId">A boxy shape</title><rect/></svg>',
-  defsWithId: '<svg><defs><linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="a"><stop stop-color="#FFF" offset="0%"/><stop stop-color="#F0F0F0" offset="100%"/></linearGradient><path id="b" d=""/></defs><path fill="url(#a)" fill-rule="nonzero" d=""/><use xlink:href="#b"></use><use fill-rule="nonzero" xlink:href="#b"></use><path fill="url(#a)" fill-rule="nonzero" d=""/></svg>'
+  defsWithId: '<svg><defs><linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="a"><stop stop-color="#FFF" offset="0%"/><stop stop-color="#F0F0F0" offset="100%"/></linearGradient><path id="b" d=""/></defs><path fill="url(#a)" fill-rule="nonzero" d=""/><use xlink:href="#b"></use><use fill-rule="nonzero" xlink:href="#b"></use><path fill="url(#a)" fill-rule="nonzero" d=""/></svg>',
+  roleNoValue: '<svg viewBox="0 0 200 200" aria-labelledby="titleId" role><title id="titleId">Another boxy shape</title><rect/></svg>',
 };
 
-test("should create an svg document", async t => {
+test("should create an svg document", () => {
   const store = svgstore();
   const svg = store.toString();
 
-  t.is(svg.slice(0, 5), "<?xml");
+  expect(svg.slice(0, 5)).toBe("<?xml");
 });
 
-test("should create an svg element", async t => {
+test("should create an svg element", () => {
   const store = svgstore();
   const svg = store.toString({inline: true});
 
-  t.is(svg.slice(0, 4), "<svg");
+  expect(svg.slice(0, 4)).toBe("<svg");
 });
 
-test("should combine svgs", async t => {
+test("should combine svgs", () => {
   const store = svgstore()
     .add("foo", doctype + FIXTURE_SVGS.foo)
     .add("bar", doctype + FIXTURE_SVGS.bar);
@@ -48,10 +48,11 @@ test("should combine svgs", async t => {
     `<symbol id="bar" viewBox="0 0 200 200"><rect style="stroke: red;"/></symbol>` +
     `</svg>`;
 
-  t.is(store.toString(), expected);
+  // TODO: Switch to snapshot?
+  expect(store.toString()).toBe(expected);
 });
 
-test("should clean defs", async t => {
+test("should clean defs", () => {
   const store = svgstore({cleanDefs: true})
     .add("foo", doctype + FIXTURE_SVGS.foo)
     .add("bar", doctype + FIXTURE_SVGS.bar)
@@ -75,10 +76,11 @@ test("should clean defs", async t => {
     `<symbol id="qux" viewBox="0 0 200 200"><rect style="stroke: red;" fill="blue"/></symbol>` +
     `</svg>`;
 
-  t.is(store.toString(), expected);
+  // TODO: switch to snapshot?
+  expect(store.toString()).toBe(expected);
 });
 
-test("should clean symbols", async t => {
+test("should clean symbols", () => {
   const store = svgstore({cleanSymbols: true})
     .add("foo", doctype + FIXTURE_SVGS.foo)
     .add("bar", doctype + FIXTURE_SVGS.bar)
@@ -103,10 +105,11 @@ test("should clean symbols", async t => {
     `<symbol id="qux" viewBox="0 0 200 200"><rect style="stroke: red;"/></symbol>` +
     `</svg>`;
 
-  t.is(store.toString(), expected);
+  // TODO: Switch to snapshot
+  expect(store.toString()).toBe(expected);
 });
 
-test("should attempt to preserve the `viewBox`, `aria-labelledby`, and `role` attributes of the root SVG by default", async t => {
+test("should attempt to preserve the `viewBox`, `aria-labelledby`, and `role` attributes of the root SVG by default", () => {
   const store = svgstore()
     .add("quux", FIXTURE_SVGS.quux);
 
@@ -118,10 +121,10 @@ test("should attempt to preserve the `viewBox`, `aria-labelledby`, and `role` at
     `</symbol>` +
     `</svg>`;
 
-  t.is(store.toString(), expected);
+  expect(store.toString()).toBe(expected);
 });
 
-test("should support custom attribute preservation, on top of the defaults", async t => {
+test("should support custom attribute preservation, on top of the defaults", () => {
   const copyAttrs = ["preserveAspectRatio", "take-me-too", "role"];
   const store = svgstore({copyAttrs})
     .add("corge", FIXTURE_SVGS.corge);
@@ -134,10 +137,10 @@ test("should support custom attribute preservation, on top of the defaults", asy
     `</symbol>` +
     `</svg>`;
 
-  t.is(store.toString(), expected);
+  expect(store.toString()).toBe(expected);
 });
 
-test("should set symbol attributes", async t => {
+test("should set symbol attributes", () => {
   const options = {
     inline: true,
     symbolAttrs: {
@@ -161,10 +164,10 @@ test("should set symbol attributes", async t => {
     '<symbol id="icon-bar"><rect style="stroke: red;"/></symbol>' +
     "</svg>";
 
-  t.is(store.toString(), expected);
+  expect(store.toString()).toBe(expected);
 });
 
-test("should set svg attributes", async t => {
+test("should set svg attributes", () => {
   const options = {
     inline: true,
     svgAttrs: {
@@ -186,10 +189,10 @@ test("should set svg attributes", async t => {
     '<symbol id="bar" viewBox="0 0 200 200"><rect style="stroke: red;"/></symbol>' +
     "</svg>";
 
-  t.is(store.toString(), expected);
+  expect(store.toString()).toBe(expected);
 });
 
-test("should rename defs id", async t => {
+test("should rename defs id", () => {
   const options = {
     inline: true,
     renameDefs: true
@@ -214,5 +217,20 @@ test("should rename defs id", async t => {
     "</symbol>" +
     "</svg>";
 
-  t.is(store.toString(), expected);
+  expect(store.toString()).toBe(expected);
+});
+
+test("should attempt to preserve the `viewBox`, `role`, and `aria-labelledby` attributes of the root SVG by default", () => {
+  const store = svgstore()
+    .add("roleNoValue", FIXTURE_SVGS.roleNoValue);
+
+  const expected = `${doctype +
+    svgNs
+  }<defs/>` +
+    `<symbol id="roleNoValue" viewBox="0 0 200 200" aria-labelledby="titleId" role="">` +
+    `<title id="titleId">Another boxy shape</title><rect/>` +
+    `</symbol>` +
+    `</svg>`;
+
+  expect(store.toString()).toBe(expected);
 });

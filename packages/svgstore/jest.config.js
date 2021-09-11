@@ -1,5 +1,7 @@
+const base = require("../../jest.config.base.js");
+
 module.exports = {
-  transform: {
-    "^.+\\.(js|jsx)$": "babel-jest",
-  }
+  ...base,
+  name: "@droppyjs/svgstore",
+  displayName: "@droppyjs/svgstore",
 };

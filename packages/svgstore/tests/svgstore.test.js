@@ -1,4 +1,4 @@
-import svgstore from "../lib/svgstore";
+const svgstore = require("../lib/svgstore");
 
 const doctype = '<?xml version="1.0" encoding="UTF-8"?>' +
   '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +

@@ -137,7 +137,7 @@ switch (cmd) {
 
   case "config": {
     const ourPaths = paths.get();
-    const edit = function() {
+    const edit = () => {
       findEditor(editor => {
         if (!editor) return console.error(`No suitable editor found, please edit ${ourPaths.cfgFile}`);
         require("child_process").spawn(editor, [ourPaths.cfgFile], {stdio: "inherit"});
@@ -145,11 +145,13 @@ switch (cmd) {
     };
     fs.stat(ourPaths.cfgFile, err => {
       if (err && err.code === "ENOENT") {
-        fs.mkdir(ourPaths.config, {recursive: true}, () => {
-          cfg.init(null, err => {
-            if (err) return console.error(new Error(err.message || err).stack);
+        fs.mkdir(ourPaths.config, {recursive: true}, async () => {
+          try {
+            await cfg.init(null);
             edit();
-          });
+          } catch (err) {
+            console.error(new Error(err.message || err).stack);
+          }
         });
       } else {
         edit();

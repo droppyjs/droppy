@@ -18,7 +18,7 @@ const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
 const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
 const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
 
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 
 const gzipEncode = (data) => promisify(gzip)(data, {level: constants.Z_BEST_COMPRESSION});
 const brotliEncode = (data) => promisify(brotliCompress)(data, {
@@ -135,11 +135,11 @@ resources.files = {
 
 // On-demand loadable libs. Will be available as !/res/lib/[prop]
 const libs = {
-    // plyr
+  // plyr
   "plyr.js": ["node_modules/plyr/dist/plyr.polyfilled.min.js"],
   "plyr.css": ["node_modules/plyr/dist/plyr.css"],
   "plyr.svg": ["node_modules/plyr/dist/plyr.svg"],
-  "blank.mp4": ["node_modules/plyr/dist/blank.mp4"],
+  "blank.mp4": ["lib/blank.mp4"],
     // codemirror
   "cm.js": [
     "node_modules/codemirror/lib/codemirror.js",

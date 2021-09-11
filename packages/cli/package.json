@@ -1,7 +1,7 @@
 {
     "name": "@droppyjs/cli",
     "version": "0.1.0",
-    "description": "> TODO: description",
+    "description": "> Command Line Interface for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",

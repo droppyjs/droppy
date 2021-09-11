@@ -1,0 +1,45 @@
+{
+
+  "name": "@droppyjs/svgstore",
+	"version": "0.1.0",
+  "description": "> Combines mulitple svg files into one.",
+	"author": "droppyjs <hello@droppyjs.com>",
+	"homepage": "https://github.com/droppyjs/droppy#readme",
+  "license": "MIT",
+  "main": "lib/svgstore.js",
+  "scripts": {
+    "coveralls": "nyc report -r text-lcov | coveralls",
+    "test": "nyc ava -v",
+    "posttest": "nyc report -r lcov",
+    "watch": "chokidar '{src,test}/**/*.js' -d 1000 -c 'npm test'"
+  },
+  "keywords": [
+    "concat",
+    "join",
+    "merge",
+    "pack",
+    "path",
+    "sprite",
+    "svg",
+    "svgs",
+    "svgstore",
+    "symbol",
+    "symbols"
+  ],
+  "dependencies": {
+    "cheerio": "1.0.0-rc.10"
+  },
+  "devDependencies": {
+    "ava": "0.25.0",
+    "chokidar-cli": "^1.2.1",
+    "coveralls": "^3.0.2",
+    "nyc": "^13.0.1"
+  },
+  "repository": {
+		"type": "git",
+		"url": "git+https://github.com/droppyjs/droppy.git"
+	},
+	"bugs": {
+		"url": "https://github.com/droppyjs/droppy/issues"
+	}
+}

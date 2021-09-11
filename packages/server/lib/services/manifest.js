@@ -1,6 +1,6 @@
 "use strict";
 
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 const originalUrl = require("original-url");
 
 module.exports = function manifest(req) {

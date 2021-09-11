@@ -14,7 +14,7 @@
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
         "lint": "eslint packages",
-        "test": "yarn lint",
+        "test": "lerna run --stream test --",
         "postinstall": "husky install && yarn bootstrap",
         "pub:canary": "lerna publish --c",
         "pub": "lerna publish && git push"

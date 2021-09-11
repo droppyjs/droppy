@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/server",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "> Server for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
@@ -24,8 +24,8 @@
         "url": "https://github.com/droppyjs/droppy/issues"
     },
     "dependencies": {
-        "@droppyjs/client": "0.1.0",
-        "@droppyjs/svgstore": "0.1.0",
+        "@droppyjs/client": "0.2.0",
+        "@droppyjs/svgstore": "0.2.0",
         "busboy": "0.3.1",
         "chokidar": "3.4.2",
         "colorette": "1.2.1",

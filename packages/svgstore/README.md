@@ -6,7 +6,7 @@ Combines multiple SVG files into one using `<symbol>` elements which you may [`<
 
 ## Install
 
-    $ npm install --save svgstore
+    $ npm install --save @droppyjs/svgstore
 
 ## Usage
 
@@ -29,8 +29,6 @@ The resulting file may be consumed in markup as external content.
     <svg role="img"><use xlink:href="./sprites.svg#rainbow"/></svg>
 </body>
 ```
-
-See the [examples directory](https://github.com/shannonmoeller/svgstore/tree/master/docs/examples) for more detail.
 
 ## API
 
@@ -89,14 +87,4 @@ The long-term goal for this project, in particular, is to provide a single stand
 
 ----
 
-MIT © [Shannon Moeller](http://shannonmoeller.com)
-
-[coveralls-img]: http://img.shields.io/coveralls/svgstore/svgstore/master.svg?style=flat-square
-[coveralls-url]: https://coveralls.io/r/svgstore/svgstore
-[downloads-img]: http://img.shields.io/npm/dm/svgstore.svg?style=flat-square
-[npm-img]:       http://img.shields.io/npm/v/svgstore.svg?style=flat-square
-[npm-url]:       https://npmjs.org/package/svgstore
-[travis-img]:    http://img.shields.io/travis/svgstore/svgstore.svg?style=flat-square
-[travis-url]:    https://travis-ci.org/svgstore/svgstore
-[broccoli-svgstore]: https://github.com/svgstore/broccoli-svgstore
-[svgstore-cli]: https://github.com/svgstore/svgstore-cli
+MIT © [Shannon Moeller](http://shannonmoeller.com), [Mark Hughes](https://droppyjs.com)

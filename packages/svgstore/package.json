@@ -34,8 +34,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.15.6",
     "babel-jest": "^27.1.1",
-    "chokidar-cli": "^1.2.1",
-    "coveralls": "^3.0.2",
+    "chokidar-cli": "^3.0.0",
     "jest": "^27.1.1"
   },
   "repository": {

@@ -1,5 +1,10 @@
 const units = ["B", "kB", "MB", "GB", "TB", "PB"];
 
+/**
+ *
+ * @param {number} num
+ * @returns
+ */
 module.exports = (num) => {
   if (num < 1) {
     return `${num} B`;

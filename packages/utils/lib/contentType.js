@@ -6,7 +6,7 @@ const overrideMimeTypes = {
 };
 
 /**
- * @param {String} p
+ * @param {string} p
  * @returns
  */
 module.exports = function(p) {

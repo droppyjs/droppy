@@ -1,6 +1,15 @@
 const path = require("path");
 const {stat, access} = require("fs").promises;
 
+// eslint-disable-next-line no-unused-vars
+const {PathLike} = require("fs");
+
+/**
+ *
+ * @param {PathLike} origPath
+ * @param {*} callback
+ * @returns
+ */
 module.exports = async (origPath, callback) => {
   let stats;
   try {

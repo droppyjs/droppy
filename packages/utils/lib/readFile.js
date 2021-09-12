@@ -1,5 +1,11 @@
 const fs = require("fs");
 
+/**
+ *
+ * @param {string} p
+ * @param {CallableFunction} cb
+ * @returns
+ */
 module.exports = function(p, cb) {
   if (typeof p !== "string") return cb(null);
   fs.stat(p, (_, stats) => {

@@ -3,7 +3,7 @@ const escapeStringRegexp = require("escape-string-regexp");
 const paths = require("./paths");
 
 /**
- * @param {String} str
+ * @param {string} str
  * @returns
  */
 module.exports = (str) => {

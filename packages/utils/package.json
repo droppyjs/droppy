@@ -6,6 +6,9 @@
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/index.js",
+    "scripts": {
+      "test": "jest --coverage"
+    },
     "dependencies": {
         "content-disposition": "^0.5.3",
         "daemonize-process": "^3.0.0",
@@ -52,5 +55,9 @@
     "publishConfig": {
         "access": "public"
     },
-    "gitHead": "c43ef66a2d426358537f7a3890b4ca31dfbf81ef"
+    "gitHead": "c43ef66a2d426358537f7a3890b4ca31dfbf81ef",
+    "devDependencies": {
+        "babel-jest": "^27.1.1",
+        "jest": "^27.1.1"
+    }
 }

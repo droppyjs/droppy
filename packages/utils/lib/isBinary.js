@@ -10,13 +10,13 @@ const forceBinaryTypes = [
 
 /**
  *
- * @param {String} p
- * @returns
+ * @param {string} p
+ * @returns {boolean}
  */
 module.exports = async function(p) {
   if (forceBinaryTypes.includes(path.extname(p).substring(1))) {
     return true;
   }
 
-  return isbinaryfile.isBinaryFile(p);
+  return await isbinaryfile.isBinaryFile(p);
 };

@@ -1,3 +1,9 @@
+/**
+ *
+ * @param {*} links
+ * @param {number} length
+ * @returns
+ */
 module.exports = (links, length) => {
   const linkChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 

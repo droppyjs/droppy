@@ -1,10 +1,11 @@
-const {mkdir, lstat, copyFile, readdir} = require("fs").promises;
+const fs = require("fs");
 const path = require("path");
+const {mkdir, lstat, copyFile, readdir} = fs.promises;
 
 /**
  * Copy a directory.
- * @param {String} src
- * @param {String} dest
+ * @param {fs.PathLike} src
+ * @param {fs.PathLike} dest
  */
 const copyDir =  async (src, dest) => {
   await mkdir(dest);

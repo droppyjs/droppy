@@ -3,7 +3,7 @@ const path = require("path");
 const paths = require("./paths");
 
 /**
- * @param {String} path
+ * @param {string} path
  * @returns
  */
 module.exports = (p) => {

@@ -1,5 +1,11 @@
 const fs = require("fs");
 
+/**
+ *
+ * @param {fs.PathLike} src
+ * @param {fs.PathLike} dst
+ * @returns
+ */
 module.exports = (src, dst) => {
   return new Promise((resolve, reject) => {
     let cbCalled = false;

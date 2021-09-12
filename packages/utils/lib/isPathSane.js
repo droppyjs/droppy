@@ -1,8 +1,8 @@
 const validate = require("valid-filename");
 
 /**
- * @param {String} p
- * @param {String} isURL
+ * @param {string} p
+ * @param {boolean} isURL
  * @returns
  */
 module.exports = (p, isURL) => {

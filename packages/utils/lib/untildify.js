@@ -1,5 +1,4 @@
 const os = require("os");
-const homeDirectory = os.homedir();
 
 /**
  * Function originaly from https://github.com/sindresorhus/untildify
@@ -9,5 +8,6 @@ const homeDirectory = os.homedir();
  * @returns
  */
 module.exports = (pathWithTilde) => {
+  const homeDirectory = os.homedir();
   return homeDirectory ? pathWithTilde.replace(/^~(?=$|\/|\\)/, homeDirectory) : pathWithTilde;
 };

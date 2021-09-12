@@ -430,7 +430,7 @@ function onWebSocketRequest(ws, req) {
       log.debug(ws, null, magenta("RECV "), pretty(msg));
     }
 
-    if (!csrf.validate(msg.token)) {
+    if (!csrf.validate(msg.token, req)) {
       ws.close(1011);
       return;
     }

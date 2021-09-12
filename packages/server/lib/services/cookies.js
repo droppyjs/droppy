@@ -2,7 +2,7 @@
 
 const cookies = module.exports = {};
 const db = require("./db.js");
-const utils = require("./utils.js");
+const {createSid} = require("@droppyjs/utils");
 
 // TODO: set secure flag on cookie. Requires X-Forwarded-Proto from the proxy
 const cookieParams = ["HttpOnly", "SameSite=strict"];
@@ -28,7 +28,7 @@ cookies.get = function(cookie) {
 
 cookies.free = function(_req, res, _postData) {
   const sessions = db.get("sessions");
-  const sid = utils.createSid();
+  const sid = createSid();
     // TODO: obtain path
   res.setHeader("Set-Cookie", cookieHeaders(sid, "/", inOneYear()));
   sessions[sid] = {
@@ -40,7 +40,7 @@ cookies.free = function(_req, res, _postData) {
 
 cookies.create = function(_req, res, postData) {
   const sessions = db.get("sessions");
-  const sid = utils.createSid();
+  const sid = createSid();
   const expires = postData.remember ? inOneYear() : null;
   res.setHeader("Set-Cookie", cookieHeaders(sid, postData.path, expires));
   sessions[sid] = {

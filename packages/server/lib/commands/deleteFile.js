@@ -2,6 +2,7 @@ const filetree = require("../services/filetree");
 const log = require("../services/log");
 
 exports.default = {
+  command: "DELETE_FILE",
   handler: async ({validatePaths, sid, config, msg, ws, vId, sendError}) => {
     if (config.readOnly) {
       log.info(ws, null, `Prevent deleting read-only file: ${msg.data}`);

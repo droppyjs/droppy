@@ -1,0 +1,56 @@
+{
+    "name": "@droppyjs/utils",
+    "version": "0.2.1",
+    "description": "> Utils for droppy.",
+    "author": "droppyjs <hello@droppyjs.com>",
+    "homepage": "https://github.com/droppyjs/droppy#readme",
+    "license": "BSD-2-Clause",
+    "main": "lib/index.js",
+    "dependencies": {
+        "content-disposition": "^0.5.3",
+        "daemonize-process": "^3.0.0",
+        "escape-string-regexp": "4.0.0",
+        "isbinaryfile": "^4.0.8",
+        "mime-types": "^2.1.32",
+        "minimist": "^1.2.5",
+        "mv": "^2.1.1",
+        "ps-node": "^0.1.6",
+        "untildify": "^4.0.0",
+        "valid-filename": "3.1.0",
+        "which": "^2.0.2"
+    },
+    "directories": {
+        "lib": "lib",
+        "test": "__tests__"
+    },
+    "files": [
+        "lib"
+    ],
+    "keywords": [
+        "self-hosted",
+        "personal",
+        "file",
+        "server",
+        "http",
+        "https",
+        "media",
+        "cloud",
+        "storage",
+        "self",
+        "hosted"
+    ],
+    "bin": {
+        "droppy": "bin/droppy"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/droppyjs/droppy.git"
+    },
+    "bugs": {
+        "url": "https://github.com/droppyjs/droppy/issues"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "gitHead": "c43ef66a2d426358537f7a3890b4ca31dfbf81ef"
+}

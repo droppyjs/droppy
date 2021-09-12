@@ -5,9 +5,10 @@ const chokidar = require("chokidar");
 const fs = require("fs");
 const crypto = require("crypto");
 const path = require("path");
+const {paths} = require("@droppyjs/utils");
 
 const log = require("./log.js");
-const dbFile = require("./paths.js").get().db;
+const dbFile = paths.locations.db;
 const defaults = {users: {}, sessions: {}, links: {}};
 
 let database, watching;

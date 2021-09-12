@@ -1,9 +1,9 @@
 "use strict";
 
 const svgstore = require("@droppyjs/svgstore");
+const {paths} = require("@droppyjs/utils");
 const fs = require("fs");
 const path = require("path");
-const paths = require("./paths.js").get();
 
 module.exports = function svg() {
   const sprites = svgstore({
@@ -12,8 +12,8 @@ module.exports = function svg() {
     },
   });
 
-  fs.readdirSync(paths.svg).forEach(file => {
-    sprites.add(`i-${file.replace(/\.svg/, "")}`, fs.readFileSync(path.join(paths.svg, file)));
+  fs.readdirSync(paths.locations.svg).forEach(file => {
+    sprites.add(`i-${file.replace(/\.svg/, "")}`, fs.readFileSync(path.join(paths.locations.svg, file)));
   });
 
   return sprites.toString({inline: true});

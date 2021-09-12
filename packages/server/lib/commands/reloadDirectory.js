@@ -1,6 +1,7 @@
 const filetree = require("../services/filetree.js");
 
 exports.default = {
+  command: "RELOAD_DIRECTORY",
   handler: async ({validatePaths, sid, sendFiles, msg, ws, vId}) => {
     if (!validatePaths(msg.data.dir, msg.type, ws, sid, vId)) {
       return;

@@ -1,10 +1,12 @@
 const path = require("path");
 
+const utils = require("@droppyjs/utils");
+
 const filetree = require("../services/filetree");
-const utils = require("../services/utils");
 const log = require("../services/log");
 
 exports.default = {
+  command: "CREATE_FILES",
   handler: async ({validatePaths, sid, config, msg, ws, vId, sendError}) => {
     if (config.readOnly) {
       return sendError(sid, vId, "Files are read-only");

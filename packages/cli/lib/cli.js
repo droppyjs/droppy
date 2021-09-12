@@ -9,7 +9,8 @@ const util = require("util");
 
 const pkg = require("../package.json");
 
-const {server, paths, resources, log, cfg, db} = require("@droppyjs/server");
+const {paths} = require("@droppyjs/utils");
+const {server, resources, log, cfg, db} = require("@droppyjs/server");
 
 util.inspect.defaultOptions.depth = 4;
 
@@ -136,7 +137,7 @@ switch (cmd) {
     break;
 
   case "config": {
-    const ourPaths = paths.get();
+    const ourPaths = paths.locations;
     const edit = () => {
       findEditor(editor => {
         if (!editor) return console.error(`No suitable editor found, please edit ${ourPaths.cfgFile}`);

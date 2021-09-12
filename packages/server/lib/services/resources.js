@@ -11,12 +11,11 @@ const {stat, mkdir, readdir, readFile, writeFile} = require("fs").promises;
 const {promisify} = require("util");
 
 const log = require("./log.js");
-const paths = require("./paths.js").get();
-const utils = require("./utils.js");
+const {contentType, paths} = require("@droppyjs/utils");
 
-const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
-const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
-const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
+const themesPath = path.join(paths.locations.client, "/node_modules/codemirror/theme");
+const modesPath = path.join(paths.locations.client, "/node_modules/codemirror/mode");
+const cachePath = path.join(paths.locations.homedir, "/.droppy/cache/cache.json");
 
 const pkg = require("../../package.json");
 
@@ -107,10 +106,10 @@ try {
 
 resources.files = {
   css: [
-    `${paths.client}/lib/style.css`,
-    `${paths.client}/lib/sprites.css`,
-    `${paths.client}/lib/tooltips.css`,
-    `${paths.client}/lib/clienttheme.css`,
+    `${paths.locations.client}/lib/style.css`,
+    `${paths.locations.client}/lib/sprites.css`,
+    `${paths.locations.client}/lib/tooltips.css`,
+    `${paths.locations.client}/lib/clienttheme.css`,
   ],
   js: [
     "node_modules/handlebars/dist/handlebars.runtime.min.js",
@@ -225,8 +224,8 @@ async function isCacheFresh(cb) {
   const files = [];
   for (const type of Object.keys(resources.files)) {
     resources.files[type].forEach(file => {
-      if (fs.existsSync(path.join(paths.client, file))) {
-        files.push(path.join(paths.client, file));
+      if (fs.existsSync(path.join(paths.locations.client, file))) {
+        files.push(path.join(paths.locations.client, file));
       } else {
         files.push(file);
       }
@@ -235,15 +234,15 @@ async function isCacheFresh(cb) {
 
   for (const file of Object.keys(libs)) {
     if (typeof libs[file] === "string") {
-      if (fs.existsSync(path.join(paths.client, libs[file]))) {
-        files.push(path.join(paths.client, libs[file]));
+      if (fs.existsSync(path.join(paths.locations.client, libs[file]))) {
+        files.push(path.join(paths.locations.client, libs[file]));
       } else {
         files.push(libs[file]);
       }
     } else {
       libs[file].forEach(file => {
-        if (fs.existsSync(path.join(paths.client, file))) {
-          files.push(path.join(paths.client, file));
+        if (fs.existsSync(path.join(paths.locations.client, file))) {
+          files.push(path.join(paths.locations.client, file));
         } else {
           files.push(file);
         }
@@ -272,7 +271,7 @@ async function compile(write, cb) {
     cache.themes[theme] = {
       data,
       etag: etag(data),
-      mime: utils.contentType("css"),
+      mime: contentType("css"),
     };
   }
 
@@ -280,7 +279,7 @@ async function compile(write, cb) {
     cache.modes[mode] = {
       data,
       etag: etag(data),
-      mime: utils.contentType("js"),
+      mime: contentType("js"),
     };
   }
 
@@ -288,7 +287,7 @@ async function compile(write, cb) {
     cache.lib[file] = {
       data,
       etag: etag(data),
-      mime: utils.contentType(file),
+      mime: contentType(file),
     };
   }
 
@@ -320,7 +319,7 @@ async function readThemes() {
     themes[name.replace(/\.css$/, "")] = Buffer.from(await minifyCSS(String(data)));
   }
 
-  const droppyTheme = await readFile(path.join(paths.client, "/lib/cmtheme.css"));
+  const droppyTheme = await readFile(path.join(paths.locations.client, "/lib/cmtheme.css"));
   themes.droppy = Buffer.from(await minifyCSS(String(droppyTheme)));
 
   return themes;
@@ -330,7 +329,7 @@ async function readModes() {
   const modes = {};
 
     // parse meta.js from CM for supported modes
-  const js = await readFile(path.join(paths.client, "/node_modules/codemirror/mode/meta.js"));
+  const js = await readFile(path.join(paths.locations.client, "/node_modules/codemirror/mode/meta.js"));
 
     // Extract modes from CodeMirror
   const sandbox = {CodeMirror: {}};
@@ -353,7 +352,7 @@ async function readLibs() {
 
   for (const [dest, files] of Object.entries(libs)) {
     lib[dest] = Buffer.concat(await Promise.all(files.map(file => {
-      return readFile(path.join(paths.client, file));
+      return readFile(path.join(paths.locations.client, file));
     })));
   }
 
@@ -393,8 +392,8 @@ function templates() {
         "templates=Handlebars.templates=Handlebars.templates||{};";
   const suffix = "Handlebars.partials=Handlebars.templates})();";
 
-  return prefix + fs.readdirSync(paths.templates).map(file => {
-    const p = path.join(paths.templates, file);
+  return prefix + fs.readdirSync(paths.locations.templates).map(file => {
+    const p = path.join(paths.locations.templates, file);
     const name = file.replace(/\..+$/, "");
     let html = htmlMinifier.minify(fs.readFileSync(p, "utf8"), opts.htmlMinifier);
 
@@ -417,8 +416,8 @@ function templates() {
 resources.compileJS = async function() {
   let js = "";
   resources.files.js.forEach(file => {
-    if (fs.existsSync(path.join(paths.client, file))) {
-      js += `${fs.readFileSync(path.join(paths.client, file), "utf8")};`;
+    if (fs.existsSync(path.join(paths.locations.client, file))) {
+      js += `${fs.readFileSync(path.join(paths.locations.client, file), "utf8")};`;
     } else {
       js += `${fs.readFileSync(file, "utf8")};`;
     }
@@ -433,7 +432,7 @@ resources.compileJS = async function() {
   return {
     data: Buffer.from(js),
     etag: etag(js),
-    mime: utils.contentType("js"),
+    mime: contentType("js"),
   };
 };
 
@@ -449,25 +448,25 @@ resources.compileCSS = async function() {
   return {
     data: Buffer.from(css),
     etag: etag(css),
-    mime: utils.contentType("css"),
+    mime: contentType("css"),
   };
 };
 
 resources.compileHTML = async function(res) {
-  let html = fs.readFileSync(path.join(paths.client, "lib", "index.html"), "utf8");
+  let html = fs.readFileSync(path.join(paths.locations.client, "lib", "index.html"), "utf8");
   html = html.replace("<!-- {{svg}} -->", svg());
 
   let auth = html.replace("{{type}}", "a");
   auth = minify ? htmlMinifier.minify(auth, opts.htmlMinifier) : auth;
-  res["auth.html"] = {data: Buffer.from(auth), etag: etag(auth), mime: utils.contentType("html")};
+  res["auth.html"] = {data: Buffer.from(auth), etag: etag(auth), mime: contentType("html")};
 
   let first = html.replace("{{type}}", "f");
   first = minify ? htmlMinifier.minify(first, opts.htmlMinifier) : first;
-  res["first.html"] = {data: Buffer.from(first), etag: etag(first), mime: utils.contentType("html")};
+  res["first.html"] = {data: Buffer.from(first), etag: etag(first), mime: contentType("html")};
 
   let main = html.replace("{{type}}", "m");
   main = minify ? htmlMinifier.minify(main, opts.htmlMinifier) : main;
-  res["main.html"] = {data: Buffer.from(main), etag: etag(main), mime: utils.contentType("html")};
+  res["main.html"] = {data: Buffer.from(main), etag: etag(main), mime: contentType("html")};
   return res;
 };
 
@@ -481,9 +480,9 @@ async function compileAll() {
     // Read misc files
   for (const file of resources.files.other) {
     const name = path.basename(file);
-    const fullPath = path.join(paths.client, file);
+    const fullPath = path.join(paths.locations.client, file);
     const data = fs.readFileSync(fullPath);
-    res[name] = {data, etag: etag(data), mime: utils.contentType(name)};
+    res[name] = {data, etag: etag(data), mime: contentType(name)};
   }
 
   return res;

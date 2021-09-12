@@ -26,6 +26,7 @@
     "dependencies": {
         "@droppyjs/client": "0.2.1",
         "@droppyjs/svgstore": "0.2.1",
+        "@droppyjs/utils": "0.2.1",
         "busboy": "0.3.1",
         "chokidar": "3.4.2",
         "colorette": "1.2.1",
@@ -50,7 +51,6 @@
         "send": "0.17.1",
         "strip-ansi": "6.0.0",
         "untildify": "4.0.0",
-        "valid-filename": "3.1.0",
         "which": "2.0.2",
         "ws": "7.4.6",
         "yazl": "2.5.1"
@@ -82,5 +82,6 @@
     ],
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "c43ef66a2d426358537f7a3890b4ca31dfbf81ef"
 }

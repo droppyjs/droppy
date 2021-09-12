@@ -1,10 +1,11 @@
 const path = require("path");
 
 const db = require("../services/db.js");
-const utils = require("../services/utils.js");
+const utils = require("@droppyjs/utils");
 const log = require("../services/log.js");
 
 exports.default = {
+  command: "REQUEST_SHARELINK",
   handler: async ({validatePaths, sid, sendObj, config, msg, ws, vId}) => {
     if (!validatePaths(msg.data.location, msg.type, ws, sid, vId)) return;
     const links = db.get("links");

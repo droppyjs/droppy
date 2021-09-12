@@ -4,11 +4,12 @@ const fs = require("fs");
 const {dirname} = require("path");
 const {promisify} = require("util");
 
+const {paths} = require("@droppyjs/utils");
 const stat = promisify(fs.stat);
 const readFile = promisify(fs.readFile);
 const mkdir = promisify(fs.mkdir);
 
-const configFile = require("./paths.js").get().cfgFile;
+const configFile = paths.locations.cfgFile;
 
 const defaults = {
   listeners: [{

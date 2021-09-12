@@ -2,12 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 
+const utils = require("@droppyjs/utils");
+
 const stat = util.promisify(fs.stat);
 
 const log = require("../services/log.js");
-const utils = require("../services/utils.js");
 
 exports.default = {
+  command: "REQUEST_UPDATE",
   handler: async ({
     sid,
     sendObj,

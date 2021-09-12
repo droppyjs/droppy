@@ -1,11 +1,13 @@
 const fs = require("fs");
 const escRe = require("escape-string-regexp");
 
+const utils = require("@droppyjs/utils");
+
 const filetree = require("../services/filetree");
 const log = require("../services/log");
-const utils = require("../services/utils");
 
 exports.default = {
+  command: "CLIPBOARD",
   handler: async ({validatePaths, sid, config, msg, ws, vId, sendError}) => {
     const src = msg.data.src;
     const dst = msg.data.dst;

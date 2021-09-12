@@ -3,7 +3,7 @@
 const paths = module.exports = {};
 const fs = require("fs");
 const path = require("path");
-const untildify = require("untildify");
+const {untildify} = require(".");
 
 const os = require("os");
 
@@ -12,10 +12,31 @@ const homedir = os.homedir();
 let configDir = resolve(homedir, "/.droppy/config");
 let filesDir = resolve(homedir, "/.droppy/files");
 
-const clientPath = path.normalize(`${path.dirname(require.resolve("@droppyjs/client"))}/../`);
+const clientPath = path.normalize(`${path.dirname(__dirname)}/../client/`);
 
-paths.get = function() {
-  return {
+paths.locations = {
+  // Purposely so to be defined at start.
+  homedir,
+  files: "",
+  config: "",
+
+  pid: "",
+  temp: "",
+  cfgFile: "",
+  db: "",
+  tlsKey: "",
+  tlsCert: "",
+  tlsCA: "",
+
+  mod: "",
+  server: "",
+  client: "",
+  templates: "",
+  svg: "",
+};
+
+paths.reload = () => {
+  paths.locations = {
     homedir,
 
     files: resolve(filesDir),
@@ -33,13 +54,15 @@ paths.get = function() {
     server: resolve(__dirname, "..", "server"),
     client: clientPath,
     templates: resolve(clientPath, "lib", "templates"),
-    svg: resolve(clientPath, "lib", "svg")
+    svg: resolve(clientPath, "lib", "svg"),
   };
 };
 
 paths.seed = function(config, files) {
   if (config) configDir = config;
   if (files) filesDir = files;
+
+  paths.reload();
 };
 
 function resolve(...args) {
@@ -50,3 +73,5 @@ function resolve(...args) {
   } catch {}
   return p;
 }
+
+paths.reload();

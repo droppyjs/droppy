@@ -1,6 +1,7 @@
 const filetree = require("../services/filetree");
 
 exports.default = {
+  command: "SEARCH",
   handler: async ({validatePaths, sendObj, sid, msg, ws, vId}) => {
     const query = msg.data.query;
     const dir = msg.data.dir;

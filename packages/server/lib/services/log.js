@@ -5,7 +5,7 @@ const {red, blue, yellow, green, cyan, magenta, reset} = require("colorette");
 const stripAnsi = require("strip-ansi");
 const {isIPv6} = require("net");
 
-const utils = require("./utils.js");
+const {ip, port} = require("@droppyjs/utils");
 
 const logColors = [reset, red, yellow, cyan];
 const logLabels = ["", "ERROR", "INFO", "DEBG"];
@@ -40,10 +40,10 @@ const log = module.exports = function(req, res, logLevel, ...elems) {
     if (req.url) elems.unshift(decodeURIComponent(decodeURIComponent(req.url))); // For some reason, this need double decoding for upload URLs
     if (req.method) elems.unshift(yellow(req.method.toUpperCase()));
 
-    const ip = utils.ip(req);
+    const requestIp = ip(req);
 
-    if (ip) {
-      elems.unshift(log.formatHostPort(ip, utils.port(req) || "0"));
+    if (requestIp) {
+      elems.unshift(log.formatHostPort(requestIp, port(req) || "0"));
     }
   }
 
@@ -136,14 +136,14 @@ log.logo = function(line1, line2, line3) {
   ].join("")));
 };
 
-log.formatHostPort = function(hostname, port, proto) {
-  if (proto === "http" && port === "80" || proto === "https" && port === "443") {
-    port = "";
+log.formatHostPort = function(hostname, hostPort, proto) {
+  if (proto === "http" && hostPort === "80" || proto === "https" && hostPort === "443") {
+    hostPort = "";
   } else {
-    port = blue(`:${port}`);
+    hostPort = blue(`:${hostPort}`);
   }
 
-  return cyan(isIPv6(hostname) ? `[${hostname}]` : hostname) + port;
+  return cyan(isIPv6(hostname) ? `[${hostname}]` : hostname) + hostPort;
 };
 
 log.formatError = function(err) {

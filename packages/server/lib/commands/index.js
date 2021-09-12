@@ -1,17 +1,18 @@
-exports["CLIPBOARD"] = require("./clipboard").default;
-exports["CREATE_FILE"] = require("./createFile").default;
-exports["CREATE_FILES"] = require("./createFiles").default;
-exports["CREATE_FOLDER"] = require("./createFolder").default;
-exports["CREATE_FOLDERS"] = require("./createFolders").default;
-exports["DELETE_FILE"] = require("./deleteFile").default;
-exports["DESTROY_VIEW"] = require("./destroyView").default;
-exports["GET_MEDIA"] = require("./getMedia").default;
-exports["GET_USERS"] = require("./getUsers").default;
-exports["RELOAD_DIRECTORY"] = require("./reloadDirectory").default;
-exports["RENAME"] = require("./rename").default;
-exports["REQUEST_SETTINGS"] = require("./requestSettings").default;
-exports["REQUEST_SHARELINK"] = require("./requestSharelink").default;
-exports["REQUEST_UPDATE"] = require("./requestUpdate").default;
-exports["SAVE_FILE"] = require("./saveFile").default;
-exports["SEARCH"] = require("./search").default;
-exports["UPDATE_USER"] = require("./updateUser").default;
+const {readdirSync} = require("fs");
+const path = require("path");
+const log = require("../services/log");
+const files = readdirSync(__dirname);
+
+module.exports = files.reduce((result, current) => {
+  if (current !== "index.js") {
+    const {command, handler} = require(path.join(__dirname, current)).default;
+    if (command === undefined || handler === undefined) {
+      log.error(`Attempted to register ${current} however, ` +
+                `.command is "${command ? "OK" : "invalid"}", ` +
+                `and .handler is "${handler ? "OK" : "invalid"}"`);
+    } else {
+      result[command] = handler;
+    }
+  }
+  return result;
+}, {});

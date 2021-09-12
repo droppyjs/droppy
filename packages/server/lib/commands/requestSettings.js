@@ -1,4 +1,5 @@
 exports.default = {
+  command: "REQUEST_SETTINGS",
   handler: ({pkg, sid, sendObj, msg, priv, config, cache}) => {
     sendObj(sid, {
       type: "SETTINGS",

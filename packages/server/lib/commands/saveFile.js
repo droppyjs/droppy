@@ -2,6 +2,7 @@ const filetree = require("../services/filetree");
 const log = require("../services/log");
 
 exports.default = {
+  command: "SAVE_FILE",
   handler: async ({validatePaths, sendObj, sid, config, msg, ws, vId, sendError}) => {
     if (config.readOnly) {
       log.info(ws, null, `Prevented saving read-only file: ${msg.data.to}`);

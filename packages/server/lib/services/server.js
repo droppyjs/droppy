@@ -12,9 +12,9 @@ const {red, blue, green, cyan, magenta} = require("colorette");
 const etag = require("etag");
 const rrdir = require("rrdir");
 const sendFile = require("send");
-const ut = require("untildify");
 const Wss = require("ws").Server;
 const yazl = require("yazl");
+const {paths, mkdir, pretty, isPathSane, arrify, sanitizePathsInString, addFilesPath, ip, readJsonBody, isBinary, formatBytes, addUploadTempExt, rootName, getNewPath, removeUploadTempExt, move, rm, removeFilesPath, contentType, getDispo, untildify} = require("@droppyjs/utils");
 
 const cfg = require("./cfg.js");
 const cookies = require("./cookies.js");
@@ -23,10 +23,8 @@ const db = require("./db.js");
 const filetree = require("./filetree.js");
 const log = require("./log.js");
 const manifest = require("./manifest.js");
-const paths = require("./paths.js").get();
 const pkg = require("../../package.json");
 const resources = require("./resources.js");
-const utils = require("./utils.js");
 
 const commands = require("../commands");
 
@@ -54,11 +52,11 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
       ].join(" "), [
         blue("config"),
         "at",
-        green(paths.config)
+        green(paths.locations.config)
       ].join(" "), [
         blue("files"),
         "at",
-        green(paths.files)
+        green(paths.locations.files)
       ].join(" ")
     );
   }
@@ -66,12 +64,12 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
 
   try {
     await promisify((cb) => {
-      utils.mkdir([paths.files, paths.config], cb);
+      mkdir([paths.locations.files, paths.locations.config], cb);
     })();
 
     await promisify((cb) => {
       if (isStandalone) {
-        fs.writeFile(paths.pid, String(process.pid), cb);
+        fs.writeFile(paths.locations.pid, String(process.pid), cb);
       } else {
         cb();
       }
@@ -94,7 +92,7 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
       firstRun = Object.keys(db.get("users")).length === 0;
             // clean up old sessions if no users exist
       if (firstRun) db.set("sessions", {});
-      log.info("Configuration: ", utils.pretty(config));
+      log.info("Configuration: ", pretty(config));
       log.info("Loading resources ...");
       resources.load(config.dev, (err, c) => {
         log.info("Loading resources done");
@@ -159,7 +157,7 @@ function onRequest(req, res) {
   }
 
   if (ready) {
-    if (!utils.isPathSane(req.url, true)) {
+    if (!isPathSane(req.url, true)) {
       res.statusCode = 400;
       res.end();
       return log.info(req, res, `Invalid GET: ${req.url}`);
@@ -190,9 +188,9 @@ async function startListeners(callback) {
     }
 
         // arrify and filter `undefined`
-    const hosts = utils.arrify(listener.host).filter(host => Boolean(host));
-    const ports = utils.arrify(listener.port).filter(port => Boolean(port));
-    const sockets = utils.arrify(listener.socket).filter(socket => Boolean(socket));
+    const hosts = arrify(listener.host).filter(host => Boolean(host));
+    const ports = arrify(listener.port).filter(port => Boolean(port));
+    const sockets = arrify(listener.socket).filter(socket => Boolean(socket));
 
         // validate listener options
     hosts.forEach(host => {
@@ -429,7 +427,7 @@ function onWebSocketRequest(ws, req) {
     msg = JSON.parse(msg);
 
     if (msg.type !== "SAVE_FILE") {
-      log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
+      log.debug(ws, null, magenta("RECV "), pretty(msg));
     }
 
     if (!csrf.validate(msg.token)) {
@@ -448,7 +446,7 @@ function onWebSocketRequest(ws, req) {
     }
 
     if (commands[msg.type]) {
-      commands[msg.type].handler({priv, msg, sendObj, sid, updateClientLocation, sendFiles, sendError, validatePaths, sendUsers, pkg, config, cache, ws, setView, vId, cookie});
+      commands[msg.type]({priv, msg, sendObj, sid, updateClientLocation, sendFiles, sendError, validatePaths, sendUsers, pkg, config, cache, ws, setView, vId, cookie});
     } else {
       // TODO: invalid command, handle?
     }
@@ -478,7 +476,7 @@ function onWebSocketRequest(ws, req) {
 // Ensure that a given path does not contain invalid file names
 function validatePaths(paths, type, ws, sid, vId) {
   return (Array.isArray(paths) ? paths : [paths]).every(p => {
-    if (!utils.isPathSane(p)) {
+    if (!isPathSane(p)) {
       sendError(sid, vId, "Invalid request");
       log.info(ws, null, `Invalid ${type} request: ${p}`);
       return false;
@@ -525,7 +523,7 @@ function sendObjAll(data) {
 }
 
 function sendError(sid, vId, text) {
-  text = utils.sanitizePathsInString(text);
+  text = sanitizePathsInString(text);
   sendObj(sid, {type: "ERROR", vId, text});
   log.error(clients[sid].ws, null, `Sent error: ${text}`);
 }
@@ -546,7 +544,7 @@ function send(ws, data) {
         const debugData = JSON.parse(data);
                 // Remove some spammy logging
         if (debugData.type === "RELOAD" && debugData.css) debugData.css = {"...": "..."};
-        log.debug(ws, null, green("SEND "), utils.pretty(debugData));
+        log.debug(ws, null, green("SEND "), pretty(debugData));
       }
       ws.send(data, err => {
         if (err) log.err(err);
@@ -616,11 +614,11 @@ function handleGETandHEAD(req, res) {
     }
     log.info(req, res);
   } else if (/^\/!\/type\/[\s\S]+/.test(URI)) {
-    handleTypeRequest(req, res, utils.addFilesPath(URI.substring(7)));
+    handleTypeRequest(req, res, addFilesPath(URI.substring(7)));
   } else if (/^\/!\/file\/[\s\S]+/.test(URI)) {
     handleFileRequest(req, res, false);
   } else if (/^\/!\/zip\/[\s\S]+/.test(URI)) {
-    const zipPath = utils.addFilesPath(URI.substring(6));
+    const zipPath = addFilesPath(URI.substring(6));
     fs.stat(zipPath, (err, stats) => {
       if (!err && stats.isDirectory()) {
         streamArchive(req, res, zipPath, true, stats, false);
@@ -644,22 +642,23 @@ function handlePOST(req, res) {
   if (/^\/!\/login/.test(URI)) {
     res.setHeader("Content-Type", "text/plain");
 
-        // Rate-limit login attempts to one attempt every 2 seconds
-    const ip = utils.ip(req);
-    if (rateLimited.includes(ip)) {
+    // Rate-limit login attempts to one attempt every 2 seconds
+    const requestIp = ip(req);
+
+    if (rateLimited.includes(requestIp)) {
       res.statusCode = 429;
       res.end();
       return;
     } else {
-      rateLimited.push(ip);
+      rateLimited.push(requestIp);
       setTimeout(() => {
         rateLimited.some((rIp, i) => {
-          if (rIp === ip) return rateLimited.splice(i, 1);
+          if (rIp === requestIp) return rateLimited.splice(i, 1);
         });
       }, 2000);
     }
 
-    utils.readJsonBody(req).then(postData => {
+    readJsonBody(req).then(postData => {
       if (db.authUser(postData.username, postData.password)) {
         cookies.create(req, res, postData);
         res.statusCode = 200;
@@ -679,7 +678,7 @@ function handlePOST(req, res) {
     return;
   } else if (firstRun && /^\/!\/adduser/.test(URI)) {
     res.setHeader("Content-Type", "text/plain");
-    utils.readJsonBody(req).then(postData => {
+    readJsonBody(req).then(postData => {
       if (postData.username && postData.password &&
                 typeof postData.username === "string" &&
                 typeof postData.password === "string") {
@@ -714,7 +713,7 @@ function handlePOST(req, res) {
     handleUploadRequest(req, res);
   } else if (/^\/!\/logout$/.test(URI)) {
     res.setHeader("Content-Type", "text/plain");
-    utils.readJsonBody(req).then(postData => {
+    readJsonBody(req).then(postData => {
       cookies.unset(req, res, postData);
       res.statusCode = 200;
       res.end();
@@ -840,17 +839,17 @@ function handleFileRequest(req, res, download) {
     if (!link) return redirectToRoot(req, res);
     shareLink = true;
     download = link.attachement;
-    filepath = utils.addFilesPath(link.location);
+    filepath = addFilesPath(link.location);
   } else { // it's a direct file request
     if (!validateRequest(req)) {
       return redirectToRoot(req, res);
     }
     parts = /^\/!\/(.+?)\/(.+)$/.exec(URI);
-    if (!parts || !parts[1] || !parts[2] || !utils.isPathSane(parts[2])) {
+    if (!parts || !parts[1] || !parts[2] || !isPathSane(parts[2])) {
       return redirectToRoot(req, res);
     }
     download = parts[1] === "dl";
-    filepath = utils.addFilesPath(`/${[parts[2]]}`);
+    filepath = addFilesPath(`/${[parts[2]]}`);
   }
 
   fs.stat(filepath, (error, stats) => {
@@ -876,9 +875,9 @@ function handleFileRequest(req, res, download) {
 }
 
 async function handleTypeRequest(req, res, file) {
-  let isBinary;
+  let requestIsBinary = false;
   try {
-    isBinary = await utils.isBinary(file);
+    requestIsBinary = await isBinary(file);
   } catch (err) {
     res.statusCode = 500;
     res.end();
@@ -888,7 +887,7 @@ async function handleTypeRequest(req, res, file) {
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  res.end(isBinary ? "binary" : "text");
+  res.end(requestIsBinary ? "binary" : "text");
   log.info(req, res);
 }
 
@@ -950,24 +949,24 @@ function handleUploadRequest(req, res) {
   };
 
   busboy.on("file", (_, file, filePath) => {
-    if (!utils.isPathSane(filePath) || !utils.isPathSane(dstDir)) return;
+    if (!isPathSane(filePath) || !isPathSane(dstDir)) return;
     numFiles++;
 
     file.on("limit", () => {
       log.info(req, res, "Maximum file size reached, cancelling upload");
       sendError(
         req.sid, vId,
-        `Maximum upload size of ${utils.formatBytes(config.maxFileSize)} exceeded.`
+        `Maximum upload size of ${formatBytes(config.maxFileSize)} exceeded.`
       );
       closeConnection(400);
     });
 
         // store temp names in rootNames for later rename
-    const tmpPath = utils.addUploadTempExt(filePath);
-    rootNames.add(utils.rootname(tmpPath));
+    const tmpPath = addUploadTempExt(filePath);
+    rootNames.add(rootName(tmpPath));
 
-    const dst = path.join(paths.files, dstDir, tmpPath);
-    utils.mkdir(path.dirname(dst), () => {
+    const dst = path.join(paths.locations.files, dstDir, tmpPath);
+    mkdir(path.dirname(dst), () => {
       fs.stat(dst, err => {
         if (err && err.code === "ENOENT") {
           const ws = fs.createWriteStream(dst, {mode: "644"});
@@ -975,7 +974,7 @@ function handleUploadRequest(req, res) {
           file.pipe(ws);
         } else if (!err) {
           if (req.query.rename === "1") {
-            utils.getNewPath(dst, newDst => {
+            getNewPath(dst, newDst => {
               const ws = fs.createWriteStream(newDst, {mode: "644"});
               ws.on("error", onWriteError);
               file.pipe(ws);
@@ -998,9 +997,9 @@ function handleUploadRequest(req, res) {
 
         // move temp files into place
     await Promise.all([...rootNames].map(async p => {
-      const srcPath = path.join(paths.files, dstDir, p);
-      const dstPath = path.join(paths.files, dstDir, utils.removeUploadTempExt(p));
-      await promisify(utils.move)(srcPath, dstPath);
+      const srcPath = path.join(paths.locations.files, dstDir, p);
+      const dstPath = path.join(paths.locations.files, dstDir, removeUploadTempExt(p));
+      await promisify(move)(srcPath, dstPath);
     }));
 
     filetree.updateDir(dstDir);
@@ -1013,7 +1012,7 @@ function handleUploadRequest(req, res) {
 
             // remove all uploaded temp files on cancel
       await Promise.all([...rootNames].map(async p => {
-        await promisify(utils.rm)(path.join(paths.files, dstDir, p));
+        await promisify(rm)(path.join(paths.locations.files, dstDir, p));
       }));
 
       filetree.updateDir(dstDir);
@@ -1084,7 +1083,7 @@ function removeClientPerDir(sid, vId) {
 }
 
 function debug() {
-  require("chokidar").watch(paths.client, {
+  require("chokidar").watch(paths.locations.client, {
     alwaysStat: true,
     ignoreInitial: true
   }).on("change", file => {
@@ -1128,7 +1127,7 @@ function cleanupLinks(callback) {
           return;
         }
                 // check for links where the target does not exist anymore
-        fs.stat(path.join(paths.files, location), (error, stats) => {
+        fs.stat(path.join(paths.locations.files, location), (error, stats) => {
           if (!stats || error) {
             log.debug(`deleting nonexistant link: ${shareLink}`);
             delete links[shareLink];
@@ -1163,13 +1162,13 @@ function streamArchive(req, res, zipPath, download, stats, shareLink) {
   const eTag = checkETag(req, res, zipPath, stats.mtime);
   if (!eTag) return;
   const zip = new yazl.ZipFile();
-  const relPath = utils.removeFilesPath(zipPath);
+  const relPath = removeFilesPath(zipPath);
   log.info(req, res);
   log.info(req, res, "Streaming zip of ", blue(relPath));
   res.statusCode = 200;
-  res.setHeader("Content-Type", utils.contentType(zip));
+  res.setHeader("Content-Type", contentType(zip));
   res.setHeader("Transfer-Encoding", "chunked");
-  res.setHeader("Content-Disposition", utils.getDispo(`${zipPath}.zip`, download));
+  res.setHeader("Content-Disposition", getDispo(`${zipPath}.zip`, download));
   res.setHeader("Cache-Control", `${shareLink ? "public" : "private"}, max-age=0`);
   res.setHeader("ETag", eTag);
 
@@ -1207,9 +1206,9 @@ function streamFile(req, res, filepath, download, stats, shareLink) {
   if (!eTag) return;
 
   function setHeaders(res) {
-    res.setHeader("Content-Type", utils.contentType(filepath));
+    res.setHeader("Content-Type", contentType(filepath));
     res.setHeader("Cache-Control", `${shareLink ? "public" : "private"}, max-age=0`);
-    res.setHeader("Content-Disposition", utils.getDispo(filepath, download));
+    res.setHeader("Content-Disposition", getDispo(filepath, download));
     res.setHeader("ETag", eTag);
   }
 
@@ -1220,8 +1219,8 @@ function streamFile(req, res, filepath, download, stats, shareLink) {
   }
 
     // send expects a url-encoded argument
-  sendFile(req, encodeURIComponent(utils.removeFilesPath(filepath).substring(1)), {
-    root: paths.files,
+  sendFile(req, encodeURIComponent(removeFilesPath(filepath).substring(1)), {
+    root: paths.locations.files,
     dotfiles: "allow",
     index: false,
     etag: false,
@@ -1266,8 +1265,8 @@ async function tlsSetup(opts, cb) {
     return cb(new Error("Missing TLS option 'cert'"));
   }
 
-  const cert = await readFile(path.resolve(paths.config, ut(opts.cert)), "utf8");
-  const key = await readFile(path.resolve(paths.config, ut(opts.key)), "utf8");
+  const cert = await readFile(path.resolve(paths.locations.config, untildify(opts.cert)), "utf8");
+  const key = await readFile(path.resolve(paths.locations.config, untildify(opts.key)), "utf8");
 
   cb(null, {cert, key});
 }
@@ -1315,6 +1314,6 @@ function endProcess(signal) {
     }
   });
   if (count > 0) log.info(`Closed ${count} WebSocket${count > 1 ? "s" : ""}`);
-  try { fs.unlinkSync(paths.pid); } catch {}
+  try { fs.unlinkSync(paths.locations.pid); } catch {}
   process.exit(0);
 }

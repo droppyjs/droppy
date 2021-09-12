@@ -4,6 +4,7 @@ const log = require("../services/log");
 const db = require("../services/db");
 
 exports.default = {
+  command: "RENAME",
   handler: async ({validatePaths, sid, config, sendError, msg, ws, vId}) => {
     if (config.readOnly) {
       return sendError(sid, vId, "Files are read-only");

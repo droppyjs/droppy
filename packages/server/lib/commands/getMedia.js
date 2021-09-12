@@ -1,11 +1,13 @@
 const path = require("path");
 const imgSize = require("image-size");
 
+const utils = require("@droppyjs/utils");
+
 const filetree = require("../services/filetree");
 const log = require("../services/log");
-const utils = require("../services/utils");
 
 exports.default = {
+  command: "GET_MEDIA",
   handler: async ({validatePaths, sid, msg, ws, vId, sendError, sendObj}) => {
     const dir = msg.data.dir;
     const exts = msg.data.exts;

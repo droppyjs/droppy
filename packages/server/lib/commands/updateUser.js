@@ -4,6 +4,7 @@ const log = require("../services/log");
 const db = require("../services/db");
 
 exports.default = {
+  command: "UPDATE_USER",
   handler: async ({priv, cookie, sid, msg, ws, sendUsers, sendError}) => {
     const name = msg.data.name;
     const pass = msg.data.pass;

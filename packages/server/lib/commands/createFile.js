@@ -1,6 +1,7 @@
 const filetree = require("../services/filetree");
 
 exports.default = {
+  command: "CREATE_FILE",
   handler: async ({validatePaths, sid, config, msg, ws, vId, sendError}) => {
     if (config.readOnly) {
       return sendError(sid, vId, "Files are read-only");

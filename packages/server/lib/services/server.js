@@ -7,7 +7,7 @@ const {promisify} = require("util");
 const {readFile} = require("fs").promises;
 
 const throttle = require("lodash.throttle");
-const Busboy = require("busboy");
+const busboy = require("busboy");
 const {red, blue, green, cyan, magenta} = require("colorette");
 const etag = require("etag");
 const rrdir = require("rrdir");
@@ -936,10 +936,10 @@ function handleUploadRequest(req, res) {
   };
   if (config.maxFileSize > 0) opts.limits.fileSize = config.maxFileSize;
 
-  const busboy = new Busboy(opts);
+  const bb = busboy(opts);
   const rootNames = new Set();
 
-  busboy.on("error", err => {
+  bb.on("error", err => {
     log.error(err);
   });
 
@@ -949,8 +949,9 @@ function handleUploadRequest(req, res) {
     closeConnection(400);
   };
 
-  busboy.on("file", (_, file, filePath) => {
-    if (!utils.isPathSane(filePath) || !utils.isPathSane(dstDir)) return;
+  bb.on("file", (_, file, info) => {
+    const {filename} = info;
+    if (!utils.isPathSane(filename) || !utils.isPathSane(dstDir)) return;
     numFiles++;
 
     file.on("limit", () => {
@@ -962,8 +963,8 @@ function handleUploadRequest(req, res) {
       closeConnection(400);
     });
 
-        // store temp names in rootNames for later rename
-    const tmpPath = utils.addUploadTempExt(filePath);
+    // store temp names in rootNames for later rename
+    const tmpPath = utils.addUploadTempExt(filename);
     rootNames.add(utils.rootname(tmpPath));
 
     const dst = path.join(paths.files, dstDir, tmpPath);
@@ -992,7 +993,7 @@ function handleUploadRequest(req, res) {
     });
   });
 
-  busboy.on("finish", async () => {
+  bb.on("finish", async () => {
     log.info(req, res, `Received ${numFiles} files`);
     done = true;
 
@@ -1021,7 +1022,7 @@ function handleUploadRequest(req, res) {
     }
   });
 
-  req.pipe(busboy);
+  req.pipe(bb);
 
   function closeConnection(status) {
     if (res.finished) return;

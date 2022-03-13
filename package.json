@@ -37,7 +37,6 @@
         "escape-string-regexp": "5.0.0",
         "etag": "1.8.1",
         "image-size": "1.0.0",
-        "isbinaryfile": "4.0.8",
         "json-buffer": "3.0.1",
         "lodash.debounce": "4.0.8",
         "lodash.throttle": "4.1.1",
@@ -57,7 +56,6 @@
         "yazl": "2.5.1"
     },
     "devDependencies": {
-        "autoprefixer": "10.3.4",
         "babel-jest": "^27.1.1",
         "clean-css": "5.1.5",
         "eslint": "7.32.0",

@@ -5,7 +5,7 @@ const cd = require("content-disposition");
 const crypto = require("crypto");
 const escapeStringRegexp = require("escape-string-regexp");
 const fs = require("fs");
-const isbinaryfile = require("isbinaryfile");
+const {isBinary} = require("istextorbinary");
 const mimeTypes = require("mime-types");
 const mv = require("mv");
 const path = require("path");
@@ -174,7 +174,7 @@ utils.isBinary = async function(p) {
     return true;
   }
 
-  return isbinaryfile.isBinaryFile(p);
+  return isBinary(p);
 };
 
 utils.contentType = function(p) {
@@ -186,7 +186,7 @@ utils.contentType = function(p) {
     return type + (charset ? `; charset=${charset}` : "");
   } else {
     try {
-      return isbinaryfile.isBinaryFileSync(p) ? "application/octet-stream" : "text/plain";
+      return isBinary(p) ? "application/octet-stream" : "text/plain";
     } catch {
       return "application/octet-stream";
     }

@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/server",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "description": "> Server for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",

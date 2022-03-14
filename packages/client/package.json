@@ -1,6 +1,6 @@
 {
 	"name": "@droppyjs/client",
-	"version": "0.2.6",
+	"version": "0.2.7",
 	"description": "> Client for droppy",
 	"author": "droppyjs <hello@droppyjs.com>",
 	"homepage": "https://github.com/droppyjs/droppy#readme",

@@ -1,13 +1,13 @@
 {
     "name": "@droppyjs/cli",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "description": "> Command Line Interface for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
     "main": "lib/cli.js",
     "dependencies": {
-        "@droppyjs/server": "0.2.3",
+        "@droppyjs/server": "0.2.4",
         "daemonize-process": "^3.0.0",
         "minimist": "^1.2.5",
         "ps-node": "^0.1.6",
@@ -43,7 +43,7 @@
     },
     "scripts": {
         "start": "node ./lib/cli.js start",
-        "build":  "node ./lib/cli.js build"
+        "build": "node ./lib/cli.js build"
     },
     "bugs": {
         "url": "https://github.com/droppyjs/droppy/issues"

@@ -1,0 +1,8 @@
+/.vscode/
+node_modules
+npm-debug.log*
+package-lock.json
+yarn-error.log
+lerna-debug.log
+Dockerfile-dev
+coverage/

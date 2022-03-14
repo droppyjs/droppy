@@ -16,7 +16,7 @@ const utils = require("./utils.js");
 
 const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
 const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
-const cachePath = path.join(paths.homedir, "/.droppy/cache/cache.json");
+const cachePath = process.env.DROPPY_CACHE_PATH ?? path.join(paths.homedir, "/.droppy/cache/cache.json");
 
 const pkg = require("../../package.json");
 

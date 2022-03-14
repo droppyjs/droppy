@@ -54,14 +54,6 @@ if (argv.daemon || argv.d) {
   require("daemonize-process")();
 }
 
-if (argv._[0] === "build") {
-  console.info("Building resources ...");
-  resources.build(err => {
-    console.info(err || "Resources built successfully");
-    process.exit(err ? 1 : 0);
-  });
-}
-
 if (argv.configdir || argv.filesdir || argv.c || argv.f) {
   paths.seed(argv.configdir || argv.c, argv.filesdir || argv.f);
 }
@@ -130,6 +122,14 @@ switch (cmd) {
     });
     break;
   }
+
+  case "build":
+    console.info("Building resources ...");
+    resources.build(err => {
+      console.info(err || "Resources built successfully");
+      process.exit(err ? 1 : 0);
+    });
+    break;
 
   case "version":
     console.info(pkg.version);

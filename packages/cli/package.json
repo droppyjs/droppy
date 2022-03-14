@@ -42,7 +42,8 @@
         "url": "git+https://github.com/droppyjs/droppy.git"
     },
     "scripts": {
-        "start": "node ./lib/cli.js start"
+        "start": "node ./lib/cli.js start",
+        "build":  "node ./lib/cli.js build"
     },
     "bugs": {
         "url": "https://github.com/droppyjs/droppy/issues"

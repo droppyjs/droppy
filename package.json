@@ -11,13 +11,14 @@
         "node": ">= 12.10.0"
     },
     "scripts": {
+        "build": "DROPPY_CACHE_PATH=$PWD/packages/cli/dist/cache.json lerna run --stream build --",
         "start": "lerna run --stream start --",
         "bootstrap": "lerna bootstrap",
         "lint": "eslint packages",
         "test": "jest",
         "postinstall": "husky install && yarn bootstrap",
         "pub:canary": "lerna publish --c",
-        "pub": "lerna publish && git push"
+        "pub": "yarn build && lerna publish && git push"
     },
     "resolutions": {
         "hosted-git-info": "^4.0.2",

@@ -1,3 +1,11 @@
 #!/usr/bin/env node
 
+const {realpathSync, existsSync} = require("fs");
+const path = require("path");
+
+const cachePath = realpathSync(path.join(__dirname, "..", "dist", "cache.json"));
+if (existsSync(cachePath)) {
+  process.env.DROPPY_CACHE_PATH = cachePath;
+}
+
 require("../lib/cli");

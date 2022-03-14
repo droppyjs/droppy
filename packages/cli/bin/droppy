@@ -8,4 +8,6 @@ if (existsSync(cachePath)) {
   process.env.DROPPY_CACHE_PATH = cachePath;
 }
 
+process.env.DROPPY_CACHE_SKIP_VALIDATIONS = true;
+
 require("../lib/cli");

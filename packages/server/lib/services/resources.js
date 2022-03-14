@@ -184,8 +184,10 @@ resources.load = function(dev, cb) {
     try {
       const json = jb.parse(data);
       if (!json || !json.meta || !json.meta.version || json.meta.version !== pkg.version) {
-        log.info("Cache outdated. ", cachePath, ", building cache ...");
-        return compile(true, cb);
+        if (!process.env.DROPPY_CACHE_SKIP_VALIDATIONS) {
+          log.info("Cache outdated. ", cachePath, ", building cache ...");
+          return compile(true, cb);
+        }
       }
       cb(null, json);
     } catch (err2) {

@@ -44,7 +44,7 @@
         "lodash.debounce": "4.0.8",
         "lodash.throttle": "4.1.1",
         "mime-types": "2.1.27",
-        "minimist": "1.2.5",
+        "minimist": "1.2.6",
         "mv": "2.1.1",
         "original-url": "1.2.3",
         "postcss": "8.2.15",

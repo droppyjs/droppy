@@ -53,7 +53,7 @@
         "rrdir": "8.1.1",
         "send": "0.17.1",
         "strip-ansi": "6.0.0",
-        "terser": "5.2.1",
+        "terser": "5.14.2",
         "untildify": "4.0.0",
         "valid-filename": "3.1.0",
         "which": "2.0.2",

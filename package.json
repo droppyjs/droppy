@@ -68,7 +68,7 @@
         "lerna": "^4.0.0",
         "lint-staged": "^11.1.2",
         "postcss": "8.3.6",
-        "terser": "5.7.2",
+        "terser": "5.14.2",
         "updates": "12.1.0",
         "uppie": "1.1.4"
     },

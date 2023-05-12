@@ -19,12 +19,21 @@ exports.default = {
         if (utils.extensionRe(exts.pdf).test(file)) {
           resolve({pdf: true, src: file});
         } else if (utils.extensionRe(exts.img).test(file)) {
-          imgSize(path.join(utils.addFilesPath(dir), file), (err, dims) => {
+          imgSize(path.join(utils.addFilesPath(dir), file), (err, dims, width, height) => {
             if (err) log.error(err);
+
+            if (dims.orientation === 6 || dims.orientation === 8) {
+              height = dims && dims.width;
+              width = dims && dims.height;
+            } else {
+              width = dims && dims.width;
+              height = dims && dims.height;
+            }
+
             resolve({
               src: file,
-              w: dims && dims.width ? dims.width : 0,
-              h: dims && dims.height ? dims.height : 0,
+              w: width ? width : 0,
+              h: height ? height : 0,
             });
           });
         } else {

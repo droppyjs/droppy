@@ -1,47 +1,47 @@
 {
-  "name": "@droppyjs/svgstore",
-  "version": "0.2.7",
-  "description": "> Combines mulitple svg files into one.",
-  "author": "droppyjs <hello@droppyjs.com>",
-  "homepage": "https://github.com/droppyjs/droppy#readme",
-  "license": "MIT",
-  "main": "lib/svgstore.js",
-  "scripts": {
-    "test": "jest --coverage",
-    "watch": "chokidar '{lib,test}/**/*.js' -d 1000 -c 'yarn test'"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "lib/**/*.js"
-    ]
-  },
-  "keywords": [
-    "concat",
-    "join",
-    "merge",
-    "pack",
-    "path",
-    "sprite",
-    "svg",
-    "svgs",
-    "svgstore",
-    "symbol",
-    "symbols"
-  ],
-  "dependencies": {
-    "cheerio": "1.0.0-rc.10"
-  },
-  "devDependencies": {
-    "@babel/preset-env": "^7.15.6",
-    "babel-jest": "^27.1.1",
-    "chokidar-cli": "^3.0.0",
-    "jest": "^27.1.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/droppyjs/droppy.git"
-  },
-  "bugs": {
-    "url": "https://github.com/droppyjs/droppy/issues"
-  }
+    "name": "@droppyjs/svgstore",
+    "version": "0.2.7",
+    "description": "> Combines mulitple svg files into one.",
+    "author": "droppyjs <hello@droppyjs.com>",
+    "homepage": "https://github.com/droppyjs/droppy#readme",
+    "license": "MIT",
+    "main": "lib/svgstore.js",
+    "scripts": {
+        "test": "jest --coverage",
+        "watch": "chokidar '{lib,test}/**/*.js' -d 1000 -c 'yarn test'"
+    },
+    "jest": {
+        "collectCoverageFrom": [
+            "lib/**/*.js"
+        ]
+    },
+    "keywords": [
+        "concat",
+        "join",
+        "merge",
+        "pack",
+        "path",
+        "sprite",
+        "svg",
+        "svgs",
+        "svgstore",
+        "symbol",
+        "symbols"
+    ],
+    "dependencies": {
+        "cheerio": "1.0.0-rc.12"
+    },
+    "devDependencies": {
+        "@babel/preset-env": "^7.21.5",
+        "babel-jest": "^27.1.1",
+        "chokidar-cli": "^3.0.0",
+        "jest": "^27.1.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/droppyjs/droppy.git"
+    },
+    "bugs": {
+        "url": "https://github.com/droppyjs/droppy/issues"
+    }
 }

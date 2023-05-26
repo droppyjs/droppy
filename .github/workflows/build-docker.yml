@@ -1,94 +1,92 @@
-name: 'build-docker'
+name: "build-docker"
 
 on:
-    push:
-        branches:
-            - '*'
-        tags:
-            - 'v*'
+  push:
+    branches:
+      - "*"
+    tags:
+      - "v*"
 
 jobs:
-    build:
-        name: 'Build docker images'
-        runs-on: ubuntu-latest
-        steps:
-            - name: "Checkout"
-              uses: actions/checkout@v2
+  build:
+    name: "Build docker images"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
 
-            - name: "Set env vars"
-              id: vars
-              run: |
-                  echo "GITHUB_SHA_SHORT=$(echo ${GITHUB_SHA} | cut -c1-8)" >> "${GITHUB_ENV}"
-                  echo "IMAGE_NAME=$(echo "ghcr.io/${{ secrets.CR_USER }}/droppy")" >> "${GITHUB_ENV}"
-                  echo "REFNAME=$(echo "${{ github.ref }}" | sed -e 's/.*\///')" >> "${GITHUB_ENV}"
-                  echo "TAGNAME=$(echo "${{ github.ref }}" | sed -e 's/.*\/v//')" >> "${GITHUB_ENV}"
+      - name: "Set env vars"
+        id: vars
+        run: |
+          echo "GITHUB_SHA_SHORT=$(echo ${GITHUB_SHA} | cut -c1-8)" >> "${GITHUB_ENV}"
+          echo "IMAGE_NAME=$(echo "ghcr.io/${{ secrets.CR_USER }}/droppy")" >> "${GITHUB_ENV}"
+          echo "REFNAME=$(echo "${{ github.ref }}" | sed -e 's/.*\///')" >> "${GITHUB_ENV}"
+          echo "TAGNAME=$(echo "${{ github.ref }}" | sed -e 's/.*\/v//')" >> "${GITHUB_ENV}"
 
-            - name: 'Login to github container registry'
-              uses: docker/login-action@v1
-              with:
-                  registry: ghcr.io
-                  username: ${{ secrets.CR_USER }}
-                  password: ${{ secrets.CR_PAT }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Create Dockerfile-dev
-              run: |
-                  cat Dockerfile | sed -e 's/^RUN git clone.*/COPY [ ".", "\/droppy" ]/' > Dockerfile-dev
+      - name: Create Dockerfile-dev
+        run: |
+          cat Dockerfile | sed -e 's/^RUN git clone.*/COPY [ ".", "\/droppy" ]/' > Dockerfile-dev
 
-            - name: Set the tag name in package.json if tag
-              if: "contains(github.ref, 'refs/tags')"
-              run: |
-                  sed -i -E 's/^ *\t*"version": *"([^"]*)",.*/    "version": "\1", "tag": "'"${{ env.TAGNAME }}"'",/' packages/server/package.json
+      - name: Set the tag name in package.json if tag
+        if: "contains(github.ref, 'refs/tags')"
+        run: |
+          sed -i -E 's/^ *\t*"version": *"([^"]*)",.*/    "version": "\1", "tag": "'"${{ env.TAGNAME }}"'",/' packages/server/package.json
 
-            - name: Set the git revision in package.json if not tag
-              if: "!contains(github.ref, 'refs/tags')"
-              run: |
-                  sed -i -E 's/^ *\t*"version": *"([^"]*)",.*/    "version": "\1", "tag": "'"${{ env.GITHUB_SHA_SHORT }}"'",/' packages/server/package.json
+      - name: Set the git revision in package.json if not tag
+        if: "!contains(github.ref, 'refs/tags')"
+        run: |
+          sed -i -E 's/^ *\t*"version": *"([^"]*)",.*/    "version": "\1", "tag": "'"${{ env.GITHUB_SHA_SHORT }}"'",/' packages/server/package.json
 
-            - name: "Build image ${{ env.IMAGE_NAME }} ${{ env.GITHUB_SHA_SHORT }}"
-              uses: docker/build-push-action@v2
-              with:
-                  push: false
-                  no-cache: true
-                  file: "Dockerfile-dev"
-                  context: "."
-                  tags: ${{ env.IMAGE_NAME }}:working
+      - name: "Build image ${{ env.IMAGE_NAME }} ${{ env.GITHUB_SHA_SHORT }}"
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          no-cache: true
+          file: "Dockerfile-dev"
+          context: "."
+          tags: ${{ env.IMAGE_NAME }}:working
 
-            - name: "Tag using git version"
-              if: "!contains(github.ref, 'refs/tags')"
-              run: |
-                  docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}"
-                  docker push "${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}"
+      - name: "Tag using git version"
+        if: "!contains(github.ref, 'refs/tags')"
+        run: |
+          docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}"
+          docker push "${{ env.IMAGE_NAME }}:${{ env.GITHUB_SHA_SHORT }}"
 
-            - name: "Tag using git tag version or branch"
-              run: |
-                  docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:${{ env.REFNAME }}"
-                  docker push "${{ env.IMAGE_NAME }}:${{ env.REFNAME }}"
+      - name: "Tag using git tag version or branch"
+        run: |
+          docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:${{ env.REFNAME }}"
+          docker push "${{ env.IMAGE_NAME }}:${{ env.REFNAME }}"
 
-            - name: "Tag latest if release"
-              if: "contains(github.ref, 'refs/tags')"
-              run: |
-                  docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:latest"
-                  docker push "${{ env.IMAGE_NAME }}:latest"
+      - name: "Tag latest if release"
+        if: "contains(github.ref, 'refs/tags')"
+        run: |
+          docker tag "${{ env.IMAGE_NAME }}:working" "${{ env.IMAGE_NAME }}:latest"
+          docker push "${{ env.IMAGE_NAME }}:latest"
 
-            - name: Build Changelog
-              id: github_release
-              uses: mikepenz/release-changelog-builder-action@v2.4.0
-              with:
-                configuration: "changelog.json"
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v2.4.0
+        with:
+          configuration: "changelog.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: "Create release"
-              if: "contains(github.ref, 'refs/tags')"
-              id: "create_release"
-              uses: "actions/create-release@v1"
-              env:
-                  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-              with:
-                  tag_name: "${{ github.ref }}"
-                  release_name: "Release ${{ github.ref }}"
-                  draft: false
-                  prerelease: false
-                  body: ${{steps.github_release.outputs.changelog}}
-
-
+      - name: "Create release"
+        if: "contains(github.ref, 'refs/tags')"
+        id: "create_release"
+        uses: "actions/create-release@v1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          tag_name: "${{ github.ref }}"
+          release_name: "Release ${{ github.ref }}"
+          draft: false
+          prerelease: false
+          body: ${{steps.github_release.outputs.changelog}}

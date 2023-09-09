@@ -10,27 +10,29 @@
 # Description:       droppy - github.com/droppyjs/droppy
 ### END INIT INFO
 
-DROPPY_CONFIG_DIR="/srv/droppy/config"
-DROPPY_FILES_DIR="/srv/droppy/files"
-
-PROCESS="droppy"
+CONFIG="/srv/droppy/config"
+FILES="/srv/droppy/files"
+BINARY="/usr/local/bin/droppy"
 RUNAS="droppy:droppy"
-CMD="/usr/bin/env droppy -- start -c '$DROPPY_CONFIG_DIR' -f '$DROPPY_FILES_DIR'"
+PIDFILE="/run/droppy.pid"
 
 do_start() {
-    start-stop-daemon --start --background -c $RUNAS --name $PROCESS --exec $CMD 
+    start-stop-daemon --start --background \
+      --pidfile "$PIDFILE" --make-pidfile -c "$RUNAS" \
+      --exec "$BINARY" -- start -c "$CONFIG" -f "$FILES"
 }
 
 do_stop() {
-    start-stop-daemon --stop --name $PROCESS
+    start-stop-daemon --stop --oknodo \
+       --pidfile "$PIDFILE" --remove-pidfile -c "$RUNAS"
 }
 
 do_status() {
-    if pgrep -x "$PROCESS" >/dev/null
+    if start-stop-daemon --status --pidfile "$PIDFILE" -c "$RUNAS"
     then
-        echo "$PROCESS is running"
+        echo "$BINARY is running"
     else
-        echo "$PROCESS stopped"
+        echo "$BINARY stopped"
     fi
 }
 

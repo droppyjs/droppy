@@ -11,12 +11,12 @@ const {stat, mkdir, readdir, readFile, writeFile} = require("fs").promises;
 const {promisify} = require("util");
 
 const log = require("./log.js");
-const paths = require("./paths.js").get();
+const paths = require("./paths.js");
 const utils = require("./utils.js");
 
-const themesPath = path.join(paths.client, "/node_modules/codemirror/theme");
-const modesPath = path.join(paths.client, "/node_modules/codemirror/mode");
-const cachePath = process.env.DROPPY_CACHE_PATH ?? path.join(paths.homedir, "/.droppy/cache/cache.json");
+const themesPath = path.join(paths.get().client, "/node_modules/codemirror/theme");
+const modesPath = path.join(paths.get().client, "/node_modules/codemirror/mode");
+const cachePath = process.env.DROPPY_CACHE_PATH ?? path.join(paths.get().homedir, "/.droppy/cache/cache.json");
 
 const pkg = require("../../package.json");
 
@@ -107,10 +107,10 @@ try {
 
 resources.files = {
   css: [
-    `${paths.client}/lib/style.css`,
-    `${paths.client}/lib/sprites.css`,
-    `${paths.client}/lib/tooltips.css`,
-    `${paths.client}/lib/clienttheme.css`,
+    `${paths.get().client}/lib/style.css`,
+    `${paths.get().client}/lib/sprites.css`,
+    `${paths.get().client}/lib/tooltips.css`,
+    `${paths.get().client}/lib/clienttheme.css`,
   ],
   js: [
     "node_modules/handlebars/dist/handlebars.runtime.min.js",
@@ -229,8 +229,8 @@ async function isCacheFresh(cb) {
   const files = [];
   for (const type of Object.keys(resources.files)) {
     resources.files[type].forEach(file => {
-      if (fs.existsSync(path.join(paths.client, file))) {
-        files.push(path.join(paths.client, file));
+      if (fs.existsSync(path.join(paths.get().client, file))) {
+        files.push(path.join(paths.get().client, file));
       } else {
         files.push(file);
       }
@@ -239,15 +239,15 @@ async function isCacheFresh(cb) {
 
   for (const file of Object.keys(libs)) {
     if (typeof libs[file] === "string") {
-      if (fs.existsSync(path.join(paths.client, libs[file]))) {
-        files.push(path.join(paths.client, libs[file]));
+      if (fs.existsSync(path.join(paths.get().client, libs[file]))) {
+        files.push(path.join(paths.get().client, libs[file]));
       } else {
         files.push(libs[file]);
       }
     } else {
       libs[file].forEach(file => {
-        if (fs.existsSync(path.join(paths.client, file))) {
-          files.push(path.join(paths.client, file));
+        if (fs.existsSync(path.join(paths.get().client, file))) {
+          files.push(path.join(paths.get().client, file));
         } else {
           files.push(file);
         }
@@ -324,7 +324,7 @@ async function readThemes() {
     themes[name.replace(/\.css$/, "")] = Buffer.from(await minifyCSS(String(data)));
   }
 
-  const droppyTheme = await readFile(path.join(paths.client, "/lib/cmtheme.css"));
+  const droppyTheme = await readFile(path.join(paths.get().client, "/lib/cmtheme.css"));
   themes.droppy = Buffer.from(await minifyCSS(String(droppyTheme)));
 
   return themes;
@@ -334,7 +334,7 @@ async function readModes() {
   const modes = {};
 
     // parse meta.js from CM for supported modes
-  const js = await readFile(path.join(paths.client, "/node_modules/codemirror/mode/meta.js"));
+  const js = await readFile(path.join(paths.get().client, "/node_modules/codemirror/mode/meta.js"));
 
     // Extract modes from CodeMirror
   const sandbox = {CodeMirror: {}};
@@ -357,7 +357,7 @@ async function readLibs() {
 
   for (const [dest, files] of Object.entries(libs)) {
     lib[dest] = Buffer.concat(await Promise.all(files.map(file => {
-      return readFile(path.join(paths.client, file));
+      return readFile(path.join(paths.get().client, file));
     })));
   }
 
@@ -397,8 +397,8 @@ function templates() {
         "templates=Handlebars.templates=Handlebars.templates||{};";
   const suffix = "Handlebars.partials=Handlebars.templates})();";
 
-  return prefix + fs.readdirSync(paths.templates).map(file => {
-    const p = path.join(paths.templates, file);
+  return prefix + fs.readdirSync(paths.get().templates).map(file => {
+    const p = path.join(paths.get().templates, file);
     const name = file.replace(/\..+$/, "");
     let html = htmlMinifier.minify(fs.readFileSync(p, "utf8"), opts.htmlMinifier);
 
@@ -421,8 +421,8 @@ function templates() {
 resources.compileJS = async function() {
   let js = "";
   resources.files.js.forEach(file => {
-    if (fs.existsSync(path.join(paths.client, file))) {
-      js += `${fs.readFileSync(path.join(paths.client, file), "utf8")};`;
+    if (fs.existsSync(path.join(paths.get().client, file))) {
+      js += `${fs.readFileSync(path.join(paths.get().client, file), "utf8")};`;
     } else {
       js += `${fs.readFileSync(file, "utf8")};`;
     }
@@ -458,7 +458,7 @@ resources.compileCSS = async function() {
 };
 
 resources.compileHTML = async function(res) {
-  let html = fs.readFileSync(path.join(paths.client, "lib", "index.html"), "utf8");
+  let html = fs.readFileSync(path.join(paths.get().client, "lib", "index.html"), "utf8");
   html = html.replace("<!-- {{svg}} -->", svg());
 
   let auth = html.replace("{{type}}", "a");
@@ -485,7 +485,7 @@ async function compileAll() {
     // Read misc files
   for (const file of resources.files.other) {
     const name = path.basename(file);
-    const fullPath = path.join(paths.client, file);
+    const fullPath = path.join(paths.get().client, file);
     const data = fs.readFileSync(fullPath);
     res[name] = {data, etag: etag(data), mime: utils.contentType(name)};
   }

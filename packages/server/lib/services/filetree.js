@@ -12,7 +12,7 @@ const rfdc = require("rfdc");
 const util = require("util");
 
 const log = require("./log.js");
-const paths = require("./paths.js").get();
+const paths = require("./paths.js");
 const utils = require("./utils.js");
 
 const clone = rfdc();
@@ -32,7 +32,7 @@ filetree.init = function(config) {
 };
 
 filetree.watch = function() {
-  chokidar.watch(paths.files, {
+  chokidar.watch(paths.get().files, {
     alwaysStat: true,
     ignoreInitial: true,
     usePolling: Boolean(cfg.pollingInterval),

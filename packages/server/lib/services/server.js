@@ -23,7 +23,7 @@ const db = require("./db.js");
 const filetree = require("./filetree.js");
 const log = require("./log.js");
 const manifest = require("./manifest.js");
-const paths = require("./paths.js").get();
+const paths = require("./paths.js");
 const pkg = require("../../package.json");
 const resources = require("./resources.js");
 const utils = require("./utils.js");
@@ -54,11 +54,11 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
       ].join(" "), [
         blue("config"),
         "at",
-        green(paths.config)
+        green(paths.get().config)
       ].join(" "), [
         blue("files"),
         "at",
-        green(paths.files)
+        green(paths.get().files)
       ].join(" ")
     );
   }
@@ -66,12 +66,12 @@ module.exports = async function droppy(opts, isStandalone, dev, callback) {
 
   try {
     await promisify((cb) => {
-      utils.mkdir([paths.files, paths.config], cb);
+      utils.mkdir([paths.get().files, paths.get().config], cb);
     })();
 
     await promisify((cb) => {
       if (isStandalone) {
-        fs.writeFile(paths.pid, String(process.pid), cb);
+        fs.writeFile(paths.get().pid, String(process.pid), cb);
       } else {
         cb();
       }
@@ -967,7 +967,7 @@ function handleUploadRequest(req, res) {
     const tmpPath = utils.addUploadTempExt(filename);
     rootNames.add(utils.rootname(tmpPath));
 
-    const dst = path.join(paths.files, dstDir, tmpPath);
+    const dst = path.join(paths.get().files, dstDir, tmpPath);
     utils.mkdir(path.dirname(dst), () => {
       fs.stat(dst, err => {
         if (err && err.code === "ENOENT") {
@@ -999,8 +999,8 @@ function handleUploadRequest(req, res) {
 
         // move temp files into place
     await Promise.all([...rootNames].map(async p => {
-      const srcPath = path.join(paths.files, dstDir, p);
-      const dstPath = path.join(paths.files, dstDir, utils.removeUploadTempExt(p));
+      const srcPath = path.join(paths.get().files, dstDir, p);
+      const dstPath = path.join(paths.get().files, dstDir, utils.removeUploadTempExt(p));
       await promisify(utils.move)(srcPath, dstPath);
     }));
 
@@ -1014,7 +1014,7 @@ function handleUploadRequest(req, res) {
 
             // remove all uploaded temp files on cancel
       await Promise.all([...rootNames].map(async p => {
-        await promisify(utils.rm)(path.join(paths.files, dstDir, p));
+        await promisify(utils.rm)(path.join(paths.get().files, dstDir, p));
       }));
 
       filetree.updateDir(dstDir);
@@ -1085,7 +1085,7 @@ function removeClientPerDir(sid, vId) {
 }
 
 function debug() {
-  require("chokidar").watch(paths.client, {
+  require("chokidar").watch(paths.get().client, {
     alwaysStat: true,
     ignoreInitial: true
   }).on("change", file => {
@@ -1129,7 +1129,7 @@ function cleanupLinks(callback) {
           return;
         }
                 // check for links where the target does not exist anymore
-        fs.stat(path.join(paths.files, location), (error, stats) => {
+        fs.stat(path.join(paths.get().files, location), (error, stats) => {
           if (!stats || error) {
             log.debug(`deleting nonexistant link: ${shareLink}`);
             delete links[shareLink];
@@ -1222,7 +1222,7 @@ function streamFile(req, res, filepath, download, stats, shareLink) {
 
     // send expects a url-encoded argument
   sendFile(req, encodeURIComponent(utils.removeFilesPath(filepath).substring(1)), {
-    root: paths.files,
+    root: paths.get().files,
     dotfiles: "allow",
     index: false,
     etag: false,
@@ -1267,8 +1267,8 @@ async function tlsSetup(opts, cb) {
     return cb(new Error("Missing TLS option 'cert'"));
   }
 
-  const cert = await readFile(path.resolve(paths.config, ut(opts.cert)), "utf8");
-  const key = await readFile(path.resolve(paths.config, ut(opts.key)), "utf8");
+  const cert = await readFile(path.resolve(paths.get().config, ut(opts.cert)), "utf8");
+  const key = await readFile(path.resolve(paths.get().config, ut(opts.key)), "utf8");
 
   cb(null, {cert, key});
 }
@@ -1316,6 +1316,6 @@ function endProcess(signal) {
     }
   });
   if (count > 0) log.info(`Closed ${count} WebSocket${count > 1 ? "s" : ""}`);
-  try { fs.unlinkSync(paths.pid); } catch {}
+  try { fs.unlinkSync(paths.get().pid); } catch {}
   process.exit(0);
 }

@@ -3,7 +3,7 @@
 const svgstore = require("@droppyjs/svgstore");
 const fs = require("fs");
 const path = require("path");
-const paths = require("./paths.js").get();
+const paths = require("./paths.js");
 
 module.exports = function svg() {
   const sprites = svgstore({
@@ -12,7 +12,7 @@ module.exports = function svg() {
     },
   });
 
-  fs.readdirSync(paths.svg).forEach(file => {
+  fs.readdirSync(paths.get().svg).forEach(file => {
     sprites.add(`i-${file.replace(/\.svg/, "")}`, fs.readFileSync(path.join(paths.svg, file)));
   });
 

@@ -7,12 +7,13 @@ const crypto = require("crypto");
 const path = require("path");
 
 const log = require("./log.js");
-const dbFile = require("./paths.js").get().db;
+const paths = require("./paths.js");
 const defaults = {users: {}, sessions: {}, links: {}};
 
 let database, watching;
 
 db.load = function(callback) {
+  const dbFile = paths.get().db;
   fs.stat(dbFile, err => {
     if (err) {
       if (err.code === "ENOENT") {
@@ -77,6 +78,7 @@ db.load = function(callback) {
 };
 
 db.parse = function(cb) {
+  const dbFile = paths.get().db;
   fs.readFile(dbFile, "utf8", (err, data) => {
     if (err) return cb(err);
 
@@ -147,6 +149,7 @@ db.authUser = function(user, pass) {
 };
 
 db.watch = function(config) {
+  const dbFile = paths.get().db;
   chokidar.watch(dbFile, {
     ignoreInitial: true,
     usePolling: Boolean(config.pollingInterval),
@@ -165,6 +168,7 @@ db.watch = function(config) {
 
 // TODO: async
 function write() {
+  const dbFile = paths.get().db;
   watching = false;
   fs.writeFileSync(dbFile, JSON.stringify(database, null, 2));
 

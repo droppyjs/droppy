@@ -1008,7 +1008,7 @@ function handleUploadRequest(req, res) {
     closeConnection();
   });
 
-  req.on("close", async () => {
+  bb.on("close", async () => {
     if (!done) {
       log.info(req, res, "Upload cancelled");
 

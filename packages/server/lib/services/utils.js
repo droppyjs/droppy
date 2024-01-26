@@ -38,7 +38,7 @@ utils.rm = function(p, cb) {
 };
 
 utils.rmdir = function(p, cb) {
-  fs.rmdir(p, {recursive: true}, cb);
+  fs.rm(p, {recursive: true}, cb);
 };
 
 utils.move = function(src, dst, cb) {

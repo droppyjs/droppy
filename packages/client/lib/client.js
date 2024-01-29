@@ -788,9 +788,10 @@ function entryRename(view, entry, wasEmpty, callback) {
   let canSubmit = validFilename(linkText, droppy.platform);
   entry.addClass("editing");
 
-    // Add inline element
-  const renamer = $(`<input type="text" class="inline-namer" value="${linkText
-  }" placeholder="${linkText}">`).insertAfter(link);
+  // Add inline element
+  const renamer = $('<input type="text" class="inline-namer">').val(linkText).attr("placeholder", linkText);
+  renamer.insertAfter(link);
+
   renamer.off("input").on("input", function() {
     const input = this.value;
     const valid = validFilename(input, droppy.platform);

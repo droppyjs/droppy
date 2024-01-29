@@ -13,7 +13,7 @@ const util = require("util");
 const validate = require("valid-filename");
 const {mkdir, stat, lstat, copyFile, readdir, access} = require("fs").promises;
 
-const paths = require("./paths.js").get();
+const paths = require("./paths.js");
 
 const forceBinaryTypes = [
   "pdf",
@@ -134,19 +134,19 @@ utils.normalizePath = function(p) {
 };
 
 utils.addFilesPath = function(p) {
-  return p === "/" ? paths.files : path.join(`${paths.files}/${p}`);
+  return p === "/" ? paths.get().files : path.join(`${paths.get().files}/${p}`);
 };
 
 utils.removeFilesPath = function(p) {
-  if (p.length > paths.files.length) {
-    return utils.normalizePath(p.substring(paths.files.length));
-  } else if (p === paths.files) {
+  if (p.length > paths.get().files.length) {
+    return utils.normalizePath(p.substring(paths.get().files.length));
+  } else if (p === paths.get().files) {
     return "/";
   }
 };
 
 utils.sanitizePathsInString = function(str) {
-  return (str || "").replace(new RegExp(escapeStringRegexp(paths.files), "g"), "");
+  return (str || "").replace(new RegExp(escapeStringRegexp(paths.get().files), "g"), "");
 };
 
 utils.isPathSane = function(p, isURL) {

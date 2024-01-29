@@ -8,7 +8,7 @@ const stat = promisify(fs.stat);
 const readFile = promisify(fs.readFile);
 const mkdir = promisify(fs.mkdir);
 
-const configFile = require("./paths.js").get().cfgFile;
+const paths = require("./paths.js");
 
 const defaults = {
   listeners: [{
@@ -38,6 +38,7 @@ const hiddenOpts = ["dev"];
 const cfg = module.exports = {};
 
 cfg.init = (config) => new Promise(async (resolve, reject) => {
+  const configFile = paths.get().cfgFile;
   if (typeof config === "object" && config !== null) {
     config = Object.assign({}, defaults, config);
     return resolve(config);
@@ -49,7 +50,7 @@ cfg.init = (config) => new Promise(async (resolve, reject) => {
         config = defaults;
         await mkdir(dirname(configFile), {recursive: true});
 
-        await write(config);
+        await write(configFile, config);
         resolve(config);
       } else {
         return reject(err);
@@ -79,7 +80,7 @@ cfg.init = (config) => new Promise(async (resolve, reject) => {
           delete config[key];
         }
       });
-      await write(config);
+      await write(configFile, config);
       return resolve(config);
     } catch (err) {
       // TODO: can we print helpful information here?
@@ -88,7 +89,7 @@ cfg.init = (config) => new Promise(async (resolve, reject) => {
   }
 });
 
-function write(config) {
+function write(configFile, config) {
   return new Promise((resolve, reject) => {
     fs.writeFile(configFile, JSON.stringify(config, null, 2), (err) => {
       if (err) {

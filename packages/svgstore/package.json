@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/svgstore",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "> Combines mulitple svg files into one.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",

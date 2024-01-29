@@ -1,6 +1,8 @@
 {
-  "packages": ["packages/*"],
-  "version": "1.0.0",
+  "packages": [
+    "packages/*"
+  ],
+  "version": "1.0.1",
   "npmClient": "yarn",
   "useWorkspaces": false,
   "command": {
@@ -9,7 +11,10 @@
     },
     "publish": {
       "npmClient": "npm",
-      "allowBranch": ["master", "canary"],
+      "allowBranch": [
+        "master",
+        "canary"
+      ],
       "registry": "https://registry.npmjs.org/"
     }
   },

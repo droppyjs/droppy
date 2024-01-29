@@ -8,6 +8,10 @@
 
 **droppy** is a self-hosted file storage server with a web interface and capabilities to edit files and view media directly in the browser. It is particularly well-suited to be run on low-end hardware like the Raspberry Pi.
 
+<p align="center">
+   <a href="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/1-Listing.png"><img src="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/1-Listing.png" width="300"></a> <a href="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/2-Actions.png"><img src="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/2-Actions.png" width="300"></a> <a href="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/3-Split.png"><img src="https://raw.githubusercontent.com/droppyjs/droppy/canary/media/3-Split.png" width="300"></a>
+</p>
+
 ## Features
 * Responsive, scalable HTML5 interface
 * Realtime updates of file system changes

@@ -13,7 +13,7 @@ module.exports = function svg() {
   });
 
   fs.readdirSync(paths.get().svg).forEach(file => {
-    sprites.add(`i-${file.replace(/\.svg/, "")}`, fs.readFileSync(path.join(paths.svg, file)));
+    sprites.add(`i-${file.replace(/\.svg/, "")}`, fs.readFileSync(path.join(paths.get().svg, file)));
   });
 
   return sprites.toString({inline: true});

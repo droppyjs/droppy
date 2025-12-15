@@ -2774,7 +2774,7 @@ async function showApiKeys() {
   box.append('<div class="api-keys-section"><p>Loading API keys...</p></div>');
 
   try {
-    const response = await ajax({ url: "/api/keys" });
+    const response = await ajax({ url: "api/keys" });
     if (!response.ok) {
       let errorMsg = `HTTP ${response.status}`;
       try {
@@ -2821,7 +2821,7 @@ async function showApiKeys() {
     try {
       const response = await ajax({
         method: "POST",
-        url: "/api/keys",
+        url: "api/keys",
         data: { name, expiresIn: expiresIn || undefined }
       });
 
@@ -2867,7 +2867,7 @@ async function showApiKeys() {
     try {
       const response = await ajax({
         method: "DELETE",
-        url: `/api/keys/${keyId}`
+        url: `api/keys/${keyId}`
       });
 
       if (!response.ok) {

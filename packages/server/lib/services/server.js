@@ -1359,6 +1359,7 @@ async function handleApiKeys({ req, res, auth, url }) {
 
   // User must be authenticated with a username
   if (!auth.username) {
+    log.info(req, res, "API Auth Failed. Auth object:", JSON.stringify(auth));
     sendJSON(res, 401, { error: "authentication_required" });
     return;
   }

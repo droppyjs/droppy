@@ -2776,7 +2776,15 @@ async function showApiKeys() {
   try {
     const response = await ajax({ url: "/api/keys" });
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      let errorMsg = `HTTP ${response.status}`;
+      try {
+        const errData = await response.json();
+        if (errData.error) errorMsg += `: ${errData.error}`;
+        if (errData.details) errorMsg += ` (${errData.details})`;
+      } catch {
+        // JSON parse failed, use default error message
+      } 
+      throw new Error(errorMsg);
     }
     const data = await response.json();
 
@@ -2795,8 +2803,8 @@ async function showApiKeys() {
     });
 
     box.empty().append(Handlebars.templates["api-keys"]({ keys: data.keys }));
-  } catch {
-    box.empty().append('<div class="api-keys-section"><p class="api-keys-error">Failed to load API keys. You may not have permission.</p><button class="api-keys-back">← Back</button></div>');
+  } catch (err) {
+    box.empty().append(`<div class="api-keys-section"><p class="api-keys-error">Failed to load API keys: ${err.message}</p><button class="api-keys-back">← Back</button></div>`);
   }
 
   // Back button handler
@@ -3679,6 +3687,7 @@ function showSpinner(view) {
 }
 
 function hideSpinner(view) {
+  if (!view || !view[0]) return;
   const spinner = view.find(".spinner");
   if (spinner.length) spinner[0].setAttribute("class", "spinner");
   if (view[0].stuckTimeout) clearTimeout(view[0].stuckTimeout);

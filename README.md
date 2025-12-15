@@ -323,3 +323,5 @@ $ yarn start
 The [Makefile](https://github.com/droppyjs/droppy/blob/master/Makefile) has a few old tasks for updating dependencies, pushing docker images, see the comment above for dependencies of those tasks. This should not be required anymore, but is left as a reference.
 
 © [Mark Hughes](https://github.com/droppyjs), [silverwind](https://github.com/silverwind), distributed under BSD licence.
+
+##

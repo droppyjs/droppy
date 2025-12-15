@@ -2844,11 +2844,8 @@ async function showApiKeys() {
         });
       });
 
-      // Clear input and refresh list after a short delay
+      // Clear input - don't auto-refresh so user has time to copy the key
       nameInput.val("");
-      setTimeout(() => {
-        showApiKeys();
-      }, 100);
     } catch (err) {
       window.alert("Failed to create API key: " + err.message);
     }

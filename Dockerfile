@@ -34,7 +34,7 @@ FROM base as builder
 
 RUN apt-get -y install -y make gcc g++
 
-RUN git clone --depth=1  https://github.com/scobru/droppy /droppy
+COPY . /droppy
 
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \

@@ -256,14 +256,14 @@ $ curl http://localhost:8989/api/list?path=/ \
 
 ## Remote CLI Commands
 
-The `@droppyjs/cli-remote` package provides command-line access to remote droppy instances via the REST API.
+The `@droppyjs/remote` package provides command-line access to remote droppy instances via the REST API.
 
 ### Installation
 
 ```sh
-$ yarn global add @droppyjs/cli-remote
+$ yarn global add @droppyjs/remote
 # or, for NPM users:
-$ npm install -g @droppyjs/cli-remote
+$ npm install -g @droppyjs/remote
 ```
 
 ### Usage

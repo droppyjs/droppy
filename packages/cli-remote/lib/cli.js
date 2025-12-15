@@ -18,17 +18,13 @@ const cmds = {
 };
 
 const opts = {
-  user: "--user <username>             Username for remote authentication",
-  pass: "--pass <password>             Password for remote authentication",
-  apiKey: "--api-key <key>              API key for remote authentication",
+  apiKey: "--api-key <key>              API key for remote authentication (required)",
   content: "--content <text>             Content to write (for write command)",
   file: "--file <path>                 File path to read content from (for write command)",
 };
 
 export async function executeRemoteCommand(cmd, args, options = {}) {
   const url = args[0];
-  const username = options.user || options.u || null;
-  const password = options.pass || options.p || null;
   const apiKey = options["api-key"] || options.apiKey || null;
 
   if (!url) {
@@ -36,7 +32,7 @@ export async function executeRemoteCommand(cmd, args, options = {}) {
     return { success: false, exitCode: 1 };
   }
 
-  const client = new RemoteClient(url, username, password, apiKey);
+  const client = new RemoteClient(url, apiKey);
 
   try {
     switch (cmd) {
@@ -159,7 +155,7 @@ export async function executeRemoteCommand(cmd, args, options = {}) {
     return { success: true, exitCode: 0 };
   } catch (err) {
     if (err.statusCode === 401) {
-      console.error(`Error: Unauthorized. Please provide valid credentials with --user and --pass`);
+      console.error(`Error: Unauthorized. Please provide a valid API key with --api-key`);
     } else if (err.statusCode === 403) {
       console.error(`Error: Forbidden. The instance may be in read-only mode.`);
     } else if (err.statusCode === 404) {
@@ -189,16 +185,14 @@ function printHelp() {
   });
 
   help += `\n\nExamples:
-  droppy-remote ping http://localhost:8989
-  droppy-remote list http://localhost:8989 / --user admin --pass secret
-  droppy-remote list http://localhost:8989 / --api-key your-api-key-here
-  droppy-remote read http://localhost:8989 /file.txt --user admin --pass secret
-  droppy-remote read http://localhost:8989 /file.txt --api-key your-api-key-here
-  droppy-remote write http://localhost:8989 /new.txt --content "Hello" --user admin --pass secret
-  droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --api-key your-api-key-here
-  droppy-remote mkdir http://localhost:8989 /newdir --user admin --pass secret
-  droppy-remote delete http://localhost:8989 /old.txt --user admin --pass secret
-  droppy-remote move http://localhost:8989 /old.txt /new.txt --user admin --pass secret
+  droppy-remote ping http://localhost:8989 --api-key your-api-key
+  droppy-remote list http://localhost:8989 / --api-key your-api-key
+  droppy-remote read http://localhost:8989 /file.txt --api-key your-api-key
+  droppy-remote write http://localhost:8989 /new.txt --content "Hello" --api-key your-api-key
+  droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --api-key your-api-key
+  droppy-remote mkdir http://localhost:8989 /newdir --api-key your-api-key
+  droppy-remote delete http://localhost:8989 /old.txt --api-key your-api-key
+  droppy-remote move http://localhost:8989 /old.txt /new.txt --api-key your-api-key
 `;
 
   console.info(help);
@@ -228,7 +222,7 @@ const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith("cli.js"))) {
   const argv = minimist(process.argv.slice(2), {
     boolean: ["color"],
-    string: ["user", "pass", "content", "file", "api-key"],
+    string: ["content", "file", "api-key"],
   });
 
   if (!argv._.length || argv.help || argv.h) {

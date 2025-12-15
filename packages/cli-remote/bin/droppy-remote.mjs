@@ -5,7 +5,7 @@ import { executeRemoteCommand, printHelp } from "../lib/cli.js";
 
 const argv = minimist(process.argv.slice(2), {
   boolean: ["color"],
-  string: ["user", "pass", "content", "file"],
+  string: ["content", "file", "api-key"],
 });
 
 if (!argv._.length) {

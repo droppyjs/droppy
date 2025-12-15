@@ -841,11 +841,7 @@ function authenticateRequest(req) {
     return { ...apiKeyAuth, source: "apikey" };
   }
 
-  const basicAuth = parseBasicAuth(req);
-  if (basicAuth) {
-    return { ...basicAuth, source: "basic" };
-  }
-
+  // Note: Basic Auth removed for security - use API keys for programmatic access
   return null;
 }
 

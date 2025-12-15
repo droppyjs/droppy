@@ -8,27 +8,17 @@ import http from "http";
 const API_PREFIX = "/api/";
 
 class RemoteClient {
-  constructor(baseUrl, username = null, password = null, apiKey = null) {
+  constructor(baseUrl, apiKey = null) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
-    this.username = username;
-    this.password = password;
     this.apiKey = apiKey;
   }
 
   _getAuthHeader() {
-    // Prefer API key if provided
-    if (this.apiKey) {
-      return {
-        Authorization: `Bearer ${this.apiKey}`,
-      };
-    }
-
-    if (!this.username || !this.password) {
+    if (!this.apiKey) {
       return {};
     }
-    const credentials = Buffer.from(`${this.username}:${this.password}`).toString("base64");
     return {
-      Authorization: `Basic ${credentials}`,
+      Authorization: `Bearer ${this.apiKey}`,
     };
   }
 
@@ -132,4 +122,3 @@ class RemoteClient {
 }
 
 export { RemoteClient };
-

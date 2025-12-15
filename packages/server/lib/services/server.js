@@ -743,6 +743,7 @@ const apiRoutes = {
   mkdir: handleApiMkdir,
   delete: handleApiDelete,
   move: handleApiMove,
+  keys: handleApiKeys,
 };
 
 function isApiRequest(url) {
@@ -835,6 +836,11 @@ function authenticateRequest(req) {
     return { ...sessionAuth, source: "session" };
   }
 
+  const apiKeyAuth = parseApiKeyAuth(req);
+  if (apiKeyAuth) {
+    return { ...apiKeyAuth, source: "apikey" };
+  }
+
   const basicAuth = parseBasicAuth(req);
   if (basicAuth) {
     return { ...basicAuth, source: "basic" };
@@ -888,6 +894,31 @@ function parseBasicAuth(req) {
   };
 }
 
+function parseApiKeyAuth(req) {
+  const header = req.headers?.authorization || req.headers?.Authorization;
+  if (!header || typeof header !== "string") return null;
+
+  const trimmed = header.trim();
+  if (!trimmed.toLowerCase().startsWith("bearer ")) return null;
+
+  const token = trimmed.slice(7);
+  if (!token) return null;
+
+  const result = db.validateApiKey(token);
+  if (!result) return null;
+
+  // Update last used timestamp
+  db.updateApiKeyLastUsed(result.keyId);
+
+  const userEntry = db.get("users")[result.username] || {};
+  return {
+    username: result.username,
+    privileged: Boolean(userEntry.privileged),
+    keyId: result.keyId,
+    permissions: result.permissions,
+  };
+}
+
 function normalizeApiPath(raw, { allowRoot = true } = {}) {
   if (raw === undefined || raw === null) {
     return allowRoot ? "/" : null;
@@ -921,6 +952,28 @@ function ensureWritable(res) {
     return false;
   }
   return true;
+}
+
+/**
+ * Check if the authenticated user has the required permission
+ * @param {Object} auth - The auth object from authenticateRequest
+ * @param {string} permission - Required permission: "read", "write", "delete", "admin"
+ * @returns {boolean}
+ */
+function hasPermission(auth, permission) {
+  // Non-API key auth (session, basic) has all permissions
+  if (auth.source !== "apikey") {
+    return true;
+  }
+  // API key auth - check permissions array
+  if (!auth.permissions || !Array.isArray(auth.permissions)) {
+    return false;
+  }
+  // Admin permission grants all
+  if (auth.permissions.includes("admin")) {
+    return true;
+  }
+  return auth.permissions.includes(permission);
 }
 
 function formatListing(entries) {
@@ -971,12 +1024,17 @@ async function handleApiPing({ req, res }) {
   });
 }
 
-async function handleApiList({ req, res, searchParams }) {
+async function handleApiList({ req, res, searchParams, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "GET") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "GET",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "read")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "read" });
     return;
   }
 
@@ -998,12 +1056,17 @@ async function handleApiList({ req, res, searchParams }) {
   });
 }
 
-async function handleApiRead({ req, res, searchParams }) {
+async function handleApiRead({ req, res, searchParams, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "GET") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "GET",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "read")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "read" });
     return;
   }
 
@@ -1070,12 +1133,17 @@ async function handleApiRead({ req, res, searchParams }) {
   });
 }
 
-async function handleApiWrite({ req, res }) {
+async function handleApiWrite({ req, res, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "POST") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "POST",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "write")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "write" });
     return;
   }
 
@@ -1131,12 +1199,17 @@ async function handleApiWrite({ req, res }) {
   });
 }
 
-async function handleApiMkdir({ req, res }) {
+async function handleApiMkdir({ req, res, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "POST") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "POST",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "write")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "write" });
     return;
   }
 
@@ -1173,12 +1246,17 @@ async function handleApiMkdir({ req, res }) {
   sendJSON(res, 201, { path: targetPath });
 }
 
-async function handleApiDelete({ req, res, searchParams }) {
+async function handleApiDelete({ req, res, searchParams, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "DELETE") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "DELETE",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "delete")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "delete" });
     return;
   }
 
@@ -1209,12 +1287,17 @@ async function handleApiDelete({ req, res, searchParams }) {
   sendJSON(res, 204);
 }
 
-async function handleApiMove({ req, res }) {
+async function handleApiMove({ req, res, auth }) {
   if (res.writableEnded) return;
   if (req.method !== "POST") {
     sendJSON(res, 405, { error: "method_not_allowed" }, {
       Allow: "POST",
     });
+    return;
+  }
+
+  if (!hasPermission(auth, "write")) {
+    sendJSON(res, 403, { error: "permission_denied", required: "write" });
     return;
   }
 
@@ -1269,6 +1352,73 @@ async function handleApiMove({ req, res }) {
     from: sourcePath,
     to: destinationPath,
   });
+}
+
+async function handleApiKeys({ req, res, auth, url }) {
+  if (res.writableEnded) return;
+
+  // User must be authenticated with a username
+  if (!auth.username) {
+    sendJSON(res, 401, { error: "authentication_required" });
+    return;
+  }
+
+  // Parse key ID from URL path: /api/keys/:keyId
+  const pathParts = url.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+  const keyId = pathParts.length > 2 ? pathParts[2] : null;
+
+  switch (req.method) {
+  case "GET": {
+    // List all API keys for this user
+    const keys = db.listApiKeys(auth.username);
+    sendJSON(res, 200, { keys });
+    break;
+  }
+
+  case "POST": {
+    // Generate a new API key
+    let body;
+    try {
+      body = await utils.readJsonBody(req);
+    } catch {
+      body = {};
+    }
+    const name = body?.name || "Unnamed Key";
+    const options = {
+      permissions: body?.permissions,
+      expiresIn: body?.expiresIn,
+    };
+    const result = db.generateApiKey(auth.username, name, options);
+    sendJSON(res, 201, {
+      keyId: result.keyId,
+      key: result.rawKey,  // Only shown once!
+      name,
+      permissions: result.permissions,
+      expiresAt: result.expiresAt,
+      message: "Save this key securely. It will not be shown again."
+    });
+    break;
+  }
+
+  case "DELETE": {
+    if (!keyId) {
+      sendJSON(res, 400, { error: "key_id_required" });
+      return;
+    }
+    const revoked = db.revokeApiKey(keyId, auth.username);
+    if (revoked) {
+      sendJSON(res, 200, { ok: true });
+    } else {
+      sendJSON(res, 404, { error: "key_not_found" });
+    }
+    break;
+  }
+
+  default:
+    sendJSON(res, 405, { error: "method_not_allowed" }, {
+      Allow: "GET, POST, DELETE",
+    });
+  }
 }
 
 function handlePOST(req, res) {

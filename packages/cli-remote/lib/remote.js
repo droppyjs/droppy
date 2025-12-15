@@ -8,13 +8,21 @@ import http from "http";
 const API_PREFIX = "/api/";
 
 class RemoteClient {
-  constructor(baseUrl, username = null, password = null) {
+  constructor(baseUrl, username = null, password = null, apiKey = null) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
     this.username = username;
     this.password = password;
+    this.apiKey = apiKey;
   }
 
   _getAuthHeader() {
+    // Prefer API key if provided
+    if (this.apiKey) {
+      return {
+        Authorization: `Bearer ${this.apiKey}`,
+      };
+    }
+
     if (!this.username || !this.password) {
       return {};
     }

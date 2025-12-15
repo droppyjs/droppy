@@ -20,6 +20,7 @@ const cmds = {
 const opts = {
   user: "--user <username>             Username for remote authentication",
   pass: "--pass <password>             Password for remote authentication",
+  apiKey: "--api-key <key>              API key for remote authentication",
   content: "--content <text>             Content to write (for write command)",
   file: "--file <path>                 File path to read content from (for write command)",
 };
@@ -28,13 +29,14 @@ export async function executeRemoteCommand(cmd, args, options = {}) {
   const url = args[0];
   const username = options.user || options.u || null;
   const password = options.pass || options.p || null;
+  const apiKey = options["api-key"] || options.apiKey || null;
 
   if (!url) {
     console.error("Error: URL required");
     return { success: false, exitCode: 1 };
   }
 
-  const client = new RemoteClient(url, username, password);
+  const client = new RemoteClient(url, username, password, apiKey);
 
   try {
     switch (cmd) {
@@ -189,9 +191,11 @@ function printHelp() {
   help += `\n\nExamples:
   droppy-remote ping http://localhost:8989
   droppy-remote list http://localhost:8989 / --user admin --pass secret
+  droppy-remote list http://localhost:8989 / --api-key your-api-key-here
   droppy-remote read http://localhost:8989 /file.txt --user admin --pass secret
+  droppy-remote read http://localhost:8989 /file.txt --api-key your-api-key-here
   droppy-remote write http://localhost:8989 /new.txt --content "Hello" --user admin --pass secret
-  droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --user admin --pass secret
+  droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --api-key your-api-key-here
   droppy-remote mkdir http://localhost:8989 /newdir --user admin --pass secret
   droppy-remote delete http://localhost:8989 /old.txt --user admin --pass secret
   droppy-remote move http://localhost:8989 /old.txt /new.txt --user admin --pass secret
@@ -224,7 +228,7 @@ const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && (process.argv[1] === __filename || process.argv[1].endsWith("cli.js"))) {
   const argv = minimist(process.argv.slice(2), {
     boolean: ["color"],
-    string: ["user", "pass", "content", "file"],
+    string: ["user", "pass", "content", "file", "api-key"],
   });
 
   if (!argv._.length || argv.help || argv.h) {

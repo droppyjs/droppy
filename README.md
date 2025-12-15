@@ -211,6 +211,49 @@ When droppy runs with the server package from this repository it also exposes a 
 
 Responses are JSON. Mutating endpoints honour the `readOnly` configuration and return `403` when the instance is in read-only mode. If the requested resource does not exist a `404` is returned.
 
+### API Keys
+
+For programmatic access, you can use API keys instead of username/password. API keys are more secure for automation as they:
+- Can be revoked individually without changing your password
+- Don't expose your main credentials
+- Can have optional expiration dates
+- Can be scoped to specific permissions
+
+#### Key Management Endpoints
+
+| Method | Path                  | Description                                                    |
+|--------|-----------------------|----------------------------------------------------------------|
+| GET    | `/api/keys`           | List all API keys for the authenticated user.                  |
+| POST   | `/api/keys`           | Generate a new API key. Body: `{name?, expiresIn?, permissions?}`. |
+| DELETE | `/api/keys/:keyId`    | Revoke an API key.                                             |
+
+#### Generating an API Key
+
+```sh
+# Using Basic Auth to generate a new API key
+$ curl -X POST http://localhost:8989/api/keys \
+  -u admin:password \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My CLI Key"}'
+
+# Response:
+# {
+#   "keyId": "a1b2c3d4...",
+#   "key": "64_character_api_key...",
+#   "name": "My CLI Key",
+#   "message": "Save this key securely. It will not be shown again."
+# }
+```
+
+#### Using an API Key
+
+Use the `Authorization: Bearer <key>` header:
+
+```sh
+$ curl http://localhost:8989/api/list?path=/ \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
 ## Remote CLI Commands
 
 The `@droppyjs/cli-remote` package provides command-line access to remote droppy instances via the REST API.
@@ -239,17 +282,23 @@ $ droppy-remote move <url> <source> <dest>    # Move/rename file
 
 - `--user <username>` - Username for authentication
 - `--pass <password>` - Password for authentication
+- `--api-key <key>` - API key for authentication (recommended for scripts)
 - `--content <text>` - Content to write (for write command)
 - `--file <path>` - File path to read content from (for write command)
 
 ### Examples
 
 ```sh
+# Using username/password
 $ droppy-remote ping http://localhost:8989
 $ droppy-remote list http://localhost:8989 / --user admin --pass secret
 $ droppy-remote read http://localhost:8989 /file.txt --user admin --pass secret
 $ droppy-remote write http://localhost:8989 /new.txt --content "Hello" --user admin --pass secret
-$ droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --user admin --pass secret
+
+# Using API key (recommended)
+$ droppy-remote list http://localhost:8989 / --api-key YOUR_API_KEY
+$ droppy-remote read http://localhost:8989 /file.txt --api-key YOUR_API_KEY
+$ droppy-remote write http://localhost:8989 /file.txt --file ./local.txt --api-key YOUR_API_KEY
 ```
 
 ## Downloading from the command line

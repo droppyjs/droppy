@@ -3896,8 +3896,8 @@ function ajax(opts) {
     mode: "same-origin",
     redirect: "error",
   }).catch((err) => {
-    // request failed
-    showError(getActiveView(), err.message);
+    // request failed - re-throw so callers can handle
+    throw new Error(`Network error: ${err.message}`);
   });
 }
 

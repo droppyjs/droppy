@@ -2751,6 +2751,134 @@ function showPrefs() {
       });
     });
   }, 0);
+
+  // Add API Keys button for authenticated users
+  if (!droppy.public) {
+    box.append('<button class="show-api-keys">🔑 Manage API Keys</button>');
+    box.find(".show-api-keys").off("click").on("click", showApiKeys);
+  }
+}
+
+// Format a timestamp for display
+function formatApiKeyDate(timestamp) {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+async function showApiKeys() {
+  const box = $("#prefs-box");
+  box.empty();
+
+  // Show loading state
+  box.append('<div class="api-keys-section"><p>Loading API keys...</p></div>');
+
+  try {
+    const response = await ajax({ url: "/api/keys" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const data = await response.json();
+
+    // Format dates and permissions for display
+    data.keys.forEach(key => {
+      key.createdAt = formatApiKeyDate(key.createdAt);
+      if (key.expiresAt) {
+        key.expiresAt = formatApiKeyDate(key.expiresAt);
+      }
+      if (key.lastUsedAt) {
+        key.lastUsedAt = formatApiKeyDate(key.lastUsedAt);
+      }
+      if (Array.isArray(key.permissions)) {
+        key.permissions = key.permissions.join(", ");
+      }
+    });
+
+    box.empty().append(Handlebars.templates["api-keys"]({ keys: data.keys }));
+  } catch {
+    box.empty().append('<div class="api-keys-section"><p class="api-keys-error">Failed to load API keys. You may not have permission.</p><button class="api-keys-back">← Back</button></div>');
+  }
+
+  // Back button handler
+  box.find(".api-keys-back").off("click").on("click", () => {
+    showPrefs();
+  });
+
+  // Create key handler
+  box.find(".api-key-create").off("click").on("click", async function () {
+    const nameInput = box.find(".api-key-name-input");
+    const name = nameInput.val() || "Unnamed Key";
+    const expiresIn = parseInt(box.find(".api-key-expiry").val(), 10);
+
+    try {
+      const response = await ajax({
+        method: "POST",
+        url: "/api/keys",
+        data: { name, expiresIn: expiresIn || undefined }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Show the generated key inline
+      const generated = box.find(".api-key-generated");
+      generated.find(".api-key-value").text(result.key);
+      generated.show();
+
+      // Copy button
+      generated.find(".api-key-copy").off("click").on("click", function () {
+        navigator.clipboard.writeText(result.key).then(() => {
+          $(this).text("Copied!");
+          setTimeout(() => $(this).text("Copy"), 2000);
+        });
+      });
+
+      // Clear input and refresh list after a short delay
+      nameInput.val("");
+      setTimeout(() => {
+        showApiKeys();
+      }, 100);
+    } catch (err) {
+      window.alert("Failed to create API key: " + err.message);
+    }
+  });
+
+  // Revoke key handler
+  box.find(".api-key-revoke").off("click").on("click", async function () {
+    const item = $(this).closest(".api-key-item");
+    const keyId = item.data("key-id");
+    const keyName = item.find(".api-key-name-display").text();
+
+    if (!window.confirm(`Revoke API key "${keyName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await ajax({
+        method: "DELETE",
+        url: `/api/keys/${keyId}`
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      // Remove the item with animation
+      item.css("opacity", "0");
+      setTimeout(() => {
+        item.remove();
+        // Show empty message if no keys left
+        if (box.find(".api-key-item").length === 0) {
+          box.find(".api-keys-list").html('<li class="api-keys-empty">No API keys yet. Create one above.</li>');
+        }
+      }, 200);
+    } catch (err) {
+      window.alert("Failed to revoke API key: " + err.message);
+    }
+  });
 }
 
 function showConfirmation(message, callback) {

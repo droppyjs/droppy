@@ -2448,3 +2448,211 @@ html:not(.mobile) #drop-select span.active {
   top: 100px;
   left: 25px;
 }
+
+/* ========================= API Keys Section =========================== */
+
+.api-keys-section {
+  padding: 1rem;
+  color: #ccc;
+}
+
+.api-keys-section h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.api-keys-info {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.api-keys-new {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.api-keys-new input,
+.api-keys-new select {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.5rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.api-keys-new button {
+  padding: 0.5rem 1rem;
+  background: #4a9eff;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.api-keys-new button:hover {
+  background: #3a8eef;
+}
+
+.api-key-generated {
+  background: #2a3a2a;
+  border: 1px solid #4a6a4a;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.api-key-warning {
+  color: #ffa;
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.api-key-display {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.api-key-value {
+  flex: 1;
+  background: #1a1a1a;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.7rem;
+  overflow-x: auto;
+  word-break: break-all;
+}
+
+.api-key-copy {
+  padding: 0.5rem 0.75rem;
+  background: #444;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.api-key-copy:hover {
+  background: #555;
+}
+
+.api-keys-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.api-key-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #333;
+  flex-wrap: wrap;
+}
+
+.api-key-item.expired {
+  opacity: 0.5;
+}
+
+.api-key-main {
+  flex: 1;
+  min-width: 150px;
+}
+
+.api-key-name-display {
+  font-weight: bold;
+  color: #fff;
+}
+
+.api-key-permissions {
+  font-size: 0.65rem;
+  color: #888;
+  margin-left: 0.5rem;
+}
+
+.api-key-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.65rem;
+  color: #666;
+  flex-wrap: wrap;
+}
+
+.api-key-expires.expired {
+  color: #ff6666;
+}
+
+.api-key-revoke {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid #664444;
+  border-radius: 4px;
+  color: #ff6666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.api-key-revoke:hover {
+  background: #442222;
+  border-color: #ff6666;
+}
+
+.api-key-revoke svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.api-keys-empty {
+  color: #666;
+  font-style: italic;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.api-keys-back {
+  width: 100%;
+  padding: 0.5rem;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.api-keys-back:hover {
+  background: #444;
+  color: #fff;
+}
+
+.show-api-keys {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.show-api-keys:hover {
+  background: #444;
+  color: #fff;
+}

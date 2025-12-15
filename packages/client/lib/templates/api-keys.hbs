@@ -1,0 +1,51 @@
+<div class="api-keys-section">
+    <h3>API Keys</h3>
+    <p class="api-keys-info">API keys allow programmatic access to droppy without exposing your password.</p>
+
+    <div class="api-keys-new">
+        <input type="text" class="api-key-name-input" placeholder="Key name (e.g., 'CLI Access')" />
+        <select class="api-key-expiry">
+            <option value="0">Never expires</option>
+            <option value="86400000">1 day</option>
+            <option value="604800000">7 days</option>
+            <option value="2592000000">30 days</option>
+            <option value="31536000000">1 year</option>
+        </select>
+        <button class="api-key-create">Generate Key</button>
+    </div>
+
+    <div class="api-key-generated" style="display: none;">
+        <p class="api-key-warning">⚠️ Save this key now! It won't be shown again.</p>
+        <div class="api-key-display">
+            <code class="api-key-value"></code>
+            <button class="api-key-copy">Copy</button>
+        </div>
+    </div>
+
+    <ul class="api-keys-list">
+        {{#each keys}}
+        <li class="api-key-item {{#if expired}}expired{{/if}}" data-key-id="{{keyId}}">
+            <div class="api-key-main">
+                <span class="api-key-name-display">{{name}}</span>
+                <span class="api-key-permissions">[{{permissions}}]</span>
+            </div>
+            <div class="api-key-meta">
+                <span class="api-key-created">Created: {{createdAt}}</span>
+                {{#if expiresAt}}
+                <span class="api-key-expires {{#if expired}}expired{{/if}}">
+                    {{#if expired}}Expired{{else}}Expires: {{expiresAt}}{{/if}}
+                </span>
+                {{/if}}
+                {{#if lastUsedAt}}
+                <span class="api-key-used">Last used: {{lastUsedAt}}</span>
+                {{/if}}
+            </div>
+            <button class="api-key-revoke" title="Revoke this key">{{{svg "trash"}}}</button>
+        </li>
+        {{else}}
+        <li class="api-keys-empty">No API keys yet. Create one above.</li>
+        {{/each}}
+    </ul>
+
+    <button class="api-keys-back">← Back to Preferences</button>
+</div>

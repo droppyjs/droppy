@@ -188,26 +188,21 @@ class DroppyFileTree extends EventEmitter {
 
         this.lookAway();
 
-        /**
-         * @type {Function}
-         */
-        let callable;
-
         if (stats.isFile()) {
             if (type === "cut") {
-                await this.mv(src, dst);
+                return await this.mv(src, dst);
             } else {
-                await this.cp(src, dst);
+                return await this.cp(src, dst);
             }
         } else if (stats.isDirectory()) {
             if (type === "cut") {
-                await this.mvdir(src, dst);
+                return await this.mvdir(src, dst);
             } else {
-                await this.cpdir(src, dst);
+                return await this.cpdir(src, dst);
             }
+        } else {
+            throw new Error("Invalid file type");
         }
-
-        return callable(src, dst);
     }
 
     async mk(dir) {

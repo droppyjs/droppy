@@ -1187,6 +1187,12 @@ function handleUploadRequest(req, res) {
                     const ws = createWriteStream(dst, { mode: "644" });
                     ws.on("error", onWriteError);
                     file.pipe(ws);
+                } else if (err && err.code === "EACCES") {
+                    onWriteError(
+                        new Error(
+                            `Permission denied, cannot upload ${filename} to ${dstDir} (EACCES).`,
+                        ),
+                    );
                 } else {
                     onWriteError(err);
                 }

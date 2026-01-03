@@ -1,22 +1,16 @@
 {
-  "packages": [
-    "packages/*"
-  ],
-  "version": "1.3.1",
-  "npmClient": "yarn",
-  "useWorkspaces": false,
-  "command": {
-    "version": {
-      "exact": true
+    "packages": ["packages/*"],
+    "version": "1.3.1",
+    "npmClient": "yarn",
+    "command": {
+        "version": {
+            "exact": true
+        },
+        "publish": {
+            "npmClient": "npm",
+            "allowBranch": ["master", "canary"],
+            "registry": "https://registry.npmjs.org/"
+        }
     },
-    "publish": {
-      "npmClient": "npm",
-      "allowBranch": [
-        "master",
-        "canary"
-      ],
-      "registry": "https://registry.npmjs.org/"
-    }
-  },
-  "useNx": true
+    "useNx": true
 }

@@ -3,26 +3,24 @@
  * child nodes of a given node.
  */
 
-"use strict";
-
 export default function removeAttributes(el, attrs) {
-  let localAttrs = attrs;
+    let localAttrs = attrs;
 
-  if (localAttrs === true) {
-    localAttrs = ["style"];
-  }
+    if (localAttrs === true) {
+        localAttrs = ["style"];
+    }
 
-  if (!localAttrs || !localAttrs.length) {
-    return el;
-  }
+    if (!localAttrs || !localAttrs.length) {
+        return el;
+    }
 
-  const els = el.find("*");
+    const els = el.find("*");
 
-  els.each((i) => {
-    localAttrs.forEach((attr) => {
-      els.eq(i).removeAttr(attr);
+    els.each((i) => {
+        localAttrs.forEach((attr) => {
+            els.eq(i).removeAttr(attr);
+        });
     });
-  });
 
-  return el;
+    return el;
 }

@@ -33,6 +33,7 @@
         "cheerio": "1.0.0-rc.12"
     },
     "devDependencies": {
+        "@babel/core": "^7.28.5",
         "@babel/preset-env": "^7.25.4",
         "babel-jest": "^29.7.0",
         "chokidar-cli": "^3.0.0",

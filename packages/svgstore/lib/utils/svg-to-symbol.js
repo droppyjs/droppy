@@ -3,8 +3,6 @@
  * the composition of svgstore output.
  */
 
-"use strict";
-
 const SELECTOR_SVG = "svg";
 const TEMPLATE_SYMBOL = "<symbol/>";
 const ATTRIBUTE_ID = "id";
@@ -17,17 +15,17 @@ const ATTRIBUTE_ID = "id";
  * @see <a href="https://github.com/cheeriojs/cheerio">The Cheerio Project</a>
  */
 export default function svgToSymbol(id, child, _options) {
-  if (_options === void 0) {
-    _options = {};
-  }
+    if (_options === void 0) {
+        _options = {};
+    }
 
-  const svgElem = child(SELECTOR_SVG);
+    const svgElem = child(SELECTOR_SVG);
 
-  // initialize a new <symbol> element
-  const symbol = child(TEMPLATE_SYMBOL);
+    // initialize a new <symbol> element
+    const symbol = child(TEMPLATE_SYMBOL);
 
-  symbol.attr(ATTRIBUTE_ID, id);
-  symbol.append(svgElem.contents());
+    symbol.attr(ATTRIBUTE_ID, id);
+    symbol.append(svgElem.contents());
 
-  return symbol;
+    return symbol;
 }

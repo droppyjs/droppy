@@ -1,27 +1,26 @@
-"use strict";
-
-import fs from "fs/promises";
-import { createWriteStream } from 'fs';
-import os from "os";
-import path from "path";
-import { promisify } from "util";
-
-import throttle from "lodash.throttle";
+import { createWriteStream } from "node:fs";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
 import busboy from "busboy";
-import { red, blue, green, cyan, magenta } from "colorette";
+import { blue, cyan, green, magenta, red } from "colorette";
 import etag from "etag";
+import throttle from "lodash.throttle";
 import rrdir from "rrdir";
 import sendFile from "send";
 import ut from "untildify";
 import ws from "ws";
+
 const Wss = ws.Server;
-import yazl from "yazl";
 
-import https from "https";
-import http from "http";
+import http from "node:http";
 
+import https from "node:https";
 import chokidar from "chokidar";
-
+import yazl from "yazl";
+import pkg from "../../package.json" with { type: "json" };
+import * as commands from "../commands/index.js";
 import cfg from "./cfg.js";
 import cookies from "./cookies.js";
 import csrf from "./csrf.js";
@@ -33,10 +32,6 @@ import paths from "./paths.js";
 import resources from "./resources.js";
 import utils from "./utils.js";
 
-import pkg from "../../package.json" with { type: "json" };
-
-import * as commands from "../commands/index.js";
-
 let cache = {};
 const clients = {};
 const clientsPerDir = {};
@@ -46,1503 +41,1565 @@ let ready = false;
 let dieOnError = true;
 
 const setView = (sid, vId, view) => {
-  clients[sid].views[vId] = view;
+    clients[sid].views[vId] = view;
 };
 
 export async function droppy(opts, isStandalone, dev, callback) {
-  if (isStandalone) {
-    log.logo(
-      [
-        blue(pkg.name),
-        green(pkg.version),
-        "running on",
-        blue("node"),
-        green(process.version.substring(1)),
-      ].join(" "),
-      [blue("config"), ...(opts !== undefined && opts !== null ? ["provided programmatically"] : ["at", green(paths.get().config)])].join(" "),
-      [blue("files"), "at", green(paths.get().files)].join(" ")
-    );
-  }
-  setupProcess(isStandalone);
-
-  try {
-    await utils.mkdir([paths.get().files, paths.get().config]);
-
     if (isStandalone) {
-      await fs.writeFile(paths.get().pid, String(process.pid));
+        log.logo(
+            [
+                blue(pkg.name),
+                green(pkg.version),
+                "running on",
+                blue("node"),
+                green(process.version.substring(1)),
+            ].join(" "),
+            [
+                blue("config"),
+                ...(opts !== undefined && opts !== null
+                    ? ["provided programmatically"]
+                    : ["at", green(paths.get().config)]),
+            ].join(" "),
+            [blue("files"), "at", green(paths.get().files)].join(" "),
+        );
     }
+    setupProcess(isStandalone);
 
-    config = await cfg.init(opts);
-    if (dev) {
-      config.dev = dev;
-    }
+    try {
+        await utils.mkdir([paths.get().files, paths.get().config]);
 
-    await promisify((cb) => {
-      db.load(() => {
-        db.watch(config);
-        cb();
-      });
-    })();
+        if (isStandalone) {
+            await fs.writeFile(paths.get().pid, String(process.pid));
+        }
 
-    await promisify((cb) => {
-      log.init({ logLevel: config.logLevel, timestamps: config.timestamps });
-      firstRun = Object.keys(db.get("users")).length === 0;
-      // clean up old sessions if no users exist
-      if (firstRun) db.set("sessions", {});
-      log.info("Configuration: ", utils.pretty(config));
-      log.info("Loading resources ...");
-      resources.load(config.dev, (err, c) => {
-        log.info("Loading resources done");
-        cache = c;
-        cb(err);
-      });
-    })();
+        config = await cfg.init(opts);
+        if (dev) {
+            config.dev = dev;
+        }
 
-    await promisify((cb) => {
-      cleanupLinks(cb);
-    })();
+        await promisify((cb) => {
+            db.load(() => {
+                db.watch(config);
+                cb();
+            });
+        })();
 
-    await promisify((cb) => {
-      if (config.dev) debug();
-      cb();
-    })();
+        await promisify((cb) => {
+            log.init({
+                logLevel: config.logLevel,
+                timestamps: config.timestamps,
+            });
+            firstRun = Object.keys(db.get("users")).length === 0;
+            // clean up old sessions if no users exist
+            if (firstRun) db.set("sessions", {});
+            log.info("Configuration: ", utils.pretty(config));
+            log.info("Loading resources ...");
+            resources.load(config.dev, (err, c) => {
+                log.info("Loading resources done");
+                cache = c;
+                cb(err);
+            });
+        })();
 
-    await promisify((cb) => {
-      if (isStandalone) {
-        startListeners(cb);
-      } else cb();
-    })();
+        await promisify((cb) => {
+            cleanupLinks(cb);
+        })();
 
-    log.info("Caching files ...");
-    filetree.init(config);
-    await filetree.updateDir(null);
-    if (config.watch) {
-      filetree.watch();
-    }
+        await promisify((cb) => {
+            if (config.dev) debug();
+            cb();
+        })();
 
-    log.info("Caching files done");
+        await promisify((cb) => {
+            if (isStandalone) {
+                startListeners(cb);
+            } else cb();
+        })();
 
+        log.info("Caching files ...");
+        filetree.init(config);
+        await filetree.updateDir(null);
+        if (config.watch) {
+            filetree.watch();
+        }
 
-    await promisify((cb) => {
-      if (typeof config.keepAlive === "number" && config.keepAlive > 0) {
-        setInterval(() => {
-          Object.keys(clients).forEach((client) => {
-            if (!clients[client].ws) return;
-            try {
-              clients[client].ws.ping();
-            } catch {
-              // Fail silently
+        log.info("Caching files done");
+
+        await promisify((cb) => {
+            if (typeof config.keepAlive === "number" && config.keepAlive > 0) {
+                setInterval(() => {
+                    Object.keys(clients).forEach((client) => {
+                        if (!clients[client].ws) return;
+                        try {
+                            clients[client].ws.ping();
+                        } catch {
+                            // Fail silently
+                        }
+                    });
+                }, config.keepAlive);
             }
-          });
-        }, config.keepAlive);
-      }
-      cb();
-    })();
-  } catch (err) {
-    return callback(err);
-  }
+            cb();
+        })();
+    } catch (err) {
+        return callback(err);
+    }
 
-  ready = true;
-  log.info(green("Ready for requests!"));
-  dieOnError = false;
-  callback();
+    ready = true;
+    log.info(green("Ready for requests!"));
+    dieOnError = false;
+    callback();
 
-  return { onRequest, setupWebSocket };
+    return { onRequest, setupWebSocket };
 }
 
 function onRequest(req, res) {
-  req.time = Date.now();
+    req.time = Date.now();
 
-  for (const [key, value] of Object.entries(config.headers || {})) {
-    res.setHeader(key, value);
-  }
-
-  if (ready) {
-    if (!utils.isPathSane(req.url, true)) {
-      res.statusCode = 400;
-      res.end();
-      return log.info(req, res, `Invalid GET: ${req.url}`);
+    for (const [key, value] of Object.entries(config.headers || {})) {
+        res.setHeader(key, value);
     }
-    if (req.method === "GET" || req.method === "HEAD") {
-      handleGETandHEAD(req, res);
-    } else if (req.method === "POST") {
-      handlePOST(req, res);
+
+    if (ready) {
+        if (!utils.isPathSane(req.url, true)) {
+            res.statusCode = 400;
+            res.end();
+            return log.info(req, res, `Invalid GET: ${req.url}`);
+        }
+        if (req.method === "GET" || req.method === "HEAD") {
+            handleGETandHEAD(req, res);
+        } else if (req.method === "POST") {
+            handlePOST(req, res);
+        } else {
+            res.statusCode = 405;
+            res.end();
+        }
     } else {
-      res.statusCode = 405;
-      res.end();
+        res.statusCode = 503;
+        res.end(
+            "<!DOCTYPE html><html><head><title>droppy - starting up</title></head><body><h2>Just a second! droppy is starting up ...<h2><script>window.setTimeout(function(){window.location.reload()},2000)</script></body></html>",
+        );
     }
-  } else {
-    res.statusCode = 503;
-    res.end(
-      "<!DOCTYPE html><html><head><title>droppy - starting up</title></head><body><h2>Just a second! droppy is starting up ...<h2><script>window.setTimeout(function(){window.location.reload()},2000)</script></body></html>"
-    );
-  }
 }
 
 async function startListeners(callback) {
-  if (!Array.isArray(config.listeners)) {
-    return callback(
-      new Error("Config Error: 'listeners' option must be an array")
-    );
-  }
-
-  const targets = [];
-  config.listeners.forEach((listener, i) => {
-    if (listener.protocol === undefined) {
-      listener.protocol = "http";
+    if (!Array.isArray(config.listeners)) {
+        return callback(
+            new Error("Config Error: 'listeners' option must be an array"),
+        );
     }
 
-    // arrify and filter `undefined`
-    const hosts = utils.arrify(listener.host).filter((host) => Boolean(host));
-    const ports = utils.arrify(listener.port).filter((port) => Boolean(port));
-    const sockets = utils
-      .arrify(listener.socket)
-      .filter((socket) => Boolean(socket));
-
-    // validate listener options
-    hosts.forEach((host) => {
-      if (typeof host !== "string") {
-        return callback(
-          new Error(`Invalid config value: 'host' = ${hosts[host]}`)
-        );
-      }
-    });
-    ports.forEach((port, i) => {
-      if (typeof port !== "number" && typeof port !== "string") {
-        return callback(new Error(`Invalid config value: 'port' = ${port}`));
-      }
-
-      if (typeof port === "string") {
-        const num = parseInt(port);
-        if (Number.isNaN(num)) {
-          return callback(new Error(`Invalid config value: 'port' = ${port}`));
+    const targets = [];
+    for (const listener of config.listeners) {
+        if (listener.protocol === undefined) {
+            listener.protocol = "http";
         }
-        ports[i] = num;
-      }
-    });
-    sockets.forEach((socket) => {
-      if (typeof socket !== "string") {
-        return callback(
-          new Error(`Invalid config value: 'socket' = ${socket}`)
-        );
-      }
 
-      try {
-        fs.unlink(socket);
-      } catch (err) {
-        if (err.code !== "ENOENT") {
-          return callback(
-            new Error(`Unable to write to unix socket '${socket}': ${err.code}`)
-          );
-        }
-      }
-    });
+        // arrify and filter `undefined`
+        const hosts = utils
+            .arrify(listener.host)
+            .filter((host) => Boolean(host));
+        const ports = utils
+            .arrify(listener.port)
+            .filter((port) => Boolean(port));
+        const sockets = utils
+            .arrify(listener.socket)
+            .filter((socket) => Boolean(socket));
 
-    const opts = {
-      proto: listener.protocol,
-      key: listener.key,
-      cert: listener.cert,
-      index: i,
-    };
-
-    // listen on all host + port combinations
-    hosts.forEach((host) => {
-      ports.forEach((port) => {
-        targets.push({ host, port, opts });
-      });
-    });
-
-    // listen on unix socket
-    sockets.forEach((socket) => {
-      targets.push({ socket, opts });
-    });
-  });
-
-  let listenerCount = 0;
-
-  await Promise.all(
-    targets.map((target) => {
-      return new Promise((resolve) => {
-        createListener(onRequest, target.opts, (err, server) => {
-          if (err) {
-            log.error(
-              "Error creating listener",
-              `${target.opts.proto +
-              (target.opts.socket ? "+unix://" : "://") +
-              log.formatHostPort(target.host, target.port, target.opts.proto)
-              }: ${err.message}`
-            );
-            return resolve();
-          }
-
-          server.on("listening", async () => {
-            server.removeAllListeners("error");
-            listenerCount++;
-            setupWebSocket(server);
-            const proto = target.opts.proto.toLowerCase();
-
-            if (target.socket) {
-              // socket
-              await fs.chmod(target.socket, 0o666); // make it rw
-              // a unix socket URL should normally percent-encode the path, but
-              // we're printing a path-less URL so pretty-print it with slashes.
-              log.info(
-                "Listening on ",
-                blue(`${proto}+unix://`) + cyan(server.address())
-              );
-            } else {
-              // host + port
-              const addr = server.address().address;
-              const port = server.address().port;
-
-              const addrs = [];
-              if (addr === "::" || addr === "0.0.0.0") {
-                const interfaces = os.networkInterfaces();
-                Object.keys(interfaces).forEach((name) => {
-                  interfaces[name].forEach((intf) => {
-                    if (addr === "::" && intf.address) {
-                      addrs.push(intf.address);
-                    } else if (
-                      addr === "0.0.0.0" &&
-                      intf.family === "IPv4" &&
-                      intf.address
-                    ) {
-                      addrs.push(intf.address);
-                    }
-                  });
-                });
-              } else {
-                addrs.push(addr);
-              }
-
-              if (!addrs.length) {
-                addrs.push(addr);
-              }
-
-              addrs.sort();
-
-              addrs.forEach((addr) => {
-                log.info(
-                  "Listening on ",
-                  blue(`${proto}://`) + log.formatHostPort(addr, port, proto)
+        // validate listener options
+        for (const host of hosts) {
+            if (typeof host !== "string") {
+                return callback(
+                    new Error(`Invalid config value: 'host' = ${hosts[host]}`),
                 );
-              });
             }
-            resolve();
-          });
+        }
 
-          server.on("error", (err) => {
-            if (target.host && target.port) {
-              // check for other listeners on the same port and surpress misleading errors
-              // from being printed because of Node's weird dual-stack behaviour.
-              let otherListenerFound = false;
-              if (target.host === "::" || target.host === "0.0.0.0") {
-                targets.some((t) => {
-                  if (
-                    target.port === t.port &&
-                    target.host !== t.host &&
-                    target.host
-                  ) {
-                    otherListenerFound = true;
-                    return true;
-                  }
-                });
-              }
+        for (const port of ports) {
+            if (typeof port !== "number" && typeof port !== "string") {
+                callback(new Error(`Invalid config value: 'port' = ${port}`));
+                return;
+            }
 
-              if (err.code === "EADDRINUSE") {
-                if (!otherListenerFound) {
-                  log.info(
-                    red("Failed to listen on "),
-                    log.formatHostPort(target.host, target.port),
-                    red(". Address already in use.")
-                  );
+            if (typeof port === "string") {
+                const num = parseInt(port, 10);
+                if (Number.isNaN(num)) {
+                    callback(
+                        new Error(`Invalid config value: 'port' = ${port}`),
+                    );
+                    return;
                 }
-              } else if (err.code === "EACCES") {
-                log.info(
-                  red("Failed to listen on "),
-                  log.formatHostPort(target.host, target.port),
-                  red(". Need permission to bind to ports < 1024.")
-                );
-              } else if (err.code === "EAFNOSUPPORT") {
-                if (!otherListenerFound) {
-                  log.info(
-                    red("Failed to listen on "),
-                    log.formatHostPort(target.host, target.port),
-                    red(
-                      ". Protocol unsupported. Are you trying to " +
-                      "listen on IPv6 while the protocol is disabled?"
-                    )
-                  );
-                }
-              } else if (err.code === "EADDRNOTAVAIL") {
-                log.info(
-                  red("Failed to listen on "),
-                  log.formatHostPort(target.host, target.port),
-                  red(". Address not available.")
-                );
-              } else log.error(err);
-            } else log.error(err);
-            return resolve();
-          });
+                ports[i] = num;
+            }
+        }
 
-          if (target.socket) {
-            server.listen(target.socket);
-          } else {
-            server.listen(target.port, target.host);
-          }
+        for (const socket of sockets) {
+            if (typeof socket !== "string") {
+                callback(
+                    new Error(`Invalid config value: 'socket' = ${socket}`),
+                );
+                return;
+            }
+
+            try {
+                fs.unlink(socket);
+            } catch (err) {
+                if (err.code !== "ENOENT") {
+                    callback(
+                        new Error(
+                            `Unable to write to unix socket '${socket}': ${err.code}`,
+                        ),
+                    );
+                    return;
+                }
+            }
+        }
+
+        const opts = {
+            proto: listener.protocol,
+            key: listener.key,
+            cert: listener.cert,
+            index: i,
+        };
+
+        // listen on all host + port combinations
+        hosts.forEach((host) => {
+            ports.forEach((port) => {
+                targets.push({ host, port, opts });
+            });
         });
-      });
-    })
-  );
 
-  // Only emit an error if we have at 0 listeners
-  return callback(
-    listenerCount === 0 ? new Error("No listeners available") : null
-  );
+        // listen on unix socket
+        sockets.forEach((socket) => {
+            targets.push({ socket, opts });
+        });
+    }
+
+    let listenerCount = 0;
+
+    await Promise.all(
+        targets.map((target) => {
+            return new Promise((resolve) => {
+                createListener(onRequest, target.opts, (err, server) => {
+                    if (err) {
+                        log.error(
+                            "Error creating listener",
+                            `${
+                                target.opts.proto +
+                                (target.opts.socket ? "+unix://" : "://") +
+                                log.formatHostPort(
+                                    target.host,
+                                    target.port,
+                                    target.opts.proto,
+                                )
+                            }: ${err.message}`,
+                        );
+                        return resolve();
+                    }
+
+                    server.on("listening", async () => {
+                        server.removeAllListeners("error");
+                        listenerCount++;
+                        setupWebSocket(server);
+                        const proto = target.opts.proto.toLowerCase();
+
+                        if (target.socket) {
+                            // socket
+                            await fs.chmod(target.socket, 0o666); // make it rw
+                            // a unix socket URL should normally percent-encode the path, but
+                            // we're printing a path-less URL so pretty-print it with slashes.
+                            log.info(
+                                "Listening on ",
+                                blue(`${proto}+unix://`) +
+                                    cyan(server.address()),
+                            );
+                        } else {
+                            // host + port
+                            const addr = server.address().address;
+                            const port = server.address().port;
+
+                            const addrs = [];
+                            if (addr === "::" || addr === "0.0.0.0") {
+                                const interfaces = os.networkInterfaces();
+                                Object.keys(interfaces).forEach((name) => {
+                                    interfaces[name].forEach((intf) => {
+                                        if (addr === "::" && intf.address) {
+                                            addrs.push(intf.address);
+                                        } else if (
+                                            addr === "0.0.0.0" &&
+                                            intf.family === "IPv4" &&
+                                            intf.address
+                                        ) {
+                                            addrs.push(intf.address);
+                                        }
+                                    });
+                                });
+                            } else {
+                                addrs.push(addr);
+                            }
+
+                            if (!addrs.length) {
+                                addrs.push(addr);
+                            }
+
+                            addrs.sort();
+
+                            addrs.forEach((addr) => {
+                                log.info(
+                                    "Listening on ",
+                                    blue(`${proto}://`) +
+                                        log.formatHostPort(addr, port, proto),
+                                );
+                            });
+                        }
+                        resolve();
+                    });
+
+                    server.on("error", (err) => {
+                        if (target.host && target.port) {
+                            // check for other listeners on the same port and surpress misleading errors
+                            // from being printed because of Node's weird dual-stack behaviour.
+                            let otherListenerFound = false;
+                            if (
+                                target.host === "::" ||
+                                target.host === "0.0.0.0"
+                            ) {
+                                otherListenerFound = targets.some(
+                                    (t) =>
+                                        target.port === t.port &&
+                                        target.host !== t.host &&
+                                        target.host,
+                                );
+                            }
+
+                            if (err.code === "EADDRINUSE") {
+                                if (!otherListenerFound) {
+                                    log.info(
+                                        red("Failed to listen on "),
+                                        log.formatHostPort(
+                                            target.host,
+                                            target.port,
+                                        ),
+                                        red(". Address already in use."),
+                                    );
+                                }
+                            } else if (err.code === "EACCES") {
+                                log.info(
+                                    red("Failed to listen on "),
+                                    log.formatHostPort(
+                                        target.host,
+                                        target.port,
+                                    ),
+                                    red(
+                                        ". Need permission to bind to ports < 1024.",
+                                    ),
+                                );
+                            } else if (err.code === "EAFNOSUPPORT") {
+                                if (!otherListenerFound) {
+                                    log.info(
+                                        red("Failed to listen on "),
+                                        log.formatHostPort(
+                                            target.host,
+                                            target.port,
+                                        ),
+                                        red(
+                                            ". Protocol unsupported. Are you trying to " +
+                                                "listen on IPv6 while the protocol is disabled?",
+                                        ),
+                                    );
+                                }
+                            } else if (err.code === "EADDRNOTAVAIL") {
+                                log.info(
+                                    red("Failed to listen on "),
+                                    log.formatHostPort(
+                                        target.host,
+                                        target.port,
+                                    ),
+                                    red(". Address not available."),
+                                );
+                            } else log.error(err);
+                        } else log.error(err);
+                        return resolve();
+                    });
+
+                    if (target.socket) {
+                        server.listen(target.socket);
+                    } else {
+                        server.listen(target.port, target.host);
+                    }
+                });
+            });
+        }),
+    );
+
+    // Only emit an error if we have at 0 listeners
+    return callback(
+        listenerCount === 0 ? new Error("No listeners available") : null,
+    );
 }
 
 function tlsError(err, socket) {
-  // can't get the remote address at this point, just log the error
-  if (err && err.message) log.debug(null, null, err.message);
-  if (socket.writable) socket.destroy();
+    // can't get the remote address at this point, just log the error
+    if (err?.message) {
+        log.debug(null, null, err.message);
+    }
+    if (socket.writable) {
+        socket.destroy();
+    }
 }
 
 function createListener(handler, opts, callback) {
-  let server;
-  if (opts.proto === "http") {
-    server = http.createServer(handler);
-    callback(null, server);
-  } else {
-    tlsInit(opts, (err, tlsOptions) => {
-      if (err) return callback(err);
+    let server;
+    if (opts.proto === "http") {
+        server = http.createServer(handler);
+        callback(null, server);
+    } else {
+        tlsInit(opts, (err, tlsOptions) => {
+            if (err) return callback(err);
 
-      try {
-        server = https.createServer(tlsOptions);
-      } catch (err2) {
-        return callback(err2);
-      }
+            try {
+                server = https.createServer(tlsOptions);
+            } catch (err2) {
+                return callback(err2);
+            }
 
-      server.on("request", handler);
-      server.on("tlsClientError", tlsError);
-      callback(null, server);
-    });
-  }
+            server.on("request", handler);
+            server.on("tlsClientError", tlsError);
+            callback(null, server);
+        });
+    }
 }
 
 const verifyClient = (info, cb) => {
-  if (validateRequest(info.req)) return cb(true);
-  log.info(
-    info.req,
-    { statusCode: 401 },
-    "Unauthorized WebSocket connection rejected."
-  );
-  cb(false, 401, "Unauthorized");
+    if (validateRequest(info.req)) return cb(true);
+    log.info(
+        info.req,
+        { statusCode: 401 },
+        "Unauthorized WebSocket connection rejected.",
+    );
+    cb(false, 401, "Unauthorized");
 };
 
 // WebSocket functions
 function setupWebSocket(server) {
-  let wss;
-  if (server !== false) {
-    wss = new Wss({ server, verifyClient });
-  } else {
-    wss = new Wss({ noServer: true, verifyClient });
-  }
-  wss.on("connection", onWebSocketRequest);
-  wss.on("error", log.error);
-  return wss;
+    let wss;
+    if (server !== false) {
+        wss = new Wss({ server, verifyClient });
+    } else {
+        wss = new Wss({ noServer: true, verifyClient });
+    }
+    wss.on("connection", onWebSocketRequest);
+    wss.on("error", log.error);
+    return wss;
 }
 
 function onWebSocketRequest(ws, req) {
-  ws.addr = ws._socket.remoteAddress;
-  ws.port = ws._socket.remotePort;
-  ws.headers = Object.assign({}, req.headers);
-  log.info(ws, null, "WebSocket [", green("connected"), "]");
-  const sid = `${ws._socket.remoteAddress} ${ws._socket.remotePort}`;
-  const cookie = cookies.get(req.headers.cookie);
-  clients[sid] = { views: [], cookie, ws };
+    ws.addr = ws._socket.remoteAddress;
+    ws.port = ws._socket.remotePort;
+    ws.headers = Object.assign({}, req.headers);
+    log.info(ws, null, "WebSocket [", green("connected"), "]");
+    const sid = `${ws._socket.remoteAddress} ${ws._socket.remotePort}`;
+    const cookie = cookies.get(req.headers.cookie);
+    clients[sid] = { views: [], cookie, ws };
 
-  ws.on("message", async (msg) => {
-    msg = JSON.parse(msg);
+    ws.on("message", async (msg) => {
+        msg = JSON.parse(msg);
 
-    if (msg.type !== "SAVE_FILE") {
-      log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
-    }
+        if (msg.type !== "SAVE_FILE") {
+            log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
+        }
 
-    if (!csrf.validate(msg.token)) {
-      ws.close(1011);
-      return;
-    }
+        if (!csrf.validate(msg.token)) {
+            ws.close(1011);
+            return;
+        }
 
-    const vId = msg.vId;
-    const priv = Boolean((db.get("sessions")[cookie] || {}).privileged);
+        const vId = msg.vId;
+        const priv = Boolean(db.get("sessions")?.[cookie]?.privileged);
 
-    // Ensure our client object exists, it can be lost between server restarts.
-    if (!clients[sid]) {
-      clients[sid] = {
-        views: [],
-        ws,
-      };
-    }
+        // Ensure our client object exists, it can be lost between server restarts.
+        if (!clients[sid]) {
+            clients[sid] = {
+                views: [],
+                ws,
+            };
+        }
 
-    if (commands[msg.type]) {
-      commands[msg.type].handler({
-        priv,
-        msg,
-        sendObj,
-        sid,
-        updateClientLocation,
-        sendFiles,
-        sendError,
-        validatePaths,
-        sendUsers,
-        pkg,
-        config,
-        cache,
-        ws,
-        setView,
-        vId,
-        cookie,
-      });
-    } else {
-      // TODO: invalid command, handle?
-    }
-  });
+        // biome-ignore lint/performance/noDynamicNamespaceImportAccess: by design
+        const command = commands[msg.type];
+        if (command) {
+            command.handler({
+                priv,
+                msg,
+                sendObj,
+                sid,
+                updateClientLocation,
+                sendFiles,
+                sendError,
+                validatePaths,
+                sendUsers,
+                pkg,
+                config,
+                cache,
+                ws,
+                setView,
+                vId,
+                cookie,
+            });
+        } else {
+            // TODO: invalid command, handle?
+        }
+    });
 
-  ws.on("close", (code) => {
-    let reason;
-    if (code === 4001) {
-      reason = "(Logged out)";
-      const sessions = db.get("sessions");
-      delete sessions[cookie];
-      db.set("sessions", sessions);
-    } else if (code === 1001) {
-      reason = "(Going away)";
-    }
-    removeClientPerDir(sid);
-    delete clients[sid];
-    if (code === 1011) {
-      log.info(
-        ws,
-        null,
-        "WebSocket [",
-        red("disconnected"),
-        "] ",
-        "(CSFR prevented or server restarted)"
-      );
-    } else {
-      log.info(
-        ws,
-        null,
-        "WebSocket [",
-        red("disconnected"),
-        "] ",
-        reason || `(Code: ${code || "none"})`
-      );
-    }
-  });
-  ws.on("error", log.error);
+    ws.on("close", (code) => {
+        let reason;
+        if (code === 4001) {
+            reason = "(Logged out)";
+            const sessions = db.get("sessions");
+            delete sessions[cookie];
+            db.set("sessions", sessions);
+        } else if (code === 1001) {
+            reason = "(Going away)";
+        }
+        removeClientPerDir(sid);
+        delete clients[sid];
+        if (code === 1011) {
+            log.info(
+                ws,
+                null,
+                "WebSocket [",
+                red("disconnected"),
+                "] ",
+                "(CSFR prevented or server restarted)",
+            );
+        } else {
+            log.info(
+                ws,
+                null,
+                "WebSocket [",
+                red("disconnected"),
+                "] ",
+                reason || `(Code: ${code || "none"})`,
+            );
+        }
+    });
+    ws.on("error", log.error);
 }
 
 // Ensure that a given path does not contain invalid file names
 function validatePaths(paths, type, ws, sid, vId) {
-  return (Array.isArray(paths) ? paths : [paths]).every((p) => {
-    if (!utils.isPathSane(p)) {
-      sendError(sid, vId, "Invalid request");
-      log.info(ws, null, `Invalid ${type} request: ${p}`);
-      return false;
-    } else {
-      return true;
-    }
-  });
+    return (Array.isArray(paths) ? paths : [paths]).every((p) => {
+        if (!utils.isPathSane(p)) {
+            sendError(sid, vId, "Invalid request");
+            log.info(ws, null, `Invalid ${type} request: ${p}`);
+            return false;
+        } else {
+            return true;
+        }
+    });
 }
 
 // Send a file list update
 function sendFiles(sid, vId) {
-  if (
-    !clients[sid] ||
-    !clients[sid].views[vId] ||
-    !clients[sid].ws ||
-    !clients[sid].ws._socket
-  )
-    return;
-  const folder = clients[sid].views[vId].directory;
-  sendObj(sid, {
-    type: "UPDATE_DIRECTORY",
-    vId,
-    folder,
-    data: filetree.ls(folder),
-  });
+    if (
+        !clients[sid] ||
+        !clients[sid].views[vId] ||
+        !clients[sid].ws ||
+        !clients[sid].ws._socket
+    )
+        return;
+    const folder = clients[sid].views[vId].directory;
+    sendObj(sid, {
+        type: "UPDATE_DIRECTORY",
+        vId,
+        folder,
+        data: filetree.ls(folder),
+    });
 }
 
 // Send a list of users on the server
 function sendUsers(sid) {
-  const userDB = db.get("users");
-  const userlist = {};
+    const userDB = db.get("users");
+    const userlist = {};
 
-  Object.keys(userDB).forEach((user) => {
-    userlist[user] = userDB[user].privileged || false;
-  });
-  sendObj(sid, { type: "USER_LIST", users: userlist });
+    Object.keys(userDB).forEach((user) => {
+        userlist[user] = userDB[user].privileged || false;
+    });
+    sendObj(sid, { type: "USER_LIST", users: userlist });
 }
 
 // Send js object to single client identified by its session cookie
 function sendObj(sid, data) {
-  if (!clients[sid] || !clients[sid].ws) return;
-  send(clients[sid].ws, JSON.stringify(data));
+    if (!clients[sid] || !clients[sid].ws) return;
+    send(clients[sid].ws, JSON.stringify(data));
 }
 
 // Send js object to all clients
 function sendObjAll(data) {
-  Object.keys(clients).forEach((sid) => {
-    send(clients[sid].ws, JSON.stringify(data));
-  });
+    Object.keys(clients).forEach((sid) => {
+        send(clients[sid].ws, JSON.stringify(data));
+    });
 }
 
 function sendError(sid, vId, text) {
-  text = utils.sanitizePathsInString(text);
-  sendObj(sid, { type: "ERROR", vId, text });
-  log.error(clients[sid].ws, null, `Sent error: ${text}`);
+    text = utils.sanitizePathsInString(text);
+    sendObj(sid, { type: "ERROR", vId, text });
+    log.error(clients[sid].ws, null, `Sent error: ${text}`);
 }
 
 function redirectToRoot(req, res) {
-  res.writeHead(307, { Location: "/", "Cache-Control": "public, max-age=0" });
-  res.end();
-  log.info(req, res);
-  return;
+    res.writeHead(307, { Location: "/", "Cache-Control": "public, max-age=0" });
+    res.end();
+    log.info(req, res);
+    return;
 }
 
 // Do the actual sending
 function send(ws, data) {
-  (function queue(ws, data, time) {
-    if (time > 1000) return; // in case the socket hasn't opened after 1 second, cancel the sending
-    if (ws && ws.readyState === 1) {
-      if (config.logLevel === 3) {
-        const debugData = JSON.parse(data);
-        // Remove some spammy logging
-        if (debugData.type === "RELOAD" && debugData.css)
-          debugData.css = { "...": "..." };
-        log.debug(ws, null, green("SEND "), utils.pretty(debugData));
-      }
-      ws.send(data, (err) => {
-        if (err) log.err(err);
-      });
-    } else {
-      setTimeout(queue, 50, ws, data, time + 50);
-    }
-  })(ws, data, 0);
+    (function queue(ws, data, time) {
+        if (time > 1000) return; // in case the socket hasn't opened after 1 second, cancel the sending
+        if (ws && ws.readyState === 1) {
+            if (config.logLevel === 3) {
+                const debugData = JSON.parse(data);
+                // Remove some spammy logging
+                if (debugData.type === "RELOAD" && debugData.css)
+                    debugData.css = { "...": "..." };
+                log.debug(ws, null, green("SEND "), utils.pretty(debugData));
+            }
+            ws.send(data, (err) => {
+                if (err) log.err(err);
+            });
+        } else {
+            setTimeout(queue, 50, ws, data, time + 50);
+        }
+    })(ws, data, 0);
 }
 
 async function handleGETandHEAD(req, res) {
-  const URI = decodeURIComponent(req.url);
+    const URI = decodeURIComponent(req.url);
 
-  if (config.public && !cookies.get(req.headers.cookie)) {
-    cookies.free(req, res);
-  }
+    if (config.public && !cookies.get(req.headers.cookie)) {
+        cookies.free(req, res);
+    }
 
-  // unauthenticated GETs
-  if (URI === "/") {
-    if (validateRequest(req)) {
-      handleResourceRequest(req, res, "main.html");
-      const sessions = db.get("sessions");
-      if (sessions[cookies.get(req.headers.cookie)]) {
-        sessions[cookies.get(req.headers.cookie)].lastSeen = Date.now();
-      }
-      db.set("sessions", sessions);
-    } else if (firstRun) {
-      handleResourceRequest(req, res, "first.html");
+    // unauthenticated GETs
+    if (URI === "/") {
+        if (validateRequest(req)) {
+            handleResourceRequest(req, res, "main.html");
+            const sessions = db.get("sessions");
+            if (sessions[cookies.get(req.headers.cookie)]) {
+                sessions[cookies.get(req.headers.cookie)].lastSeen = Date.now();
+            }
+            db.set("sessions", sessions);
+        } else if (firstRun) {
+            handleResourceRequest(req, res, "first.html");
+        } else {
+            handleResourceRequest(req, res, "auth.html");
+        }
+        return;
+    } else if (URI === "/robots.txt") {
+        res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("User-agent: *\nDisallow: /\n");
+        return log.info(req, res);
+    } else if (URI === "/favicon.ico") {
+        res.statusCode = 404;
+        res.end();
+        return log.info(req, res);
+    } else if (/^\/!\/res\/[\s\S]+/.test(URI)) {
+        return handleResourceRequest(req, res, URI.substring(7));
+    }
+
+    if (/^\/!\/dl\/[\s\S]+/.test(URI) || /^\/\$\/[\s\S]+$/.test(URI)) {
+        return handleFileRequest(req, res, true);
+    }
+
+    // validate requests below
+    if (!validateRequest(req)) {
+        res.statusCode = 401;
+        res.end();
+        log.info(req, res);
+        return;
+    }
+
+    if (/^\/!\/token$/.test(URI)) {
+        if (req.headers["x-app"] === "droppy") {
+            res.writeHead(200, {
+                "Cache-Control": "private, no-store, max-age=0",
+                "Content-Type": "text/plain; charset=utf-8",
+            });
+            res.end(csrf.create(req));
+        } else {
+            res.statusCode = 401;
+            res.end();
+        }
+        log.info(req, res);
+    } else if (/^\/!\/type\/[\s\S]+/.test(URI)) {
+        handleTypeRequest(req, res, utils.addFilesPath(URI.substring(7)));
+    } else if (/^\/!\/file\/[\s\S]+/.test(URI)) {
+        handleFileRequest(req, res, false);
+    } else if (/^\/!\/zip\/[\s\S]+/.test(URI)) {
+        const zipPath = utils.addFilesPath(URI.substring(6));
+
+        /**
+         * @type {import("fs").Stats}
+         */
+        let stats = null;
+
+        try {
+            stats = await fs.stat(zipPath);
+        } catch (err) {
+            log.error(err);
+        }
+
+        if (stats?.isDirectory()) {
+            streamArchive(req, res, zipPath, true, stats, false);
+        } else {
+            res.statusCode = 404;
+            res.end();
+            log.info(req, res);
+        }
     } else {
-      handleResourceRequest(req, res, "auth.html");
+        redirectToRoot(req, res);
     }
-    return;
-  } else if (URI === "/robots.txt") {
-    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("User-agent: *\nDisallow: /\n");
-    return log.info(req, res);
-  } else if (URI === "/favicon.ico") {
-    res.statusCode = 404;
-    res.end();
-    return log.info(req, res);
-  } else if (/^\/!\/res\/[\s\S]+/.test(URI)) {
-    return handleResourceRequest(req, res, URI.substring(7));
-  }
-
-  if (/^\/!\/dl\/[\s\S]+/.test(URI) || /^\/\$\/[\s\S]+$/.test(URI)) {
-    return handleFileRequest(req, res, true);
-  }
-
-  // validate requests below
-  if (!validateRequest(req)) {
-    res.statusCode = 401;
-    res.end();
-    log.info(req, res);
-    return;
-  }
-
-  if (/^\/!\/token$/.test(URI)) {
-    if (req.headers["x-app"] === "droppy") {
-      res.writeHead(200, {
-        "Cache-Control": "private, no-store, max-age=0",
-        "Content-Type": "text/plain; charset=utf-8",
-      });
-      res.end(csrf.create(req));
-    } else {
-      res.statusCode = 401;
-      res.end();
-    }
-    log.info(req, res);
-  } else if (/^\/!\/type\/[\s\S]+/.test(URI)) {
-    handleTypeRequest(req, res, utils.addFilesPath(URI.substring(7)));
-  } else if (/^\/!\/file\/[\s\S]+/.test(URI)) {
-    handleFileRequest(req, res, false);
-  } else if (/^\/!\/zip\/[\s\S]+/.test(URI)) {
-    const zipPath = utils.addFilesPath(URI.substring(6));
-
-    /**
-     * @type {import("fs").Stats}
-     */
-    let stats = null;
-
-    try {
-      stats = await fs.stat(zipPath);
-    } catch (err) {
-      log.error(err);
-    }
-
-    if (stats && stats.isDirectory()) {
-      streamArchive(req, res, zipPath, true, stats, false);
-    } else {
-      res.statusCode = 404;
-      res.end();
-      log.info(req, res);
-    }
-
-  } else {
-    redirectToRoot(req, res);
-  }
 }
 
 const rateLimited = [];
 
 function handlePOST(req, res) {
-  const URI = decodeURIComponent(req.url);
-  // unauthenticated POSTs
-  if (/^\/!\/login/.test(URI)) {
-    res.setHeader("Content-Type", "text/plain");
+    const URI = decodeURIComponent(req.url);
+    // unauthenticated POSTs
+    if (/^\/!\/login/.test(URI)) {
+        res.setHeader("Content-Type", "text/plain");
 
-    // Rate-limit login attempts to one attempt every 2 seconds
-    const ip = utils.ip(req);
-    if (rateLimited.includes(ip)) {
-      res.statusCode = 429;
-      res.end();
-      return;
-    } else {
-      rateLimited.push(ip);
-      setTimeout(() => {
-        rateLimited.some((rIp, i) => {
-          if (rIp === ip) return rateLimited.splice(i, 1);
-        });
-      }, 2000);
+        // Rate-limit login attempts to one attempt every 2 seconds
+        const ip = utils.ip(req);
+        if (rateLimited.includes(ip)) {
+            res.statusCode = 429;
+            res.end();
+            return;
+        } else {
+            rateLimited.push(ip);
+            setTimeout(() => {
+                const index = rateLimited.indexOf(ip);
+                if (index !== -1) {
+                    rateLimited.splice(index, 1);
+                }
+            }, 2000);
+        }
+
+        utils
+            .readJsonBody(req)
+            .then((postData) => {
+                if (db.authUser(postData.username, postData.password)) {
+                    cookies.create(req, res, postData);
+                    res.statusCode = 200;
+                    res.end();
+                    log.info(
+                        req,
+                        res,
+                        "User ",
+                        "'",
+                        postData.username,
+                        "'",
+                        green(" authenticated"),
+                    );
+                } else {
+                    res.statusCode = 401;
+                    res.end();
+                    log.info(
+                        req,
+                        res,
+                        "User ",
+                        "'",
+                        postData.username,
+                        "'",
+                        red(" unauthorized"),
+                    );
+                }
+            })
+            .catch((err) => {
+                log.error(err);
+                res.statusCode = 400;
+                res.end();
+                log.info(req, res);
+            });
+        return;
+    } else if (firstRun && /^\/!\/adduser/.test(URI)) {
+        res.setHeader("Content-Type", "text/plain");
+        utils
+            .readJsonBody(req)
+            .then((postData) => {
+                if (
+                    postData.username &&
+                    postData.password &&
+                    typeof postData.username === "string" &&
+                    typeof postData.password === "string"
+                ) {
+                    db.addOrUpdateUser(
+                        postData.username,
+                        postData.password,
+                        true,
+                    );
+                    cookies.create(req, res, postData);
+                    firstRun = false;
+                    res.statusCode = 200;
+                    res.end();
+                    log.info(
+                        req,
+                        res,
+                        "User ",
+                        "'",
+                        postData.username,
+                        "' created",
+                    );
+                } else {
+                    res.statusCode = 400;
+                    res.end();
+                    log.info(req, res, "Invalid user creation request");
+                }
+            })
+            .catch(() => {
+                res.statusCode = 400;
+                res.end();
+                log.info(req, res);
+            });
+        return;
     }
 
-    utils
-      .readJsonBody(req)
-      .then((postData) => {
-        if (db.authUser(postData.username, postData.password)) {
-          cookies.create(req, res, postData);
-          res.statusCode = 200;
-          res.end();
-          log.info(
-            req,
-            res,
-            "User ",
-            "'",
-            postData.username,
-            "'",
-            green(" authenticated")
-          );
-        } else {
-          res.statusCode = 401;
-          res.end();
-          log.info(
-            req,
-            res,
-            "User ",
-            "'",
-            postData.username,
-            "'",
-            red(" unauthorized")
-          );
-        }
-      })
-      .catch((err) => {
-        log.error(err);
-        res.statusCode = 400;
+    // validate requests below
+    if (!validateRequest(req)) {
+        res.statusCode = 401;
         res.end();
         log.info(req, res);
-      });
-    return;
-  } else if (firstRun && /^\/!\/adduser/.test(URI)) {
-    res.setHeader("Content-Type", "text/plain");
-    utils
-      .readJsonBody(req)
-      .then((postData) => {
-        if (
-          postData.username &&
-          postData.password &&
-          typeof postData.username === "string" &&
-          typeof postData.password === "string"
-        ) {
-          db.addOrUpdateUser(postData.username, postData.password, true);
-          cookies.create(req, res, postData);
-          firstRun = false;
-          res.statusCode = 200;
-          res.end();
-          log.info(req, res, "User ", "'", postData.username, "' created");
-        } else {
-          res.statusCode = 400;
-          res.end();
-          log.info(req, res, "Invalid user creation request");
-        }
-      })
-      .catch(() => {
-        res.statusCode = 400;
-        res.end();
-        log.info(req, res);
-      });
-    return;
-  }
+        return;
+    }
 
-  // validate requests below
-  if (!validateRequest(req)) {
-    res.statusCode = 401;
-    res.end();
-    log.info(req, res);
-    return;
-  }
-
-  if (/^\/!\/upload/.test(URI)) {
-    handleUploadRequest(req, res);
-  } else if (/^\/!\/logout$/.test(URI)) {
-    res.setHeader("Content-Type", "text/plain");
-    utils
-      .readJsonBody(req)
-      .then((postData) => {
-        cookies.unset(req, res, postData);
-        res.statusCode = 200;
+    if (/^\/!\/upload/.test(URI)) {
+        handleUploadRequest(req, res);
+    } else if (/^\/!\/logout$/.test(URI)) {
+        res.setHeader("Content-Type", "text/plain");
+        utils
+            .readJsonBody(req)
+            .then((postData) => {
+                cookies.unset(req, res, postData);
+                res.statusCode = 200;
+                res.end();
+                log.info(req, res);
+            })
+            .catch((err) => {
+                log.error(err);
+                res.statusCode = 400;
+                res.end();
+                log.info(req, res);
+            });
+    } else {
+        res.statusCode = 404;
         res.end();
         log.info(req, res);
-      })
-      .catch((err) => {
-        log.error(err);
-        res.statusCode = 400;
-        res.end();
-        log.info(req, res);
-      });
-  } else {
-    res.statusCode = 404;
-    res.end();
-    log.info(req, res);
-  }
+    }
 }
 
 function handleResourceRequest(req, res, resourceName) {
-  let resource;
+    let resource;
 
-  // Assign filename, must be unique for resource requests
-  if (/^\/!\/res\/theme\//.test(req.url)) {
-    resource = cache.themes[req.url.substring("/!/res/theme/".length)];
-  } else if (/^\/!\/res\/mode\//.test(req.url)) {
-    resource = cache.modes[req.url.substring("/!/res/mode/".length)];
-  } else if (/^\/!\/res\/lib\//.test(req.url)) {
-    resource = cache.lib[req.url.substring("/!/res/lib/".length)];
-  } else if (/^\/!\/res\/manifest\.json$/.test(req.url)) {
-    resource = {
-      data: manifest(req),
-      mime: "application/manifest+json; charset=UTF-8",
-    };
-  } else {
-    resource = cache.res[resourceName];
-  }
-
-  // Regular resource handling
-  const headers = {};
-  let status = 200;
-  let data;
-
-  if (resource === undefined) {
-    status = 400;
-  } else {
-    headers["Vary"] = "Accept-Encoding";
-
-    // Caching
-    headers["Cache-Control"] = "public, max-age=0";
-    if (resource.etag) {
-      headers["ETag"] = resource.etag;
-    }
-
-    // Check Etag
-    if ((req.headers["if-none-match"] || "") === resource.etag) {
-      res.writeHead(304, headers);
-      res.end();
-      log.info(req, res);
-      return;
-    }
-
-    // Headers on HTML requests
-    if (/\.html$/.test(resourceName)) {
-      headers["Content-Security-Policy"] = [
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:",
-        "style-src 'self' 'unsafe-inline' blob: data:",
-        "media-src 'self' blob: data:",
-        "font-src 'self' blob: data:",
-        "worker-src 'self' blob: data:",
-        "frame-src 'self' blob: data:",
-        "object-src 'none'",
-        "form-action 'self'",
-        // connect-src 'self' does not include websockets in Firefox and Safari.
-        // The proper way to solve it would require a X-Forwarded-Proto to be set
-        // by a reverse proxy, which would be a breaking change. Disabled until
-        // below bug is fixed.
-        // Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1345615
-        // "connect-src 'self' ws:" + origin + " wss:" + origin,
-      ].join("; ");
-      headers["X-Content-Type-Options"] = "nosniff";
-      headers["Referrer-Policy"] = "no-referrer";
-      if (!config.allowFrame) {
-        headers["X-Frame-Options"] = "DENY";
-      }
-      if (
-        req.headers["user-agent"] &&
-        req.headers["user-agent"].indexOf("MSIE") > 0
-      ) {
-        headers["X-UA-Compatible"] = "IE=Edge";
-      }
-    }
-
-    // Content-Type
-    headers["Content-Type"] = resource.mime;
-
-    // Encoding, length
-    const encodings = (req.headers["accept-encoding"] || "")
-      .split(",")
-      .map((e) => {
-        return e.trim().toLowerCase();
-      })
-      .filter((e) => {
-        return Boolean(e);
-      });
-    if (encodings.includes("br") && resource.brotli) {
-      headers["Content-Encoding"] = "br";
-      headers["Content-Length"] = resource.brotli.length;
-      data = resource.brotli;
-    } else if (encodings.includes("gzip") && resource.gzip) {
-      headers["Content-Encoding"] = "gzip";
-      headers["Content-Length"] = resource.gzip.length;
-      data = resource.gzip;
+    // Assign filename, must be unique for resource requests
+    if (/^\/!\/res\/theme\//.test(req.url)) {
+        resource = cache.themes[req.url.substring("/!/res/theme/".length)];
+    } else if (/^\/!\/res\/mode\//.test(req.url)) {
+        resource = cache.modes[req.url.substring("/!/res/mode/".length)];
+    } else if (/^\/!\/res\/lib\//.test(req.url)) {
+        resource = cache.lib[req.url.substring("/!/res/lib/".length)];
+    } else if (/^\/!\/res\/manifest\.json$/.test(req.url)) {
+        resource = {
+            data: manifest(req),
+            mime: "application/manifest+json; charset=UTF-8",
+        };
     } else {
-      headers["Content-Length"] = resource.data.length;
-      data = resource.data;
+        resource = cache.res[resourceName];
     }
-  }
-  res.writeHead(status, headers);
-  res.end(req.method === "GET" ? data : undefined);
-  log.info(req, res);
+
+    // Regular resource handling
+    const headers = {};
+    let status = 200;
+    let data;
+
+    if (resource === undefined) {
+        status = 400;
+    } else {
+        headers.Vary = "Accept-Encoding";
+
+        // Caching
+        headers["Cache-Control"] = "public, max-age=0";
+        if (resource.etag) {
+            headers.ETag = resource.etag;
+        }
+
+        // Check Etag
+        if ((req.headers["if-none-match"] || "") === resource.etag) {
+            res.writeHead(304, headers);
+            res.end();
+            log.info(req, res);
+            return;
+        }
+
+        // Headers on HTML requests
+        if (/\.html$/.test(resourceName)) {
+            headers["Content-Security-Policy"] = [
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:",
+                "style-src 'self' 'unsafe-inline' blob: data:",
+                "media-src 'self' blob: data:",
+                "font-src 'self' blob: data:",
+                "worker-src 'self' blob: data:",
+                "frame-src 'self' blob: data:",
+                "object-src 'none'",
+                "form-action 'self'",
+                // connect-src 'self' does not include websockets in Firefox and Safari.
+                // The proper way to solve it would require a X-Forwarded-Proto to be set
+                // by a reverse proxy, which would be a breaking change. Disabled until
+                // below bug is fixed.
+                // Firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1345615
+                // "connect-src 'self' ws:" + origin + " wss:" + origin,
+            ].join("; ");
+            headers["X-Content-Type-Options"] = "nosniff";
+            headers["Referrer-Policy"] = "no-referrer";
+            if (!config.allowFrame) {
+                headers["X-Frame-Options"] = "DENY";
+            }
+            if (
+                req.headers["user-agent"] &&
+                req.headers["user-agent"].indexOf("MSIE") > 0
+            ) {
+                headers["X-UA-Compatible"] = "IE=Edge";
+            }
+        }
+
+        // Content-Type
+        headers["Content-Type"] = resource.mime;
+
+        // Encoding, length
+        const encodings = (req.headers["accept-encoding"] || "")
+            .split(",")
+            .map((e) => {
+                return e.trim().toLowerCase();
+            })
+            .filter((e) => {
+                return Boolean(e);
+            });
+        if (encodings.includes("br") && resource.brotli) {
+            headers["Content-Encoding"] = "br";
+            headers["Content-Length"] = resource.brotli.length;
+            data = resource.brotli;
+        } else if (encodings.includes("gzip") && resource.gzip) {
+            headers["Content-Encoding"] = "gzip";
+            headers["Content-Length"] = resource.gzip.length;
+            data = resource.gzip;
+        } else {
+            headers["Content-Length"] = resource.data.length;
+            data = resource.data;
+        }
+    }
+    res.writeHead(status, headers);
+    res.end(req.method === "GET" ? data : undefined);
+    log.info(req, res);
 }
 
 async function handleFileRequest(req, res, download) {
-  const URI = decodeURIComponent(req.url);
-  let shareLink, filepath;
+    const URI = decodeURIComponent(req.url);
+    let shareLink, filepath;
 
-  let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
-  if (parts && parts[1]) {
-    // check for sharelink
-    const link = db.get("links")[parts[1]];
-    if (!link) return redirectToRoot(req, res);
-    shareLink = true;
-    download = link.attachement;
-    filepath = utils.addFilesPath(link.location);
-  } else {
-    // it's a direct file request
-    if (!validateRequest(req)) {
-      return redirectToRoot(req, res);
-    }
-    parts = /^\/!\/(.+?)\/(.+)$/.exec(URI);
-    if (!parts || !parts[1] || !parts[2] || !utils.isPathSane(parts[2])) {
-      return redirectToRoot(req, res);
-    }
-    download = parts[1] === "dl";
-    filepath = utils.addFilesPath(`/${[parts[2]]}`);
-  }
-
-  try {
-    const stats = await fs.stat(filepath);
-
-    if (stats.isDirectory() && shareLink) {
-      streamArchive(req, res, filepath, download, stats, shareLink);
+    let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
+    if (parts?.[1]) {
+        // check for sharelink
+        const link = db.get("links")[parts[1]];
+        if (!link) return redirectToRoot(req, res);
+        shareLink = true;
+        download = link.attachement;
+        filepath = utils.addFilesPath(link.location);
     } else {
-      streamFile(req, res, filepath, download, stats, shareLink);
+        // it's a direct file request
+        if (!validateRequest(req)) {
+            return redirectToRoot(req, res);
+        }
+        parts = /^\/!\/(.+?)\/(.+)$/.exec(URI);
+        if (!parts || !parts[1] || !parts[2] || !utils.isPathSane(parts[2])) {
+            return redirectToRoot(req, res);
+        }
+        download = parts[1] === "dl";
+        filepath = utils.addFilesPath(`/${[parts[2]]}`);
     }
 
-  } catch (err) {
-    if (err.code === "ENOENT") {
-      res.statusCode = 404;
-    } else if (err.code === "EACCES") {
-      res.statusCode = 403;
-    } else {
-      res.statusCode = 500;
-    }
-    log.error(err);
-    res.end();
-  }
+    try {
+        const stats = await fs.stat(filepath);
 
-  log.info(req, res);
+        if (stats.isDirectory() && shareLink) {
+            streamArchive(req, res, filepath, download, stats, shareLink);
+        } else {
+            streamFile(req, res, filepath, download, stats, shareLink);
+        }
+    } catch (err) {
+        if (err.code === "ENOENT") {
+            res.statusCode = 404;
+        } else if (err.code === "EACCES") {
+            res.statusCode = 403;
+        } else {
+            res.statusCode = 500;
+        }
+        log.error(err);
+        res.end();
+    }
+
+    log.info(req, res);
 }
 
 async function handleTypeRequest(req, res, file) {
-  let isBinary;
-  try {
-    isBinary = await utils.isBinary(file);
-  } catch (err) {
-    res.statusCode = 500;
-    res.end();
-    log.error(err);
-    return;
-  }
+    let isBinary;
+    try {
+        isBinary = await utils.isBinary(file);
+    } catch (err) {
+        res.statusCode = 500;
+        res.end();
+        log.error(err);
+        return;
+    }
 
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  res.end(isBinary ? "binary" : "text");
-  log.info(req, res);
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.end(isBinary ? "binary" : "text");
+    log.info(req, res);
 }
 
 function handleUploadRequest(req, res) {
-  let done = false;
+    let done = false;
 
-  if (config.readOnly) {
-    res.statusCode = 403;
-    res.end();
-    log.info(req, res, "Upload cancelled because of read-only mode");
-    return;
-  }
-
-  if (req.setTimeout) {
-    req.setTimeout(config.uploadTimeout);
-  }
-
-  if (req.connection.setTimeout) {
-    req.connection.setTimeout(config.uploadTimeout);
-  }
-
-  if (res.setTimeout) {
-    res.setTimeout(config.uploadTimeout);
-  }
-
-  req.query = Object.fromEntries(
-    new URLSearchParams(req.url.substring("/!/upload?".length))
-  );
-  const vId = req.query.vId;
-
-  if (!req.query || !req.query.to) {
-    res.statusCode = 500;
-    res.end();
-    log.info(req, res, "Invalid upload request");
-    return;
-  }
-
-  Object.keys(clients).some((sid) => {
-    if (clients[sid].cookie === cookies.get(req.headers.cookie)) {
-      req.sid = sid;
-      return true;
+    if (config.readOnly) {
+        res.statusCode = 403;
+        res.end();
+        log.info(req, res, "Upload cancelled because of read-only mode");
+        return;
     }
-  });
 
-  const dstDir =
-    decodeURIComponent(req.query.to) || clients[req.sid].views[vId].directory;
-
-  let numFiles = 0;
-
-  log.info(req, res, "Upload started");
-
-  const opts = {
-    preservePath: true,
-    headers: req.headers,
-    fileHwm: 1024 * 1024,
-    limits: { fieldNameSize: 255, fieldSize: 10 * 1024 * 1024 },
-    defParamCharset: 'utf8',
-  };
-
-  if (config.maxFileSize > 0) {
-    opts.limits.fileSize = config.maxFileSize;
-  }
-
-  const bb = busboy(opts);
-  const rootNames = new Set();
-
-  bb.on("error", (err) => {
-    log.error(err);
-  });
-
-  const onWriteError = (err) => {
-    log.error(req, res, err);
-    sendError(req.sid, vId, `Error writing the file: ${err.message}`);
-    closeConnection(400);
-  };
-
-  bb.on("file", (_, file, info) => {
-    const { filename } = info;
-    if (!utils.isPathSane(filename) || !utils.isPathSane(dstDir)) {
-      return;
+    if (req.setTimeout) {
+        req.setTimeout(config.uploadTimeout);
     }
-    numFiles++;
 
-    file.on("limit", () => {
-      log.info(req, res, "Maximum file size reached, cancelling upload");
-      sendError(
-        req.sid,
-        vId,
-        `Maximum upload size of ${utils.formatBytes(
-          config.maxFileSize
-        )} exceeded.`
-      );
-      closeConnection(400);
-    });
+    if (req.connection.setTimeout) {
+        req.connection.setTimeout(config.uploadTimeout);
+    }
 
-    // store temp names in rootNames for later rename
-    const tmpPath = utils.addUploadTempExt(filename);
-    rootNames.add(utils.rootname(tmpPath));
+    if (res.setTimeout) {
+        res.setTimeout(config.uploadTimeout);
+    }
 
-    const dst = utils.addFilesPath(path.join(dstDir, tmpPath));
-
-    utils.mkdir(path.dirname(dst)).then(async () => {
-      try {
-
-        await fs.stat(dst);
-
-        if (req.query.rename === "1") {
-          utils.getNewPath(dst, (newDst) => {
-            const ws = createWriteStream(newDst, { mode: "644" });
-            ws.on("error", onWriteError);
-            file.pipe(ws);
-          });
-        } else {
-          const ws = createWriteStream(dst, { mode: "644" });
-          ws.on("error", onWriteError);
-          file.pipe(ws);
-        }
-      } catch (err) {
-        if (err && err.code === "ENOENT") {
-          const ws = createWriteStream(dst, { mode: "644" });
-          ws.on("error", onWriteError);
-          file.pipe(ws);
-        } else {
-          onWriteError(err);
-        }
-      }
-    });
-  });
-
-  bb.on("finish", async () => {
-    log.info(req, res, `Received ${numFiles} files`);
-    done = true;
-
-    // move temp files into place
-    await Promise.all(
-      [...rootNames].map(async (p) => {
-        const srcPath = utils.addFilesPath(path.join(dstDir, p));
-        const dstPath = utils.addFilesPath(path.join(dstDir, utils.removeUploadTempExt(p)));
-
-        await promisify(utils.move)(srcPath, dstPath);
-      })
+    req.query = Object.fromEntries(
+        new URLSearchParams(req.url.substring("/!/upload?".length)),
     );
+    const vId = req.query.vId;
 
-    filetree.updateDir(dstDir);
-    closeConnection();
-  });
-
-  bb.on("close", async () => {
-    if (!done) {
-      log.info(req, res, "Upload cancelled");
-
-      // remove all uploaded temp files on cancel
-      await Promise.all(
-        [...rootNames].map(async (p) => {
-
-
-          await promisify(utils.rm)(utils.addFilesPath(path.join(dstDir, p)));
-        })
-      );
-
-      filetree.updateDir(dstDir);
-      closeConnection();
+    if (!req.query || !req.query.to) {
+        res.statusCode = 500;
+        res.end();
+        log.info(req, res, "Invalid upload request");
+        return;
     }
-  });
 
-  req.pipe(bb);
+    Object.keys(clients).some((sid) => {
+        if (clients[sid].cookie === cookies.get(req.headers.cookie)) {
+            req.sid = sid;
+            return true;
+        }
+        return false;
+    });
 
-  function closeConnection(status) {
-    if (res.finished) return;
-    res.statusCode = status || 200;
-    res.setHeader("Connection", "close");
-    res.end();
-  }
+    const dstDir =
+        decodeURIComponent(req.query.to) ||
+        clients[req.sid].views[vId].directory;
+
+    let numFiles = 0;
+
+    log.info(req, res, "Upload started");
+
+    const opts = {
+        preservePath: true,
+        headers: req.headers,
+        fileHwm: 1024 * 1024,
+        limits: { fieldNameSize: 255, fieldSize: 10 * 1024 * 1024 },
+        defParamCharset: "utf8",
+    };
+
+    if (config.maxFileSize > 0) {
+        opts.limits.fileSize = config.maxFileSize;
+    }
+
+    const bb = busboy(opts);
+    const rootNames = new Set();
+
+    bb.on("error", (err) => {
+        log.error(err);
+    });
+
+    const onWriteError = (err) => {
+        log.error(req, res, err);
+        sendError(req.sid, vId, `Error writing the file: ${err.message}`);
+        closeConnection(400);
+    };
+
+    bb.on("file", (_, file, info) => {
+        const { filename } = info;
+        if (!utils.isPathSane(filename) || !utils.isPathSane(dstDir)) {
+            return;
+        }
+        numFiles++;
+
+        file.on("limit", () => {
+            log.info(req, res, "Maximum file size reached, cancelling upload");
+            sendError(
+                req.sid,
+                vId,
+                `Maximum upload size of ${utils.formatBytes(
+                    config.maxFileSize,
+                )} exceeded.`,
+            );
+            closeConnection(400);
+        });
+
+        // store temp names in rootNames for later rename
+        const tmpPath = utils.addUploadTempExt(filename);
+        rootNames.add(utils.rootname(tmpPath));
+
+        const dst = utils.addFilesPath(path.join(dstDir, tmpPath));
+
+        utils.mkdir(path.dirname(dst)).then(async () => {
+            try {
+                await fs.stat(dst);
+
+                if (req.query.rename === "1") {
+                    utils.getNewPath(dst, (newDst) => {
+                        const ws = createWriteStream(newDst, { mode: "644" });
+                        ws.on("error", onWriteError);
+                        file.pipe(ws);
+                    });
+                } else {
+                    const ws = createWriteStream(dst, { mode: "644" });
+                    ws.on("error", onWriteError);
+                    file.pipe(ws);
+                }
+            } catch (err) {
+                if (err && err.code === "ENOENT") {
+                    const ws = createWriteStream(dst, { mode: "644" });
+                    ws.on("error", onWriteError);
+                    file.pipe(ws);
+                } else {
+                    onWriteError(err);
+                }
+            }
+        });
+    });
+
+    bb.on("finish", async () => {
+        log.info(req, res, `Received ${numFiles} files`);
+        done = true;
+
+        // move temp files into place
+        await Promise.all(
+            [...rootNames].map(async (p) => {
+                const srcPath = utils.addFilesPath(path.join(dstDir, p));
+                const dstPath = utils.addFilesPath(
+                    path.join(dstDir, utils.removeUploadTempExt(p)),
+                );
+
+                await promisify(utils.move)(srcPath, dstPath);
+            }),
+        );
+
+        filetree.updateDir(dstDir);
+        closeConnection();
+    });
+
+    bb.on("close", async () => {
+        if (!done) {
+            log.info(req, res, "Upload cancelled");
+
+            // remove all uploaded temp files on cancel
+            await Promise.all(
+                [...rootNames].map(async (p) => {
+                    await promisify(utils.rm)(
+                        utils.addFilesPath(path.join(dstDir, p)),
+                    );
+                }),
+            );
+
+            filetree.updateDir(dstDir);
+            closeConnection();
+        }
+    });
+
+    req.pipe(bb);
+
+    function closeConnection(status) {
+        if (res.finished) return;
+        res.statusCode = status || 200;
+        res.setHeader("Connection", "close");
+        res.end();
+    }
 }
 
 filetree.on("updateall", () => {
-  Object.keys(clientsPerDir).forEach((dir) => {
-    clientsPerDir[dir].forEach((client) => {
-      client.update();
+    Object.keys(clientsPerDir).forEach((dir) => {
+        clientsPerDir[dir].forEach((client) => {
+            client.update();
+        });
     });
-  });
 });
 
 filetree.on("update", (dir) => {
-  while (true) {
-    if (clientsPerDir[dir]) {
-      clientsPerDir[dir].forEach((client) => {
-        client.update();
-      });
+    while (true) {
+        if (clientsPerDir[dir]) {
+            clientsPerDir[dir].forEach((client) => {
+                client.update();
+            });
+        }
+        if (dir === "/") break;
+        dir = path.dirname(dir);
     }
-    if (dir === "/") break;
-    dir = path.dirname(dir);
-  }
 });
 
 function updateClientLocation(dir, sid, vId) {
-  // remove current client from any previous dirs
-  removeClientPerDir(sid, vId);
+    // remove current client from any previous dirs
+    removeClientPerDir(sid, vId);
 
-  // and add client back
-  if (!clientsPerDir[dir]) clientsPerDir[dir] = [];
-  clientsPerDir[dir].push({
-    sid,
-    vId,
-    update: throttle(
-      function () {
-        sendFiles(this.sid, this.vId);
-      },
-      config.updateInterval,
-      { leading: true, trailing: true }
-    ),
-  });
+    // and add client back
+    if (!clientsPerDir[dir]) clientsPerDir[dir] = [];
+    clientsPerDir[dir].push({
+        sid,
+        vId,
+        update: throttle(
+            function () {
+                sendFiles(this.sid, this.vId);
+            },
+            config.updateInterval,
+            { leading: true, trailing: true },
+        ),
+    });
 }
 
 function removeClientPerDir(sid, vId) {
-  Object.keys(clientsPerDir).forEach((dir) => {
-    const removeAt = [];
-    clientsPerDir[dir].forEach((client, i) => {
-      if (
-        client.sid === sid &&
-        (typeof vId === "number" ? client.vId === vId : true)
-      ) {
-        removeAt.push(i);
-      }
-    });
-    removeAt.reverse().forEach((pos) => {
-      clientsPerDir[dir].splice(pos, 1);
-    });
+    Object.keys(clientsPerDir).forEach((dir) => {
+        const removeAt = [];
+        clientsPerDir[dir].forEach((client, i) => {
+            if (
+                client.sid === sid &&
+                (typeof vId === "number" ? client.vId === vId : true)
+            ) {
+                removeAt.push(i);
+            }
+        });
+        removeAt.reverse().forEach((pos) => {
+            clientsPerDir[dir].splice(pos, 1);
+        });
 
-    // purge dirs with no clients
-    if (!clientsPerDir[dir].length) delete clientsPerDir[dir];
-  });
+        // purge dirs with no clients
+        if (!clientsPerDir[dir].length) delete clientsPerDir[dir];
+    });
 }
 
 function debug() {
-  chokidar
-    .watch(paths.get().client, {
-      alwaysStat: true,
-      ignoreInitial: true,
-    })
-    .on("change", (file) => {
-      setTimeout(async () => {
-        // prevent EBUSY on win32
-        if (/\.css$/.test(file)) {
-          cache.res["style.css"] = await resources.compileCSS();
-          sendObjAll({
-            type: "RELOAD",
-            css: String(cache.res["style.css"].data).replace(
-              '"sprites.png"',
-              '"!/res/sprites.png"'
-            ),
-          });
-        } else if (/\.(js|hbs)$/.test(file)) {
-          cache.res["client.js"] = await resources.compileJS();
-          sendObjAll({ type: "RELOAD" });
-        } else if (/\.(html|svg)$/.test(file)) {
-          await resources.compileHTML(cache.res);
-          sendObjAll({ type: "RELOAD" });
-        }
-      }, 100);
-    });
+    chokidar
+        .watch(paths.get().client, {
+            alwaysStat: true,
+            ignoreInitial: true,
+        })
+        .on("change", (file) => {
+            setTimeout(async () => {
+                // prevent EBUSY on win32
+                if (/\.css$/.test(file)) {
+                    cache.res["style.css"] = await resources.compileCSS();
+                    sendObjAll({
+                        type: "RELOAD",
+                        css: String(cache.res["style.css"].data).replace(
+                            '"sprites.png"',
+                            '"!/res/sprites.png"',
+                        ),
+                    });
+                } else if (/\.(js|hbs)$/.test(file)) {
+                    cache.res["client.js"] = await resources.compileJS();
+                    sendObjAll({ type: "RELOAD" });
+                } else if (/\.(html|svg)$/.test(file)) {
+                    await resources.compileHTML(cache.res);
+                    sendObjAll({ type: "RELOAD" });
+                }
+            }, 100);
+        });
 }
 
 // Clean up sharelinks by removing links to nonexistant files
 function cleanupLinks(callback) {
-  let linkcount = 0,
-    cbcount = 0;
-  const links = db.get("links");
-  if (Object.keys(links).length === 0) {
-    callback();
-  } else {
-    Object.keys(links).forEach(async (link) => {
-      linkcount++;
-
-      const shareLink = link;
-      const location = links[link].location;
-
-      // check for links not matching the configured length
-      if (shareLink.length !== config.linkLength) {
-        log.debug(
-          `deleting link not matching the configured length: ${shareLink}`
-        );
-        delete links[shareLink];
-        if (++cbcount === linkcount) {
-          db.set("links", links);
-          callback();
-        }
-        return;
-      }
-      // check for links where the target does not exist anymore
-
-      /**
-       * @type {import("fs").Stats}
-       */
-      let stats;
-      try {
-        stats = await fs.stat(path.join(paths.get().files, location));
-      } catch {
-        // Ignore error
-      }
-
-      if (!stats) {
-        log.debug(`deleting nonexistant link: ${shareLink}`);
-        delete links[shareLink];
-      }
-
-      if (++cbcount === linkcount) {
-        if (JSON.stringify(links) !== JSON.stringify(db.get("links"))) {
-          db.set("links", links);
-        }
+    let linkcount = 0,
+        cbcount = 0;
+    const links = db.get("links");
+    if (Object.keys(links).length === 0) {
         callback();
-      }
-    });
-  }
+    } else {
+        Object.keys(links).forEach(async (link) => {
+            linkcount++;
+
+            const shareLink = link;
+            const location = links[link].location;
+
+            // check for links not matching the configured length
+            if (shareLink.length !== config.linkLength) {
+                log.debug(
+                    `deleting link not matching the configured length: ${shareLink}`,
+                );
+                delete links[shareLink];
+                if (++cbcount === linkcount) {
+                    db.set("links", links);
+                    callback();
+                }
+                return;
+            }
+            // check for links where the target does not exist anymore
+
+            /**
+             * @type {import("fs").Stats}
+             */
+            let stats;
+            try {
+                stats = await fs.stat(path.join(paths.get().files, location));
+            } catch {
+                // Ignore error
+            }
+
+            if (!stats) {
+                log.debug(`deleting nonexistant link: ${shareLink}`);
+                delete links[shareLink];
+            }
+
+            if (++cbcount === linkcount) {
+                if (JSON.stringify(links) !== JSON.stringify(db.get("links"))) {
+                    db.set("links", links);
+                }
+                callback();
+            }
+        });
+    }
 }
 
 // verify a resource etag, returns the etag if it doesn't match, otherwise
 // returns null indicating the response is handled with a 304
 function checkETag(req, res, path, mtime) {
-  const eTag = etag(`${path}/${mtime}`);
-  if ((req.headers["if-none-match"] || "") === eTag) {
-    res.statusCode = 304;
-    res.end();
-    log.info(req, res);
-    return null;
-  }
-  return eTag;
+    const eTag = etag(`${path}/${mtime}`);
+    if ((req.headers["if-none-match"] || "") === eTag) {
+        res.statusCode = 304;
+        res.end();
+        log.info(req, res);
+        return null;
+    }
+    return eTag;
 }
 
 // Create a zip file from a directory and stream it to a client
 function streamArchive(req, res, zipPath, download, stats, shareLink) {
-  const eTag = checkETag(req, res, zipPath, stats.mtime);
-  if (!eTag) return;
-  const zip = new yazl.ZipFile();
-  const relPath = utils.removeFilesPath(zipPath);
-  log.info(req, res);
-  log.info(req, res, "Streaming zip of ", blue(relPath));
-  res.statusCode = 200;
-  res.setHeader("Content-Type", utils.contentType(zip));
-  res.setHeader("Transfer-Encoding", "chunked");
-  res.setHeader(
-    "Content-Disposition",
-    utils.getDispo(`${zipPath}.zip`, download)
-  );
-  res.setHeader(
-    "Cache-Control",
-    `${shareLink ? "public" : "private"}, max-age=0`
-  );
-  res.setHeader("ETag", eTag);
+    const eTag = checkETag(req, res, zipPath, stats.mtime);
+    if (!eTag) return;
+    const zip = new yazl.ZipFile();
+    const relPath = utils.removeFilesPath(zipPath);
+    log.info(req, res);
+    log.info(req, res, "Streaming zip of ", blue(relPath));
+    res.statusCode = 200;
+    res.setHeader("Content-Type", utils.contentType(zip));
+    res.setHeader("Transfer-Encoding", "chunked");
+    res.setHeader(
+        "Content-Disposition",
+        utils.getDispo(`${zipPath}.zip`, download),
+    );
+    res.setHeader(
+        "Cache-Control",
+        `${shareLink ? "public" : "private"}, max-age=0`,
+    );
+    res.setHeader("ETag", eTag);
 
-  if (req.method === "HEAD") {
-    res.end();
-    return;
-  }
+    if (req.method === "HEAD") {
+        res.end();
+        return;
+    }
 
-  rrdir
-    .async(zipPath, { stats: true })
-    .then((entries) => {
-      for (const entry of entries) {
-        const pathInZip = path.relative(zipPath, entry.path);
-        const metaData = {
-          mtime:
-            entry.stats && entry.stats.mtime ? entry.stats.mtime : new Date(),
-          mode: entry.stats && entry.stats.mode ? entry.stats.mode : 0o666,
-        };
+    rrdir
+        .async(zipPath, { stats: true })
+        .then((entries) => {
+            for (const entry of entries) {
+                const pathInZip = path.relative(zipPath, entry.path);
+                const metaData = {
+                    mtime: entry.stats?.mtime ? entry.stats.mtime : new Date(),
+                    mode: entry.stats?.mode ? entry.stats.mode : 0o666,
+                };
 
-        if (entry.directory) {
-          zip.addEmptyDirectory(pathInZip, metaData);
-        } else {
-          zip.addFile(entry.path, pathInZip, metaData);
-        }
-      }
+                if (entry.directory) {
+                    zip.addEmptyDirectory(pathInZip, metaData);
+                } else {
+                    zip.addFile(entry.path, pathInZip, metaData);
+                }
+            }
 
-      zip.outputStream.pipe(res);
-      zip.end();
-    })
-    .catch((err) => {
-      log.error(req, res, err);
-      res.statusCode = 500;
-      res.end();
-    });
+            zip.outputStream.pipe(res);
+            zip.end();
+        })
+        .catch((err) => {
+            log.error(req, res, err);
+            res.statusCode = 500;
+            res.end();
+        });
 }
 
 function streamFile(req, res, filepath, download, stats, shareLink) {
-  const eTag = checkETag(req, res, filepath, stats.mtime);
-  if (!eTag) return;
+    const eTag = checkETag(req, res, filepath, stats.mtime);
+    if (!eTag) return;
 
-  function setHeaders(res) {
-    res.setHeader("Content-Type", utils.contentType(filepath));
-    res.setHeader(
-      "Cache-Control",
-      `${shareLink ? "public" : "private"}, max-age=0`
-    );
-    res.setHeader("Content-Disposition", utils.getDispo(filepath, download));
-    res.setHeader("ETag", eTag);
-  }
-
-  if (req.method === "HEAD") {
-    setHeaders(res);
-    res.end();
-    return;
-  }
-
-  // send expects a url-encoded argument
-  sendFile(
-    req,
-    encodeURIComponent(utils.removeFilesPath(filepath).substring(1)),
-    {
-      root: paths.get().files,
-      dotfiles: "allow",
-      index: false,
-      etag: false,
-      cacheControl: false,
+    function setHeaders(res) {
+        res.setHeader("Content-Type", utils.contentType(filepath));
+        res.setHeader(
+            "Cache-Control",
+            `${shareLink ? "public" : "private"}, max-age=0`,
+        );
+        res.setHeader(
+            "Content-Disposition",
+            utils.getDispo(filepath, download),
+        );
+        res.setHeader("ETag", eTag);
     }
-  )
-    .on("headers", (res) => {
-      setHeaders(res);
-    })
-    .on("error", (err) => {
-      log.error(err);
-      if (err.status === 416) {
-        log.error("requested range:", req.headers.range);
-        log.error("file size:", stats.size);
-      }
-      res.statusCode = typeof err.status === "number" ? err.status : 400;
-      res.end();
-    })
-    .on("stream", () => {
-      log.info(req, res);
-    })
-    .pipe(res);
+
+    if (req.method === "HEAD") {
+        setHeaders(res);
+        res.end();
+        return;
+    }
+
+    // send expects a url-encoded argument
+    sendFile(
+        req,
+        encodeURIComponent(utils.removeFilesPath(filepath).substring(1)),
+        {
+            root: paths.get().files,
+            dotfiles: "allow",
+            index: false,
+            etag: false,
+            cacheControl: false,
+        },
+    )
+        .on("headers", (res) => {
+            setHeaders(res);
+        })
+        .on("error", (err) => {
+            log.error(err);
+            if (err.status === 416) {
+                log.error("requested range:", req.headers.range);
+                log.error("file size:", stats.size);
+            }
+            res.statusCode = typeof err.status === "number" ? err.status : 400;
+            res.end();
+        })
+        .on("stream", () => {
+            log.info(req, res);
+        })
+        .pipe(res);
 }
 
 function validateRequest(req) {
-  return Boolean(cookies.get(req.headers.cookie) || config.public);
+    return Boolean(cookies.get(req.headers.cookie) || config.public);
 }
 
 const cbs = [];
 
 function tlsInit(opts, cb) {
-  if (!cbs[opts.index]) {
-    cbs[opts.index] = [cb];
-    tlsSetup(opts, (err, tlsData) => {
-      cbs[opts.index].forEach((cb) => {
-        cb(err, tlsData);
-      });
-    });
-  } else cbs[opts.index].push(cb);
+    if (!cbs[opts.index]) {
+        cbs[opts.index] = [cb];
+        tlsSetup(opts, (err, tlsData) => {
+            cbs[opts.index].forEach((cb) => {
+                cb(err, tlsData);
+            });
+        });
+    } else cbs[opts.index].push(cb);
 }
 
 async function tlsSetup(opts, cb) {
-  if (typeof opts.key !== "string") {
-    return cb(new Error("Missing TLS option 'key'"));
-  }
-  if (typeof opts.cert !== "string") {
-    return cb(new Error("Missing TLS option 'cert'"));
-  }
+    if (typeof opts.key !== "string") {
+        return cb(new Error("Missing TLS option 'key'"));
+    }
+    if (typeof opts.cert !== "string") {
+        return cb(new Error("Missing TLS option 'cert'"));
+    }
 
-  const cert = await fs.readFile(
-    path.resolve(paths.get().config, ut(opts.cert)),
-    "utf8"
-  );
-  const key = await fs.readFile(
-    path.resolve(paths.get().config, ut(opts.key)),
-    "utf8"
-  );
+    const cert = await fs.readFile(
+        path.resolve(paths.get().config, ut(opts.cert)),
+        "utf8",
+    );
+    const key = await fs.readFile(
+        path.resolve(paths.get().config, ut(opts.key)),
+        "utf8",
+    );
 
-  cb(null, { cert, key });
+    cb(null, { cert, key });
 }
 
 function cleanupSessions() {
-  if (!ready) return;
-  // Clean inactive sessions after 1 month of inactivity
-  const sessions = db.get("sessions");
-  Object.keys(sessions).forEach((session) => {
-    if (
-      !sessions[session].lastSeen ||
-      Date.now() - sessions[session].lastSeen >= 2678400000
-    ) {
-      delete sessions[session];
-    }
-  });
-  db.set("sessions", sessions);
+    if (!ready) return;
+    // Clean inactive sessions after 1 month of inactivity
+    const sessions = db.get("sessions");
+    Object.keys(sessions).forEach((session) => {
+        if (
+            !sessions[session].lastSeen ||
+            Date.now() - sessions[session].lastSeen >= 2678400000
+        ) {
+            delete sessions[session];
+        }
+    });
+    db.set("sessions", sessions);
 }
 
 setTimeout(() => setInterval(cleanupSessions, 3600 * 1000), 60 * 1000);
 
 // Process startup
 function setupProcess(standalone) {
-  if (standalone) {
-    process.on("SIGINT", endProcess.bind(null, "SIGINT"));
-    process.on("SIGQUIT", endProcess.bind(null, "SIGQUIT"));
-    process.on("SIGTERM", endProcess.bind(null, "SIGTERM"));
-    process.on("unhandledRejection", (error) => {
-      log.error(error);
-      if (dieOnError) {
-        process.exit(1);
-      }
-    });
-    process.on("uncaughtException", (error) => {
-      log.error(error);
-      if (dieOnError) {
-        process.exit(1);
-      }
-    });
-  }
+    if (standalone) {
+        process.on("SIGINT", endProcess.bind(null, "SIGINT"));
+        process.on("SIGQUIT", endProcess.bind(null, "SIGQUIT"));
+        process.on("SIGTERM", endProcess.bind(null, "SIGTERM"));
+        process.on("unhandledRejection", (error) => {
+            log.error(error);
+            if (dieOnError) {
+                process.exit(1);
+            }
+        });
+        process.on("uncaughtException", (error) => {
+            log.error(error);
+            if (dieOnError) {
+                process.exit(1);
+            }
+        });
+    }
 }
 
 // Process shutdown
 function endProcess(signal) {
-  let count = 0;
-  log.info(`Received ${red(signal)} - Shutting down ...`);
-  Object.keys(clients).forEach((sid) => {
-    if (!clients[sid] || !clients[sid].ws) {
-      return;
+    let count = 0;
+    log.info(`Received ${red(signal)} - Shutting down ...`);
+    Object.keys(clients).forEach((sid) => {
+        if (!clients[sid] || !clients[sid].ws) {
+            return;
+        }
+
+        if (clients[sid].ws.readyState < 2) {
+            count++;
+            clients[sid].ws.close(1001);
+        }
+    });
+
+    if (count > 0) {
+        log.info(`Closed ${count} WebSocket${count > 1 ? "s" : ""}`);
     }
 
-    if (clients[sid].ws.readyState < 2) {
-      count++;
-      clients[sid].ws.close(1001);
+    try {
+        fs.unlink(paths.get().pid);
+    } catch {
+        // Fail silently
     }
-  });
-
-  if (count > 0) {
-    log.info(`Closed ${count} WebSocket${count > 1 ? "s" : ""}`);
-  }
-
-  try {
-    fs.unlink(paths.get().pid);
-  } catch {
-    // Fail silently
-  }
-  process.exit(0);
+    process.exit(0);
 }

@@ -210,7 +210,7 @@ To start a live-reloading dev server:
 
 ```sh
 $ git clone https://github.com/droppyjs/droppy && cd droppy
-$ lerna bootstrap
+$ yarn
 $ yarn start
 ```
 

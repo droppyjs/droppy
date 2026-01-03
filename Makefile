@@ -9,7 +9,7 @@ run:
 	node droppy.js start
 
 lint:
-	yarn -s run eslint packages
+	yarn biome check .
 
 test:
 	yarn 

@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/cli",
-    "version": "2.0.0-alpha.0",
+    "version": "2.0.0-alpha.1",
     "description": "> Command Line Interface for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",

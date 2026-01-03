@@ -3556,19 +3556,20 @@ function timeDifference(prev) {
     const future = diff < 0;
     let value, unit;
     diff = Math.abs(diff);
-    [
+    for (const [limit, divisor, label] of [
         [60, 1, "sec"],
         [3600, 60, "min"],
         [86400, 3600, "hour"],
         [2592000, 86400, "day"],
         [31536000, 2592000, "month"],
         [Infinity, 31536000, "year"],
-    ].forEach((data) => {
-        if (diff < data[0]) {
-            value = diff / data[1];
-            unit = data[2];
+    ]) {
+        if (diff < limit) {
+            value = diff / divisor;
+            unit = label;
+            break;
         }
-    });
+    }
     value = Math.round(value);
     if (diff <= 3) return "just now"; // acount for 3s clock skew
     unit += value > 1 ? "s" : "";

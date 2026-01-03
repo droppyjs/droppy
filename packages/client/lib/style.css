@@ -684,12 +684,11 @@ nav {
 }
 
 .data-row .item-select {
+    padding-top: 4px;
     display: block;
     width: 1.8rem;
     text-align: center;
     align-items: center;
-
-    opacity: 0;
 }
 
 .data-row:hover .item-select {
@@ -2405,8 +2404,12 @@ html:not(.mobile) #drop-select span.active {
     display: inline;
 }
 
+.droppy-checkbox input + svg {
+    color: #00000000;
+}
+
 .droppy-checkbox input:checked + svg {
-    color: #000;
+    color: #000000;
 }
 
 .header-multi-select {

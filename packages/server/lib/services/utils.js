@@ -73,7 +73,6 @@ class DroppyUtils {
       fs.statSync(dst);
       throw (new Error('Destination already exists'));
     } catch (e) {
-      console.log('e', e);
       if (e.code !== 'ENOENT') {
         throw e;
       }

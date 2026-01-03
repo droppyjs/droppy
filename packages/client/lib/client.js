@@ -1442,12 +1442,6 @@ function openDirectory(view, data, isSearch) {
                     selectedItems.push(e.target.value);
                 }
 
-                console.log("selectedItems", selectedItems);
-                console.log(
-                    'document.querySelectorAll(".item-select").length',
-                    document.querySelectorAll(".item-select").length,
-                );
-
                 if (selectedItems.length === 0) {
                     document
                         .getElementById("multi-some")

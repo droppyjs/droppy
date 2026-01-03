@@ -27,7 +27,7 @@ publish:
 
 docker:
 	@rm -rf node_modules
-	yarn -s --production --pure-lockfile
+	yarn install
 	$(eval IMAGE := silverwind/droppy)
 	$(eval VERSION := $(shell cat package.json | jq -r .version))
 	$(eval ARCHS := "linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6")
@@ -45,16 +45,9 @@ deps:
 	yarn
 
 update:
-	yarn -s run updates -u
+	yarn updates -u
 	@$(MAKE) --no-print-directory deps
 	@touch client/client.js
-
-jquery:
-	rm -rf /tmp/jquery
-	git clone --depth 1 https://github.com/jquery/jquery /tmp/jquery
-	cd /tmp/jquery; yarn; yarn -s run grunt; yarn -s run grunt custom:$(JQUERY_FLAGS); yarn -s run grunt remove_map_comment
-	cat /tmp/jquery/dist/jquery.min.js | perl -pe 's|"3\..+?"|"3"|' > $(CURDIR)/client/jquery-custom.min.js
-	rm -rf /tmp/jquery
 
 Dockerfile-dev: Dockerfile
 	cat Dockerfile | sed -e 's/^RUN git clone.*/COPY [ ".", "\/droppy" ]/' > Dockerfile-dev

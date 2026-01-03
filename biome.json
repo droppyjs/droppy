@@ -13,6 +13,14 @@
         "indentStyle": "space",
         "indentWidth": 4
     },
+    "overrides": [
+        {
+            "includes": ["lerna.json"],
+            "formatter": {
+                "enabled": false
+            }
+        }
+    ],
     "linter": {
         "enabled": true,
         "rules": {

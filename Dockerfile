@@ -38,7 +38,6 @@ RUN git clone --depth=1  https://github.com/droppyjs/droppy /droppy
 
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \
-    corepack enable && \
     yarn
 
 

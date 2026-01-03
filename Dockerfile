@@ -11,41 +11,49 @@
 # BASE
 # -------------------------------------------------- #
 
-FROM debian:12.4-slim as base
+FROM node:20-bookworm-slim AS base
 
 SHELL ["/bin/bash", "-c"]
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND noninteractive
 ENV BASH_ENV ~/.bashrc
-ENV VOLTA_HOME /root/.volta
-ENV PATH $VOLTA_HOME/bin:$PATH
 
 RUN apt-get -y update && \
-    apt-get -y install aria2 gnupg software-properties-common \
-        python3 git curl bash openssl && \
-    curl https://get.volta.sh | bash
+    apt-get -y install --no-install-recommends \
+        ca-certificates \
+        bash \
+        openssl && \
+    rm -rf /var/lib/apt/lists/*
 
 
 # -------------------------------------------------- #
 # BUILDER
 # -------------------------------------------------- #
 
-FROM base as builder
+FROM base AS builder
 
-RUN apt-get -y install -y make gcc g++
+RUN apt-get -y update && \
+    apt-get -y install --no-install-recommends \
+        git \
+        python3 \
+        make \
+        gcc \
+        g++ && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1  https://github.com/droppyjs/droppy /droppy
+COPY . /droppy
 
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \
-    yarn
+    corepack enable && \
+    yarn install --immutable
 
 
 # -------------------------------------------------- #
 # APPLICATION
 # -------------------------------------------------- #
 
-FROM base as application
+FROM base AS application
 LABEL maintainer="https://github.com/droppyjs/droppy"
 
 # Copy files
@@ -67,7 +75,6 @@ RUN cd /droppy && \
     /usr/lib/node_modules \
     /usr/local/lib/node_modules \
     /usr/local/share/.cache && \
-  apt-get -y remove --purge --auto-remove systemd && \
   rm -rf /var/cache/apt/archives/ \
     /var/lib/apt/lists/ \
     /usr/share/man/ \

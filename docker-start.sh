@@ -41,8 +41,6 @@ if [ ! -f "${FILE}" ]; then
 
   export HOME=/home/droppy
 
-  volta install node
-
   touch "${FILE}"
 fi
 

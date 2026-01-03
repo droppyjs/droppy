@@ -189,7 +189,7 @@ async function startListeners(callback) {
     }
 
     const targets = [];
-    for (const listener of config.listeners) {
+    for (const [i, listener] of config.listeners.entries()) {
         if (listener.protocol === undefined) {
             listener.protocol = "http";
         }

@@ -10,9 +10,20 @@ const __dirname = dirname(__filename);
 
 // Check for DROPPY_CACHE_PATH, otherwise add default.
 if (!("DROPPY_CACHE_PATH" in process.env)) {
-    const cachePath = realpathSync(join(__dirname, "..", "dist", "cache.json"));
-    if (existsSync(cachePath)) {
-        process.env.DROPPY_CACHE_PATH = cachePath;
+    try {
+        const cachePath = realpathSync(
+            join(__dirname, "..", "dist", "cache.json"),
+        );
+        if (existsSync(cachePath)) {
+            process.env.DROPPY_CACHE_PATH = cachePath;
+        }
+    } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+            // ignore, no cache found, it will be created on first use
+        } else {
+            console.error(error);
+            process.exit(1);
+        }
     }
 }
 
@@ -21,4 +32,4 @@ if (!("DROPPY_CACHE_SKIP_VALIDATIONS" in process.env)) {
     process.env.DROPPY_CACHE_SKIP_VALIDATIONS = true;
 }
 
-import("../lib/cli.js");
+import("../dist/cli.js");

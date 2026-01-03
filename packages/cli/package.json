@@ -5,23 +5,24 @@
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
-    "main": "lib/cli.js",
+    "main": "dist/cli.js",
+    "types": "dist/cli.d.ts",
     "type": "module",
     "dependencies": {
         "@droppyjs/server": "workspace:^",
-        "daemonize-process": "^3.0.0",
-        "minimist": "^1.2.5",
+        "daemonize-process": "4.1.1",
+        "minimist": "^1.2.8",
         "ps-node": "^0.1.6",
-        "untildify": "^4.0.0",
-        "which": "^2.0.2"
+        "untildify": "^6.0.0",
+        "which": "^6.0.0"
     },
     "directories": {
-        "lib": "lib",
+        "src": "src",
         "test": "__tests__",
         "dist": "dist"
     },
     "files": [
-        "lib",
+        "bin",
         "dist"
     ],
     "keywords": [
@@ -45,8 +46,9 @@
         "url": "git+https://github.com/droppyjs/droppy.git"
     },
     "scripts": {
-        "start": "node ./lib/cli.js start",
-        "build": "node ./lib/cli.js build"
+        "build:ts": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "start": "yarn build:ts && node ./dist/cli.js start",
+        "build": "yarn build:ts && node ./dist/cli.js build"
     },
     "bugs": {
         "url": "https://github.com/droppyjs/droppy/issues"

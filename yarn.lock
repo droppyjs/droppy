@@ -2698,11 +2698,11 @@ __metadata:
   resolution: "@droppyjs/cli@workspace:packages/cli"
   dependencies:
     "@droppyjs/server": "workspace:^"
-    daemonize-process: "npm:^3.0.0"
-    minimist: "npm:^1.2.5"
+    daemonize-process: "npm:4.1.1"
+    minimist: "npm:^1.2.8"
     ps-node: "npm:^0.1.6"
-    untildify: "npm:^4.0.0"
-    which: "npm:^2.0.2"
+    untildify: "npm:^6.0.0"
+    which: "npm:^6.0.0"
   bin:
     droppy: bin/droppy.mjs
   languageName: unknown
@@ -2737,7 +2737,6 @@ __metadata:
     clean-css: "npm:4.2.3"
     colorette: "npm:1.2.1"
     content-disposition: "npm:0.5.3"
-    daemonize-process: "npm:3.0.0"
     escape-string-regexp: "npm:4.0.0"
     etag: "npm:1.8.1"
     file-extension: "npm:4.0.5"
@@ -2749,7 +2748,7 @@ __metadata:
     lodash.debounce: "npm:4.0.8"
     lodash.throttle: "npm:4.1.1"
     mime-types: "npm:2.1.27"
-    minimist: "npm:1.2.6"
+    minimist: "npm:1.2.8"
     mv: "npm:2.1.1"
     original-url: "npm:1.2.3"
     postcss: "npm:8.2.15"
@@ -2759,9 +2758,8 @@ __metadata:
     send: "npm:0.17.1"
     strip-ansi: "npm:6.0.0"
     terser: "npm:5.2.1"
-    untildify: "npm:4.0.0"
+    untildify: "npm:^6.0.0"
     updates: "npm:10.3.5"
-    which: "npm:2.0.2"
     ws: "npm:7.4.6"
     yazl: "npm:2.5.1"
   languageName: unknown
@@ -4020,6 +4018,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^22.10.6":
+  version: 22.19.3
+  resolution: "@types/node@npm:22.19.3"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/a30a75d503da795ddbd5f8851014f3e91925c2a63fa3f14128d54c998f25d682dfba96dc9589c73cf478b87a16d88beb790b11697bb8cd5bee913079237a58f2
+  languageName: node
+  linkType: hard
+
 "@types/normalize-package-data@npm:^2.4.0":
   version: 2.4.0
   resolution: "@types/normalize-package-data@npm:2.4.0"
@@ -4027,10 +4034,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ps-node@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "@types/ps-node@npm:0.1.3"
+  checksum: 10c0/fc23db9b65e41a911e2c6c9fe55a2341681f460c264956d57f4cc50660994a68a6cd07a5c2de4b4b6d12517718404fda7cc6584fe32d8e8c8008af8af005fae4
+  languageName: node
+  linkType: hard
+
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
   checksum: 10c0/3327ee919a840ffe907bbd5c1d07dfd79137dd9732d2d466cf717ceec5bb21f66296173c53bb56cff95fae4185b9cd6770df3e9745fe4ba528bbc4975f54d13f
+  languageName: node
+  linkType: hard
+
+"@types/which@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@types/which@npm:3.0.4"
+  checksum: 10c0/036e4cb243ebfd5cf4893be2ab3b9a60a22368811c1f1c78fb8fc70cadc274024282d04b8d7c0948268372600003252d84e2d3a5e064014a543a5da235c5989d
   languageName: node
   linkType: hard
 
@@ -5558,10 +5579,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daemonize-process@npm:3.0.0, daemonize-process@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "daemonize-process@npm:3.0.0"
-  checksum: 10c0/e323db69768f6ca96a0e581129f78151dcfb1c8c4a957369964c8d396ef3de36c3fcb3db74e4b8194f8354f77d87d6a278c9edef29e8080db1a19f2e48e49ca3
+"daemonize-process@npm:4.1.1":
+  version: 4.1.1
+  resolution: "daemonize-process@npm:4.1.1"
+  checksum: 10c0/2abdee667b191302a91bb712c56ad118b1c6537652ce6509847bde7aa03e8e641634b7a41e6449ccc331ada1b1f5b33c8cb03ac4a11e638194e37e1dc251c623
   languageName: node
   linkType: hard
 
@@ -5852,12 +5873,14 @@ __metadata:
     "@babel/plugin-syntax-import-assertions": "npm:^7.25.6"
     "@babel/preset-env": "npm:^7.28.5"
     "@biomejs/biome": "npm:2.3.10"
+    "@types/node": "npm:^22.10.6"
+    "@types/ps-node": "npm:^0.1.3"
+    "@types/which": "npm:^3.0.4"
     babel-jest: "npm:^29.7.0"
     chokidar: "npm:3.5.2"
     clean-css: "npm:5.1.5"
     colorette: "npm:1.3.0"
     content-disposition: "npm:0.5.3"
-    daemonize-process: "npm:3.0.0"
     escape-string-regexp: "npm:5.0.0"
     etag: "npm:1.8.1"
     globals: "npm:^15.9.0"
@@ -5870,7 +5893,7 @@ __metadata:
     lodash.debounce: "npm:4.0.8"
     lodash.throttle: "npm:4.1.1"
     mime-types: "npm:2.1.32"
-    minimist: "npm:1.2.6"
+    minimist: "npm:1.2.8"
     mv: "npm:2.1.1"
     nx: "npm:^16.2.2"
     original-url: "npm:1.2.3"
@@ -5881,10 +5904,9 @@ __metadata:
     send: "npm:0.17.1"
     strip-ansi: "npm:7.0.0"
     terser: "npm:5.7.2"
-    untildify: "npm:4.0.0"
+    typescript: "npm:^5.6.3"
     updates: "npm:12.1.0"
     uppie: "npm:1.1.4"
-    which: "npm:2.0.2"
     ws: "npm:8.2.1"
     yazl: "npm:2.5.1"
   languageName: unknown
@@ -8714,17 +8736,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimist@npm:1.2.6, minimist@npm:^1.2.0, minimist@npm:^1.2.5":
-  version: 1.2.6
-  resolution: "minimist@npm:1.2.6"
-  checksum: 10c0/d0b566204044481c4401abbd24cc75814e753b37268e7fe7ccc78612bf3e37bf1e45a6c43fb0b119445ea1c413c000bde013f320b7211974f2f49bcbec1d0dbf
-  languageName: node
-  linkType: hard
-
-"minimist@npm:^1.2.6":
+"minimist@npm:1.2.8, minimist@npm:^1.2.6, minimist@npm:^1.2.8":
   version: 1.2.8
   resolution: "minimist@npm:1.2.8"
   checksum: 10c0/19d3fcdca050087b84c2029841a093691a91259a47def2f18222f41e7645a0b7c44ef4b40e88a1e58a40c84d2ef0ee6047c55594d298146d0eb3f6b737c20ce6
+  languageName: node
+  linkType: hard
+
+"minimist@npm:^1.2.0, minimist@npm:^1.2.5":
+  version: 1.2.6
+  resolution: "minimist@npm:1.2.6"
+  checksum: 10c0/d0b566204044481c4401abbd24cc75814e753b37268e7fe7ccc78612bf3e37bf1e45a6c43fb0b119445ea1c413c000bde013f320b7211974f2f49bcbec1d0dbf
   languageName: node
   linkType: hard
 
@@ -11700,7 +11722,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3 < 6":
+"typescript@npm:>=3 < 6, typescript@npm:^5.6.3":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
   bin:
@@ -11710,7 +11732,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.6.3#optional!builtin<compat/typescript>":
   version: 5.9.3
   resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
@@ -11728,6 +11750,13 @@ __metadata:
   bin:
     uglifyjs: bin/uglifyjs
   checksum: 10c0/5985b6e42eace5e8b2c36091da6232d3a10d69cc06e8c8234fcffa6b7a68d1ce301368537bdd7fc7da942202727ae2da67ec9d5824ef623c3645e58ec6df3c86
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
   languageName: node
   linkType: hard
 
@@ -11837,10 +11866,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"untildify@npm:4.0.0, untildify@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "untildify@npm:4.0.0"
-  checksum: 10c0/d758e624c707d49f76f7511d75d09a8eda7f2020d231ec52b67ff4896bcf7013be3f9522d8375f57e586e9a2e827f5641c7e06ee46ab9c435fc2b2b2e9de517a
+"untildify@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "untildify@npm:6.0.0"
+  checksum: 10c0/0a1ed4f3e3322b9e09340152a40e4068b9f0cf5aa343d8a040e5fa14275d0c83ffc874484facb0687becf659cfe8c6dcaf04e36ea116212c83613602004a1e4f
   languageName: node
   linkType: hard
 
@@ -12036,7 +12065,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which@npm:2.0.2, which@npm:^2.0.1, which@npm:^2.0.2":
+"which@npm:^2.0.1, which@npm:^2.0.2":
   version: 2.0.2
   resolution: "which@npm:2.0.2"
   dependencies:

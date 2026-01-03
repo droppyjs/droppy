@@ -44,4 +44,4 @@ if [ ! -f "${FILE}" ]; then
   touch "${FILE}"
 fi
 
-exec /bin/su droppy -s /bin/bash -c "node /droppy/packages/cli/lib/cli.js start"
+exec /bin/su droppy -s /bin/bash -c "node /droppy/packages/cli/dist/cli.js start"

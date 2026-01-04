@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import filetree from "../services/filetree.js";
+import filetree from "../services/filetree/index.js";
 import log from "../services/log.js";
 import utils from "../services/utils.js";
 

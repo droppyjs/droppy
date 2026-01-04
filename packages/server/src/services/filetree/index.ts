@@ -1,30 +1,36 @@
-// @ts-nocheck
 import { EventEmitter } from "node:events";
+import type { Stats } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import chokidar from "chokidar";
 import escRe from "escape-string-regexp";
 import debounce from "lodash.debounce";
 import rfdc from "rfdc";
-import rrdir from "rrdir";
-import type { DroppyConfig } from "./cfg/types.js";
-import log from "./log.js";
-import paths from "./paths.js";
-import utils from "./utils.js";
+import { type Entry, rrdirAsync } from "rrdir";
+import type { DroppyConfig } from "../cfg/types.js";
+import log from "../log.js";
+import paths from "../paths.js";
+import utils from "../utils.js";
 
 const clone = rfdc();
 
 let dirs = {};
-let todoDirs = [];
+let todoDirs: string[] = [];
 let initial = true;
 let watching = true;
-let timer = null;
-let cfg: DroppyConfig = null;
+let timer: any = null;
+let cfg: DroppyConfig;
 
 const WATCHER_DELAY = 3000;
 
+type EntryWithStringPath = Omit<Entry, "path"> & { path: string };
+
+function rrdirPathToString(p: Entry["path"]): string {
+    return typeof p === "string" ? p : Buffer.from(p).toString("utf8");
+}
+
 class DroppyFileTree extends EventEmitter {
-    init(config) {
+    init(config: DroppyConfig) {
         cfg = config;
     }
 
@@ -45,15 +51,14 @@ class DroppyFileTree extends EventEmitter {
     }
 
     updateAll() {
-        debounce(() => {
+        debounce(async () => {
             log.debug("Updating file tree because of local filesystem changes");
-            this.updateDir(null, () => {
-                this.emit("updateall");
-            });
+            await this.updateDir(null);
+            this.emit("updateall");
         })();
     }
 
-    async updateDir(dir) {
+    async updateDir(dir: string | null = null) {
         if (dir === null) {
             dir = "/";
             dirs = {};
@@ -61,19 +66,19 @@ class DroppyFileTree extends EventEmitter {
 
         const fullDir = utils.addFilesPath(dir);
 
-        let stats: fs.Stats;
+        let stats: Stats | undefined;
         try {
             stats = await fs.lstat(fullDir);
         } catch (err) {
             log.error(err);
         }
 
-        let entries = [];
+        let entries: Entry[] = [];
         if (initial) {
             // sync walk for performance
             initial = false;
             try {
-                entries = rrdir.sync(fullDir, {
+                entries = await rrdirAsync(fullDir, {
                     stats: true,
                     exclude: cfg.ignorePatterns,
                     followSymlinks: true,
@@ -83,7 +88,7 @@ class DroppyFileTree extends EventEmitter {
             }
         } else {
             try {
-                entries = await rrdir.async(fullDir, {
+                entries = await rrdirAsync(fullDir, {
                     stats: true,
                     exclude: cfg.ignorePatterns,
                     followSymlinks: true,
@@ -93,8 +98,15 @@ class DroppyFileTree extends EventEmitter {
             }
         }
 
-        for (const entry of entries || []) {
-            if (entry.err) {
+        const normalizedEntries: EntryWithStringPath[] = (entries || []).map(
+            (entry) => ({
+                ...entry,
+                path: rrdirPathToString(entry.path),
+            }),
+        );
+
+        for (const entry of normalizedEntries) {
+            if (entry.err && "code" in entry.err) {
                 if (
                     entry.err.code === "ENOENT" &&
                     dirs[utils.removeFilesPath(entry.path)]
@@ -104,14 +116,14 @@ class DroppyFileTree extends EventEmitter {
             }
         }
 
-        const readDirs = entries.filter((entry) => entry.directory);
-        const readFiles = entries.filter((entry) => !entry.directory);
+        const readDirs = normalizedEntries.filter((entry) => entry.directory);
+        const readFiles = normalizedEntries.filter((entry) => !entry.directory);
 
         this.updateDirInCache(dir, stats, readDirs, readFiles);
     }
 
-    async del(dir) {
-        let stats: fs.Stats;
+    async del(dir: string) {
+        let stats: Stats;
         try {
             stats = await fs.stat(utils.addFilesPath(dir));
         } catch (err) {
@@ -129,11 +141,11 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    unlink(dir) {
+    unlink(dir: string) {
         this.lookAway();
 
         // TODO: remove new promise, change to async when utils.rm is async
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             utils.rm(utils.addFilesPath(dir), (err) => {
                 if (err) {
                     log.error(err);
@@ -147,11 +159,11 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    unlinkdir(dir) {
+    unlinkdir(dir: string) {
         this.lookAway();
 
         // TODO: remove new promise, change to async when utils.rmdir is async
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             utils.rmdir(utils.addFilesPath(dir), (err) => {
                 if (err) {
                     log.error(err);
@@ -171,8 +183,8 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    async clipboard(src, dst, type) {
-        let stats: fs.Stats;
+    async clipboard(src: string, dst: string, type: "cut" | "copy") {
+        let stats: Stats;
 
         try {
             stats = await fs.stat(utils.addFilesPath(src));
@@ -201,13 +213,17 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    async mk(dir) {
+    async mk(dir: string) {
         this.lookAway();
 
         try {
             await fs.stat(utils.addFilesPath(dir));
         } catch (err) {
-            if (err && err.code === "ENOENT") {
+            if (
+                err instanceof Error &&
+                "code" in err &&
+                err.code === "ENOENT"
+            ) {
                 const fd = await fs.open(utils.addFilesPath(dir), "wx");
 
                 await fd.close();
@@ -226,13 +242,17 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    async mkdir(dir) {
+    async mkdir(dir: string) {
         this.lookAway();
 
         try {
             await fs.stat(utils.addFilesPath(dir));
         } catch (err) {
-            if (err?.code !== "ENOENT") {
+            if (
+                err instanceof Error &&
+                "code" in err &&
+                err.code !== "ENOENT"
+            ) {
                 log.error(err);
                 throw err;
             }
@@ -244,7 +264,7 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    async move(src, dst) {
+    async move(src: string, dst: string) {
         this.lookAway();
 
         try {
@@ -262,10 +282,10 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    mv(src, dst) {
+    mv(src: string, dst: string) {
         this.lookAway();
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             // TODO: asjust to async/await when utils.move is async
             utils.move(
                 utils.addFilesPath(src),
@@ -293,10 +313,10 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    mvdir(src, dst) {
+    mvdir(src: string, dst: string) {
         this.lookAway();
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             // TODO: asjust to async/await when utils.move is async
             utils.move(
                 utils.addFilesPath(src),
@@ -337,10 +357,10 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    cp(src, dst) {
+    cp(src: string, dst: string) {
         this.lookAway();
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             utils.copyFile(
                 utils.addFilesPath(src),
                 utils.addFilesPath(dst),
@@ -367,7 +387,7 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    async cpdir(src, dst) {
+    async cpdir(src: string, dst: string) {
         this.lookAway();
         await utils.copyDir(utils.addFilesPath(src), utils.addFilesPath(dst));
 
@@ -393,12 +413,16 @@ class DroppyFileTree extends EventEmitter {
         this.update(path.dirname(dst));
     }
 
-    async save(dst, data) {
+    async save(dst: string, data: string) {
         this.lookAway();
         try {
             await fs.stat(utils.addFilesPath(dst));
         } catch (err) {
-            if (err.code !== "ENOENT") {
+            if (
+                err instanceof Error &&
+                "code" in err &&
+                err.code !== "ENOENT"
+            ) {
                 log.error(err);
                 throw err;
             }
@@ -414,10 +438,10 @@ class DroppyFileTree extends EventEmitter {
         this.update(path.dirname(dst));
     }
 
-    search(query, p) {
+    search(query: string, p: string) {
         if (!dirs[p] || typeof query !== "string" || !query) return null;
-        const files = [];
-        const folders = [];
+        const files: string[] = [];
+        const folders: string[] = [];
         query = query.toLowerCase();
         Object.keys(dirs)
             .filter((dir) => {
@@ -438,12 +462,12 @@ class DroppyFileTree extends EventEmitter {
         return e;
     }
 
-    ls(p) {
+    ls(p: string) {
         if (!dirs[p]) return;
         const files = Object.keys(dirs[p].files).map((file) => {
             return path.posix.join(p, file);
         });
-        const folders = [];
+        const folders: string[] = [];
         Object.keys(dirs).forEach((dir) => {
             if (path.dirname(dir) === p && path.basename(dir)) {
                 folders.push(dir);
@@ -452,8 +476,10 @@ class DroppyFileTree extends EventEmitter {
         return this.entries(files, folders);
     }
 
-    lsFilter(p, re) {
-        if (!dirs[p]) return;
+    lsFilter(p: string, re: RegExp) {
+        if (!dirs[p]) {
+            return;
+        }
         return Object.keys(dirs[p].files).filter((file) => {
             return re.test(file);
         });
@@ -472,7 +498,7 @@ class DroppyFileTree extends EventEmitter {
         { trailing: true },
     );
 
-    update(dir) {
+    update(dir: string) {
         this.updateDirSizes();
         todoDirs.push(dir);
         this.debouncedUpdate();
@@ -506,15 +532,20 @@ class DroppyFileTree extends EventEmitter {
             });
     }
 
-    updateDirInCache(root, stat, readDirs, readFiles) {
+    updateDirInCache(
+        root: string,
+        stat: Stats | undefined,
+        readDirs: EntryWithStringPath[],
+        readFiles: EntryWithStringPath[],
+    ) {
         dirs[root] = {
             files: {},
             size: 0,
             mtime: stat ? stat.mtime.getTime() : Date.now(),
         };
 
-        const readDirObj = {},
-            readDirKeys = [];
+        const readDirObj = {};
+        const readDirKeys: string[] = [];
 
         readDirs
             .sort((a, b) => utils.naturalSort(a.path, b.path))
@@ -590,8 +621,13 @@ class DroppyFileTree extends EventEmitter {
         });
     }
 
-    entries(files, folders, relativePaths, base) {
-        const entries = {};
+    entries(
+        files: string[],
+        folders: string[],
+        relativePaths: boolean = false,
+        base: string = "",
+    ) {
+        const entries: Record<string, string> = {};
         files.forEach((file) => {
             const f = dirs[path.dirname(file)].files[path.basename(file)];
             const mtime = Math.round(f.mtime / 1e3);

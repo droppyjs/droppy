@@ -1,4 +1,4 @@
-import filetree from "../services/filetree.js";
+import filetree from "../services/filetree/index.js";
 
 import type { CommandHandler } from "./index.js";
 

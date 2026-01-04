@@ -2754,7 +2754,7 @@ __metadata:
     postcss: "npm:8.5.6"
     ps-node: "npm:0.1.6"
     rfdc: "npm:1.1.4"
-    rrdir: "npm:8.1.1"
+    rrdir: "npm:14.0.2"
     send: "npm:0.17.1"
     strip-ansi: "npm:6.0.0"
     terser: "npm:5.2.1"
@@ -5913,7 +5913,6 @@ __metadata:
     postcss: "npm:8.5.6"
     ps-node: "npm:0.1.6"
     rfdc: "npm:1.3.0"
-    rrdir: "npm:8.2.2"
     send: "npm:0.17.1"
     strip-ansi: "npm:7.0.0"
     terser: "npm:5.7.2"
@@ -10018,7 +10017,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.2":
+"picomatch@npm:4.0.3, picomatch@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "picomatch@npm:4.0.3"
+  checksum: 10c0/9582c951e95eebee5434f59e426cddd228a7b97a0161a375aed4be244bd3fe8e3a31b846808ea14ef2c8a2527a6eeab7b3946a67d5979e81694654f939473ae2
+  languageName: node
+  linkType: hard
+
+"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1":
   version: 2.2.2
   resolution: "picomatch@npm:2.2.2"
   checksum: 10c0/0fa37cfc2ceaf7cc1021ec1936841351a2fcbcfbb50540994a4531c77ac613dd78ef9d2ee93b1afc18c02642a9a51e5115c728427fc1f1df2b5d231b720569f0
@@ -10029,13 +10035,6 @@ __metadata:
   version: 2.3.0
   resolution: "picomatch@npm:2.3.0"
   checksum: 10c0/a65bde78212368e16afb82429a0ea033d20a836270446acb53ec6e31d939bccf1213f788bc49361f7aff47b67c1fb74d898f99964f67f26ca07a3cd815ddbcbb
-  languageName: node
-  linkType: hard
-
-"picomatch@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "picomatch@npm:4.0.3"
-  checksum: 10c0/9582c951e95eebee5434f59e426cddd228a7b97a0161a375aed4be244bd3fe8e3a31b846808ea14ef2c8a2527a6eeab7b3946a67d5979e81694654f939473ae2
   languageName: node
   linkType: hard
 
@@ -10743,21 +10742,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rrdir@npm:8.1.1":
-  version: 8.1.1
-  resolution: "rrdir@npm:8.1.1"
+"rrdir@npm:14.0.2":
+  version: 14.0.2
+  resolution: "rrdir@npm:14.0.2"
   dependencies:
-    picomatch: "npm:^2.2.2"
-  checksum: 10c0/4f2ae6a694b937a9fa283361d4fde34d600fa756bf7ca72e8294df04cb65e23aa005d7ce96d3b3ee01d5f4c31e442bbdd1219a4defb8189a4f2556f0518aa5e7
-  languageName: node
-  linkType: hard
-
-"rrdir@npm:8.2.2":
-  version: 8.2.2
-  resolution: "rrdir@npm:8.2.2"
-  dependencies:
-    picomatch: "npm:^2.2.2"
-  checksum: 10c0/1dd3579daefac48c5ea3f76056be68a1c0ad8a76fbb335d72898b61e0d7340c79eea694fb0a3d8a31b62d14e4f016345a9950ad85edddba8f689fed64cc4d350
+    picomatch: "npm:4.0.3"
+  checksum: 10c0/5aa27a9ffd84c4cff43f549695c333792592e25575cdfdcb35ad8d77bc5ba14fc534ce9be5d7eeb3e465fbed1648ec44952be462c39c4ed86b2ee19ed55080a4
   languageName: node
   linkType: hard
 

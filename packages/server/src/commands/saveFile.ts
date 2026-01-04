@@ -1,5 +1,5 @@
 // @ts-nocheck
-import filetree from "../services/filetree.js";
+import filetree from "../services/filetree/index.js";
 import log from "../services/log.js";
 
 import type { CommandHandler } from "./index.js";

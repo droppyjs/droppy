@@ -7,7 +7,7 @@ import busboy from "busboy";
 import { blue, cyan, green, magenta, red } from "colorette";
 import etag from "etag";
 import throttle from "lodash.throttle";
-import rrdir from "rrdir";
+import { rrdirAsync } from "rrdir";
 import sendFile from "send";
 import ut from "untildify";
 import * as ws from "ws";
@@ -32,7 +32,7 @@ import type { DroppyConfig } from "./cfg/types.js";
 import cookies from "./cookies/index.js";
 import csrf from "./csrf/index.js";
 import db from "./db.js";
-import filetree from "./filetree.js";
+import filetree from "./filetree/index.js";
 import log from "./log.js";
 import manifest from "./manifest.js";
 import paths from "./paths.js";
@@ -1559,11 +1559,14 @@ function streamArchive(req, res, zipPath, download, stats, shareLink) {
         return;
     }
 
-    rrdir
-        .async(zipPath, { stats: true })
+    rrdirAsync(zipPath, { stats: true })
         .then((entries) => {
             for (const entry of entries) {
-                const pathInZip = path.relative(zipPath, entry.path);
+                const entryPath =
+                    typeof entry.path === "string"
+                        ? entry.path
+                        : Buffer.from(entry.path).toString("utf8");
+                const pathInZip = path.relative(zipPath, entryPath);
                 const metaData = {
                     mtime: entry.stats?.mtime ? entry.stats.mtime : new Date(),
                     mode: entry.stats?.mode ? entry.stats.mode : 0o666,
@@ -1572,7 +1575,7 @@ function streamArchive(req, res, zipPath, download, stats, shareLink) {
                 if (entry.directory) {
                     zip.addEmptyDirectory(pathInZip, metaData);
                 } else {
-                    zip.addFile(entry.path, pathInZip, metaData);
+                    zip.addFile(entryPath, pathInZip, metaData);
                 }
             }
 

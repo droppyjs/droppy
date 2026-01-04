@@ -32,7 +32,7 @@ export type CommandHandler<T = any> = {
             sid: any,
             vId: any,
         ) => boolean;
-        sendUsers: (sid: string) => void;
+        sendUsers: (sid: string) => Promise<void>;
         pkg: {
             name: string;
             version: string;

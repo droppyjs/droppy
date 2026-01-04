@@ -12,10 +12,10 @@ import type { TokenEntry } from "./types.js";
 const tokensByKey = new Map<string, TokenEntry>();
 let lastCleanup = 0;
 
-function keyFromReq(req: DroppyHttpRequest): string | null {
+async function keyFromReq(req: DroppyHttpRequest): Promise<string | null> {
     const cookie = req.headers.cookie;
     if (cookie) {
-        const sid = cookies.get(cookie);
+        const sid = await cookies.get(cookie);
         if (sid) {
             return `sid:${sid}`;
         }
@@ -59,9 +59,9 @@ function cleanupIfNeeded() {
     }
 }
 
-export function create(req: DroppyHttpRequest) {
+export async function create(req: DroppyHttpRequest) {
     cleanupIfNeeded();
-    const key = keyFromReq(req);
+    const key = await keyFromReq(req);
     if (!key) {
         return "";
     }
@@ -94,9 +94,9 @@ export function create(req: DroppyHttpRequest) {
     return token;
 }
 
-export function validate(req: DroppyHttpRequest, token: string) {
+export async function validate(req: DroppyHttpRequest, token: string) {
     cleanupIfNeeded();
-    const key = keyFromReq(req);
+    const key = await keyFromReq(req);
     if (!key) {
         return false;
     }

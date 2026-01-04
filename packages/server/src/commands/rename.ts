@@ -1,5 +1,5 @@
 // @ts-nocheck
-import db from "../services/db.js";
+import db from "../services/db/db.js";
 import filetree from "../services/filetree/index.js";
 import log from "../services/log.js";
 
@@ -55,13 +55,12 @@ export const RENAME: CommandHandler<RenameMessage> = {
         }
 
         // update sharelinks to new destination
-        const links = db.get("links");
-        for (const link of Object.keys(links)) {
-            if (links[link].location === rSrc) {
-                links[link].location = rDst;
-                log.info(ws, null, `Share link updated: ${link} -> ${rDst}`);
-            }
-        }
-        db.set("links", links);
+        await db.setRecordsWhere(
+            "links",
+            { location: rSrc },
+            { location: rDst },
+        );
+
+        log.info(ws, null, `Share link updated: ${link} -> ${rDst}`);
     },
 };

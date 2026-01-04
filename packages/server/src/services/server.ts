@@ -31,12 +31,13 @@ import cfg from "./cfg/index.js";
 import type { DroppyConfig } from "./cfg/types.js";
 import cookies from "./cookies/index.js";
 import csrf from "./csrf/index.js";
-import db from "./db.js";
+import db from "./db/db.js";
 import filetree from "./filetree/index.js";
 import log from "./log.js";
 import manifest from "./manifest.js";
 import paths from "./paths.js";
 import resources from "./resources.js";
+import users from "./users/index.js";
 import utils from "./utils.js";
 
 let cache: any = {};
@@ -92,35 +93,25 @@ export async function droppy(
             config.dev = dev;
         }
 
-        await promisify((cb) => {
-            db.load(() => {
-                db.watch(config);
-                cb(null, null);
-            });
-        })();
+        await db.load(config);
 
-        await promisify((cb) => {
-            log.init({
-                logLevel: config.logLevel,
-                timestamps: config.timestamps,
-            });
-            firstRun = Object.keys(db.get("users")).length === 0;
-            // clean up old sessions if no users exist
-            if (firstRun) {
-                db.set("sessions", {});
-            }
-            log.info("Configuration: ", utils.pretty(config));
-            log.info("Loading resources ...");
-            resources.load(config.dev ?? false, (err, c) => {
-                log.info("Loading resources done");
-                cache = c;
-                cb(err, null);
-            });
-        })();
+        log.init({
+            logLevel: config.logLevel,
+            timestamps: config.timestamps,
+        });
+        firstRun = (await db.countRecords("users")) === 0;
+        // clean up old sessions if no users exist
+        if (firstRun) {
+            await db.deleteAllRecords("sessions");
+        }
 
-        await promisify((cb) => {
-            cleanupLinks(cb);
-        })();
+        log.info("Configuration: ", utils.pretty(config));
+        log.info("Loading resources ...");
+        const c = await resources.load(config.dev ?? false);
+        log.info("Loading resources done");
+        cache = c;
+
+        await cleanupLinks();
 
         await promisify((cb) => {
             if (config.dev) debug();
@@ -551,13 +542,15 @@ function setupWebSocket(server: DroppyHttpServer) {
     return wss;
 }
 
-function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
+async function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
     ws.addr = req.socket.remoteAddress as string;
     ws.port = req.socket.remotePort as number;
     ws.headers = Object.assign({}, req.headers);
     log.info(ws, null, "WebSocket [", green("connected"), "]");
     const sid = `${ws.addr} ${ws.port}`;
-    const cookie = req.headers.cookie ? cookies.get(req.headers.cookie) : null;
+    const cookie = req.headers.cookie
+        ? await cookies.get(req.headers.cookie)
+        : null;
     if (!cookie) {
         ws.close(4001);
         return;
@@ -573,13 +566,15 @@ function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
             log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
         }
 
-        if (!csrf.validate(req, msg.token)) {
+        if (!(await csrf.validate(req, msg.token))) {
             ws.close(1011);
             return;
         }
 
         const vId = msg.vId;
-        const priv = Boolean(db.get("sessions")?.[cookie]?.privileged);
+        const session = await db.getRecord("sessions", cookie);
+
+        const priv = session?.privileged ?? false;
 
         // Ensure our client object exists, it can be lost between server restarts.
         if (!clients[sid]) {
@@ -615,13 +610,11 @@ function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
         }
     });
 
-    ws.on("close", (code) => {
+    ws.on("close", async (code) => {
         let reason: string | undefined;
         if (code === 4001) {
             reason = "(Logged out)";
-            const sessions = db.get("sessions");
-            delete sessions[cookie];
-            db.set("sessions", sessions);
+            await db.deleteRecord("sessions", cookie);
         } else if (code === 1001) {
             reason = "(Going away)";
         }
@@ -682,14 +675,15 @@ function sendFiles(sid, vId) {
 }
 
 // Send a list of users on the server
-function sendUsers(sid) {
-    const userDB = db.get("users");
-    const userlist = {};
+async function sendUsers(sid) {
+    const users = await db.getRecordsWhere("users", {});
 
-    Object.keys(userDB).forEach((user) => {
-        userlist[user] = userDB[user].privileged || false;
-    });
-    sendObj(sid, { type: "USER_LIST", users: userlist });
+    const userList = users.map((user) => ({
+        name: user._id,
+        privileged: user.privileged,
+    }));
+
+    sendObj(sid, { type: "USER_LIST", userList });
 }
 
 // Send js object to single client identified by its session cookie
@@ -753,7 +747,7 @@ async function handleGETandHEAD(
     const URI = decodeURIComponent(req.url);
 
     const cookie = req.headers.cookie
-        ? cookies.get(req.headers.cookie)
+        ? await cookies.get(req.headers.cookie)
         : undefined;
     if (config.public && !cookie) {
         cookies.free(req, res, {});
@@ -763,14 +757,16 @@ async function handleGETandHEAD(
     if (URI === "/") {
         if (validateRequest(req)) {
             handleResourceRequest(req, res, "main.html");
-            const sessions = db.get("sessions");
             const sessionId = req.headers.cookie
-                ? cookies.get(req.headers.cookie)
+                ? await cookies.get(req.headers.cookie)
                 : undefined;
             if (sessionId) {
-                sessions[sessionId].lastSeen = Date.now();
+                const session = await db.getRecord("sessions", sessionId);
+                if (session) {
+                    session.lastSeen = Date.now();
+                    await db.setRecord("sessions", sessionId, session);
+                }
             }
-            db.set("sessions", sessions);
         } else if (firstRun) {
             handleResourceRequest(req, res, "first.html");
         } else {
@@ -806,7 +802,7 @@ async function handleGETandHEAD(
             // Ensure a session exists for public mode; CSRF is session-bound.
             const tokenCookieHeader = req.headers.cookie;
             const tokenSid = tokenCookieHeader
-                ? cookies.get(tokenCookieHeader)
+                ? await cookies.get(tokenCookieHeader)
                 : null;
             if (config.public && !tokenSid) {
                 cookies.free(req, res, {});
@@ -828,7 +824,7 @@ async function handleGETandHEAD(
                 }
             }
 
-            const token = csrf.create(req);
+            const token = await csrf.create(req);
             if (!token) {
                 res.statusCode = 401;
                 res.end();
@@ -902,9 +898,11 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
 
         utils
             .readJsonBody<{ username: string; password: string }>(req)
-            .then((postData) => {
-                if (db.authUser(postData.username, postData.password)) {
-                    cookies.create(req, res, postData);
+            .then(async (postData) => {
+                if (
+                    await users.authUser(postData.username, postData.password)
+                ) {
+                    await cookies.create(req, res, postData);
                     res.statusCode = 200;
                     res.end();
                     log.info(
@@ -941,19 +939,19 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
         res.setHeader("Content-Type", "text/plain");
         utils
             .readJsonBody<{ username: string; password: string }>(req)
-            .then((postData) => {
+            .then(async (postData) => {
                 if (
                     postData.username &&
                     postData.password &&
                     typeof postData.username === "string" &&
                     typeof postData.password === "string"
                 ) {
-                    db.addOrUpdateUser(
+                    await users.addOrUpdateUser(
                         postData.username,
                         postData.password,
                         true,
                     );
-                    cookies.create(req, res, postData);
+                    await cookies.create(req, res, postData);
                     firstRun = false;
                     res.statusCode = 200;
                     res.end();
@@ -1124,10 +1122,15 @@ async function handleFileRequest(req, res, download) {
     let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
     if (parts?.[1]) {
         // check for sharelink
-        const link = db.get("links")[parts[1]];
-        if (!link) return redirectToRoot(req, res);
+        const linkName = parts[1];
+
+        const link = await db.getRecord("links", linkName);
+
+        if (!link) {
+            return redirectToRoot(req, res);
+        }
         shareLink = true;
-        download = link.attachement;
+        download = link.isAttachment;
         filepath = utils.addFilesPath(link.location);
     } else {
         // it's a direct file request
@@ -1186,7 +1189,7 @@ async function handleTypeRequest(req, res, file) {
     log.info(req, res);
 }
 
-function handleUploadRequest(req, res) {
+async function handleUploadRequest(req, res) {
     let done = false;
 
     if (config.readOnly) {
@@ -1220,13 +1223,12 @@ function handleUploadRequest(req, res) {
         return;
     }
 
-    Object.keys(clients).some((sid) => {
-        if (clients[sid].cookie === cookies.get(req.headers.cookie)) {
+    for (const sid of Object.keys(clients)) {
+        if (clients[sid].cookie === (await cookies.get(req.headers.cookie))) {
             req.sid = sid;
-            return true;
+            break;
         }
-        return false;
-    });
+    }
 
     const dstDir =
         decodeURIComponent(req.query.to) ||
@@ -1471,30 +1473,22 @@ function debug() {
 }
 
 // Clean up sharelinks by removing links to nonexistant files
-function cleanupLinks(callback) {
-    let linkcount = 0,
-        cbcount = 0;
-    const links = db.get("links");
+async function cleanupLinks() {
+    const links = await db.getRecordsWhere("links", {});
     if (Object.keys(links).length === 0) {
-        callback();
+        return;
     } else {
-        Object.keys(links).forEach(async (link) => {
-            linkcount++;
-
-            const shareLink = link;
-            const location = links[link].location;
+        for (const link of links) {
+            const shareLink = link._id;
+            const location = link.location;
 
             // check for links not matching the configured length
             if (shareLink.length !== config.linkLength) {
                 log.debug(
                     `deleting link not matching the configured length: ${shareLink}`,
                 );
-                delete links[shareLink];
-                if (++cbcount === linkcount) {
-                    db.set("links", links);
-                    callback();
-                }
-                return;
+                await db.deleteRecord("links", shareLink);
+                continue;
             }
             // check for links where the target does not exist anymore
 
@@ -1507,16 +1501,9 @@ function cleanupLinks(callback) {
 
             if (!stats) {
                 log.debug(`deleting nonexistant link: ${shareLink}`);
-                delete links[shareLink];
+                await db.deleteRecord("links", shareLink);
             }
-
-            if (++cbcount === linkcount) {
-                if (JSON.stringify(links) !== JSON.stringify(db.get("links"))) {
-                    db.set("links", links);
-                }
-                callback();
-            }
-        });
+        }
     }
 }
 
@@ -1691,21 +1678,17 @@ async function tlsSetup(opts, cb) {
     cb(null, { cert, key });
 }
 
-function cleanupSessions() {
+async function cleanupSessions() {
     if (!ready) {
         return;
     }
     // Clean inactive sessions after 1 month of inactivity
-    const sessions = db.get("sessions");
-    Object.keys(sessions).forEach((session) => {
-        if (
-            !sessions[session].lastSeen ||
-            Date.now() - sessions[session].lastSeen >= 2678400000
-        ) {
-            delete sessions[session];
+    const sessions = await db.getRecordsWhere("sessions", {});
+    for (const session of sessions) {
+        if (!session.lastSeen || Date.now() - session.lastSeen >= 2678400000) {
+            await db.deleteRecord("sessions", session._id);
         }
-    });
-    db.set("sessions", sessions);
+    }
 }
 
 setTimeout(() => setInterval(cleanupSessions, 3600 * 1000), 60 * 1000);

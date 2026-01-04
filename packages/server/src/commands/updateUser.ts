@@ -1,7 +1,7 @@
 import { magenta } from "colorette";
-import db from "../services/db.js";
+import db from "../services/db/db.js";
 import log from "../services/log.js";
-
+import users from "../services/users/index.js";
 import type { CommandHandler } from "./index.js";
 
 interface UpdateUserMessage {
@@ -16,25 +16,37 @@ export const UPDATE_USER: CommandHandler<UpdateUserMessage> = {
     handler: async ({ priv, cookie, sid, msg, ws, sendUsers, sendError }) => {
         const name = msg.data.name;
         const pass = msg.data.pass;
-        if (!priv) return;
+        if (!priv) {
+            return;
+        }
+
         if (pass === "") {
-            if (!db.get("users")[name]) {
-                // TODO: warning?
-                return;
+            const user = await db.getRecord("users", name);
+            if (!user) {
+                return sendError(sid, null, "User not found");
             }
-            if (db.get("sessions")[cookie]?.username === name) {
+
+            const session = await db.getRecord("sessions", cookie);
+            if (!session) {
+                return sendError(sid, null, "Invalid session");
+            }
+
+            if (session.username === name) {
                 return sendError(sid, null, "Cannot delete yourself");
             }
-            if (db.delUser(name)) {
-                log.info(ws, null, "Deleted user: ", magenta(name));
-            }
+
+            await users.delUser(name);
+
+            log.info(ws, null, "Deleted user: ", magenta(name));
         } else {
-            const isNew = !db.get("users")[name];
-            db.addOrUpdateUser(name, pass, msg.data.priv || false);
+            const user = await db.getRecord("users", name);
+
+            await users.addOrUpdateUser(name, pass, msg.data.priv || false);
+
             log.info(
                 ws,
                 null,
-                `${isNew ? "Added" : "Updated"} user: `,
+                `${user ? "Updated" : "Added"} user: `,
                 magenta(name),
             );
         }

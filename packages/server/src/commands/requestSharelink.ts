@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import db from "../services/db.js";
+import db from "../services/db/db.js";
 import log from "../services/log.js";
 import utils from "../services/utils.js";
 
@@ -9,37 +9,35 @@ import type { CommandHandler } from "./index.js";
 interface RequestSharelinkMessage {
     data: {
         location: string;
-        attachement: string;
+        isAttachment: boolean;
     };
     type: string;
 }
 
 export const REQUEST_SHARELINK: CommandHandler<RequestSharelinkMessage> = {
     handler: async ({ validatePaths, sid, sendObj, config, msg, ws, vId }) => {
-        if (!validatePaths(msg.data.location, msg.type, ws, sid, vId)) return;
-        const links = db.get("links");
+        if (!validatePaths(msg.data.location, msg.type, ws, sid, vId)) {
+            return;
+        }
 
-        // Check if we already have a link for that file
-        const hadLink = Object.keys(links).some((link) => {
-            if (
-                msg.data.location === links[link].location &&
-                msg.data.attachement === links[link].attachement
-            ) {
-                const ext =
-                    links[link].ext || path.extname(links[link].location);
-                sendObj(sid, {
-                    type: "SHARELINK",
-                    vId,
-                    link: config.linkExtensions && ext ? link + ext : link,
-                    attachement: msg.data.attachement,
-                });
-                return true;
-            }
+        const isAttachment = msg.data.isAttachment;
 
-            return false;
+        const links = await db.getRecordsWhere("links", {
+            location: msg.data.location,
+            isAttachment,
         });
 
-        if (hadLink) {
+        for (const link of links) {
+            const ext = link.ext || path.extname(link.location);
+            sendObj(sid, {
+                type: "SHARELINK",
+                vId,
+                link: config.linkExtensions && ext ? link._id + ext : link._id,
+                isAttachment,
+            });
+        }
+
+        if (links.length > 0) {
             return;
         }
 
@@ -51,17 +49,17 @@ export const REQUEST_SHARELINK: CommandHandler<RequestSharelinkMessage> = {
             `Share link created: ${link} -> ${msg.data.location}`,
         );
 
-        links[link] = {
+        await db.addOrUpdateRecord("links", link, {
             location: msg.data.location,
-            attachement: msg.data.attachement,
+            isAttachment,
             ext,
-        };
-        db.set("links", links);
+        });
+
         sendObj(sid, {
             type: "SHARELINK",
             vId,
             link: config.linkExtensions ? link + ext : link,
-            attachement: msg.data.attachement,
+            isAttachment: isAttachment,
         });
     },
 };

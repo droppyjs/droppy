@@ -13,6 +13,24 @@
         "src": "src",
         "test": "__tests__"
     },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./services/db": {
+            "import": "./dist/services/db/index.js",
+            "types": "./dist/services/db/index.d.ts"
+        },
+        "./services/db/struct": {
+            "import": "./dist/services/db/struct.js",
+            "types": "./dist/services/db/struct.d.ts"
+        },
+        "./services/db/types": {
+            "import": "./dist/services/db/types.js",
+            "types": "./dist/services/db/types.d.ts"
+        }
+    },
     "files": [
         "dist"
     ],

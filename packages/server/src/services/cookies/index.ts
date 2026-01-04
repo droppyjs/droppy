@@ -29,14 +29,14 @@ export function parse(cookie: string) {
  * @param cookie
  * @returns The session ID or null if the cookie is not found or the session ID is not valid.
  */
-export function get(cookie: string): string | null {
+export async function get(cookie: string): Promise<string | null> {
     const entries = parse(cookie);
     if (!entries || !entries.s) {
         return null;
     }
 
-    const sessions = Object.keys(db.get("sessions") || {});
-    if (!sessions.includes(entries.s)) {
+    const session = await db.getRecord("sessions", entries.s);
+    if (!session) {
         return null;
     }
 
@@ -57,15 +57,14 @@ export function free(
     res: DroppyHttpResponse,
     _postData: Record<string, string>,
 ) {
-    const sessions = db.get("sessions");
     const sid = utils.createSid();
     // TODO: obtain path
     res.setHeader("Set-Cookie", cookieHeaders(sid, "/", inOneYear()));
-    sessions[sid] = {
+
+    db.addRecord("sessions", sid, {
         privileged: true,
         lastSeen: Date.now(),
-    };
-    db.set("sessions", sessions);
+    });
 }
 
 /**
@@ -76,21 +75,25 @@ export function free(
  * @param res The response object.
  * @param postData The post data object.
  */
-export function create(
+export async function create(
     _req: DroppyHttpRequest,
     res: DroppyHttpResponse,
     postData: Record<string, string>,
 ) {
-    const sessions = db.get("sessions");
     const sid = utils.createSid();
     const expires = postData.remember ? inOneYear() : null;
     res.setHeader("Set-Cookie", cookieHeaders(sid, postData.path, expires));
-    sessions[sid] = {
-        privileged: db.get("users")[postData.username].privileged,
+
+    const user = await db.getRecord("users", postData.username);
+    if (!user) {
+        return;
+    }
+
+    db.addRecord("sessions", sid, {
+        privileged: user.privileged,
         username: postData.username,
         lastSeen: Date.now(),
-    };
-    db.set("sessions", sessions);
+    });
 }
 
 export function unset(
@@ -102,14 +105,12 @@ export function unset(
         return;
     }
 
-    const session = parse(req.headers.cookie).s;
-    if (!session) {
+    const sid = parse(req.headers.cookie).s;
+    if (!sid) {
         return;
     }
 
-    const sessions = db.get("sessions");
-    delete sessions[session];
-    db.set("sessions", sessions);
+    db.deleteRecord("sessions", sid);
     res.setHeader("Set-Cookie", cookieHeaders("gone", postData.path, epoch()));
 }
 

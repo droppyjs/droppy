@@ -177,35 +177,51 @@ const libs = {
     "pdf.worker.js": ["node_modules/pdfjs-dist/build/pdf.worker.js"],
 };
 
-export const load = (
-    dev: boolean,
-    cb: (err?: Error | null, cache?: any) => void,
-) => {
+export const load = async (dev: boolean) => {
     minify = !dev;
 
-    if (dev) return compile(false, cb);
-    fs.readFile(cachePath, (err, data) => {
-        if (err) {
-            log.info(err.code, " ", cachePath, ", ", "building cache ...");
-            return compile(true, cb);
-        }
+    if (dev) {
+        // TODO: change to async/await
+        return await new Promise((resolve, reject) => {
+            compile(false, (err, cache) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(cache);
+                }
+            });
+        });
+    }
 
-        try {
-            const json = jb.parse(data);
-            //
-            // if (!json || !json.meta || !json.meta.version || json.meta.version !== pkg.version) {
-            // if (!process.env.DROPPY_CACHE_SKIP_VALIDATIONS) {
-            //     log.info("Cache outdated. ", cachePath, ", building cache ...");
-            //     return compile(true, cb);
-            // }
-            // }
-            //
-            cb(null, json);
-        } catch (err2) {
-            log.error(err2);
-            compile(false, cb);
+    let data: Buffer;
+
+    try {
+        data = fs.readFileSync(cachePath);
+    } catch (err) {
+        if (err instanceof Error && "code" in err && err.code === "ENOENT") {
+            log.info(err.code, " ", cachePath, ", ", "building cache ...");
+
+            return await new Promise((resolve, reject) => {
+                compile(true, (err, cache) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(cache);
+                    }
+                });
+            });
         }
-    });
+        throw err;
+    }
+
+    try {
+        const json = jb.parse(data);
+
+        return json;
+    } catch (err) {
+        log.error(err);
+        throw err;
+    }
 };
 
 export const build = (cb: (err?: Error | null) => void) => {

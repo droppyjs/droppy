@@ -10,9 +10,8 @@ export async function add(pkg: Pkg, argv: Argv) {
         help(pkg, argv);
     } else {
         db.load(() => {
-            db.addOrUpdateUser(args[0], args[1], args[2] === "p", () => {
-                printUsers(db.get("users"));
-            });
+            db.addOrUpdateUser(args[0], args[1], args[2] === "p");
+            printUsers(db.get("users"));
         });
     }
 }

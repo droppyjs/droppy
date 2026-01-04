@@ -7,5 +7,4 @@ export async function build(_pkg: Pkg, argv: Argv) {
         console.info(err || "Resources built successfully");
         process.exit(err ? 1 : 0);
     });
-
 }

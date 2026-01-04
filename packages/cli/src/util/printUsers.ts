@@ -11,4 +11,3 @@ export function printUsers(users: Record<string, unknown>) {
         );
     }
 }
-

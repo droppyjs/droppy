@@ -7,9 +7,9 @@ import { daemonizeProcess } from "daemonize-process";
 import minimist from "minimist";
 import untildify from "untildify";
 import pkg from "../package.json" with { type: "json" };
-import type { Argv } from "./types.js";
 import { help } from "./commands/help.js";
 import { commands } from "./commands/index.js";
+import type { Argv } from "./types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

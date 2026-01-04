@@ -10,9 +10,8 @@ export async function del(pkg: Pkg, argv: Argv) {
         help(pkg, argv);
     } else {
         db.load(() => {
-            db.delUser(args[0], () => {
-                printUsers(db.get("users"));
-            });
+            db.delUser(args[0]);
+            printUsers(db.get("users"));
         });
     }
 }

@@ -4055,6 +4055,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
+  languageName: node
+  linkType: hard
+
 "@types/yargs-parser@npm:*":
   version: 20.2.1
   resolution: "@types/yargs-parser@npm:20.2.1"
@@ -5876,6 +5885,7 @@ __metadata:
     "@types/node": "npm:^22.10.6"
     "@types/ps-node": "npm:^0.1.3"
     "@types/which": "npm:^3.0.4"
+    "@types/ws": "npm:^8.18.1"
     babel-jest: "npm:^29.7.0"
     chokidar: "npm:3.5.2"
     clean-css: "npm:5.1.5"

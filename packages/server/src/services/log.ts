@@ -1,0 +1,189 @@
+// @ts-nocheck
+import fs from "node:fs";
+import { isIPv6 } from "node:net";
+import { blue, cyan, green, magenta, red, reset, yellow } from "colorette";
+import stripAnsi from "strip-ansi";
+
+import utils from "./utils.js";
+
+const logColors = [reset, red, yellow, cyan];
+const logLabels = ["", "ERROR", "INFO", "DEBG"];
+let opts: any, logfile: string;
+
+const log = (req, res, logLevel, ...elems) => {
+    if (opts && opts.logLevel < logLevel) return;
+    let statusCode: string;
+
+    if (req?.time) {
+        elems.unshift(`[${magenta(`${Date.now() - req.time}ms`)}]`);
+    }
+
+    if (res) {
+        if (res.statusCode) {
+            statusCode = res.statusCode;
+            switch (String(statusCode).charAt(0)) {
+                case "2":
+                    statusCode = `[${green(statusCode)}]`;
+                    break;
+                case "3":
+                    statusCode = `[${yellow(statusCode)}]`;
+                    break;
+                case "4":
+                case "5":
+                    statusCode = `[${red(statusCode)}]`;
+                    break;
+            }
+            elems.unshift(statusCode);
+        }
+    }
+
+    if (req) {
+        if (req.url)
+            elems.unshift(decodeURIComponent(decodeURIComponent(req.url))); // For some reason, this need double decoding for upload URLs
+        if (req.method) elems.unshift(yellow(req.method.toUpperCase()));
+
+        const ip = utils.ip(req);
+
+        if (ip) {
+            elems.unshift(log.formatHostPort(ip, utils.port(req) || "0"));
+        }
+    }
+
+    if (logLevel > 0) {
+        elems.unshift(`[${logColors[logLevel](logLabels[logLevel])}]`);
+    }
+
+    if (opts?.timestamps) {
+        elems.unshift(log.timestamp());
+    }
+
+    elems.forEach((part, index) => {
+        if (part === "") {
+            elems.splice(index, 1);
+        }
+    });
+
+    if (logfile) {
+        fs.write(logfile, `${stripAnsi(elems.join(" "))}\n`);
+    } else {
+        console.info(...elems);
+    }
+};
+
+log.init = (o) => {
+    opts = o;
+};
+
+log.setLogFile = (fd) => {
+    logfile = fd;
+};
+
+log.debug = (...args) => {
+    const [req, res, ...elems] = args;
+    if (req && (req.headers || req.addr)) {
+        log(req, res, 3, elems.join(""));
+    } else {
+        log(null, null, 3, args.join(""));
+    }
+};
+
+log.info = (...args) => {
+    const [req, res, ...elems] = args;
+    if (req && (req.headers || req.addr)) {
+        log(req, res, 2, elems.join(""));
+    } else {
+        log(null, null, 2, args.join(""));
+    }
+};
+
+log.error = (...args) => {
+    const [req, res, ...elems] = args;
+    if (req && (req.headers || req.addr)) {
+        log(
+            req,
+            res,
+            1,
+            red(
+                log.formatError(
+                    elems.length === 1 ? elems[0] : elems.join(" "),
+                ),
+            ),
+        );
+    } else {
+        log(
+            null,
+            null,
+            1,
+            red(log.formatError(args.length === 1 ? args[0] : args.join(" "))),
+        );
+    }
+};
+
+log.plain = (...args) => {
+    if (opts && opts.logLevel < 2) return;
+    log(null, null, 0, args.join(""));
+};
+
+log.timestamp = () => {
+    const now = new Date();
+    let day = now.getDate();
+    let month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    let hrs = now.getHours();
+    let mins = now.getMinutes();
+    let secs = now.getSeconds();
+
+    if (month < 10) month = `0${month}`;
+    if (day < 10) day = `0${day}`;
+    if (hrs < 10) hrs = `0${hrs}`;
+    if (mins < 10) mins = `0${mins}`;
+    if (secs < 10) secs = `0${secs}`;
+    return `${year}-${month}-${day} ${hrs}:${mins}:${secs}`;
+};
+
+log.logo = (line1, line2, line3) => {
+    log.plain(
+        blue(
+            [
+                "\n",
+                "           .:.\n",
+                `    :::  .:::::.   ${line1}\n`,
+                `  ..:::..  :::     ${line2}\n`,
+                `   ':::'   :::     ${line3}\n`,
+                "     '\n",
+            ].join(""),
+        ),
+    );
+};
+
+log.formatHostPort = (hostname, port, proto?: string) => {
+    if (
+        (proto === "http" && port === "80") ||
+        (proto === "https" && port === "443")
+    ) {
+        port = "";
+    } else {
+        port = blue(`:${port}`);
+    }
+
+    return cyan(isIPv6(hostname) ? `[${hostname}]` : hostname) + port;
+};
+
+log.formatError = (err) => {
+    let output: string;
+    if (err instanceof Error) {
+        output = err.stack;
+    } else if (!err) {
+        output = `${
+            new Error("Error handler called without an argument").stack
+        }\nerr = ${err}`;
+    } else if (typeof err === "string") {
+        output = err;
+    } else {
+        output = `${err}\n${new Error().stack}`;
+    }
+
+    return output.replace(/^Error: /, "");
+};
+
+export default log;

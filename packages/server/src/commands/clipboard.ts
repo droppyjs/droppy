@@ -1,10 +1,8 @@
-import fs from "node:fs";
 import escRe from "escape-string-regexp";
 
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 import { utils } from "../utils/index.js";
-
 import type { CommandHandler } from "./index.js";
 
 interface ClipboardMessage {
@@ -42,18 +40,21 @@ export const CLIPBOARD: CommandHandler<ClipboardMessage> = {
             return sendError(sid, vId, "Can't copy directory into itself");
         }
 
-        fs.stat(utils.addFilesPath(msg.data.dst), async (err, stats) => {
-            if ((!err && stats) || msg.data.src === msg.data.dst) {
-                utils.getNewPath(utils.addFilesPath(msg.data.dst), (newDst) => {
-                    filetree.clipboard(
-                        msg.data.src,
-                        utils.removeFilesPath(newDst),
-                        msg.data.type,
-                    );
-                });
-            } else {
-                filetree.clipboard(msg.data.src, msg.data.dst, msg.data.type);
-            }
-        });
+        const destinationExists = await storage.exists(
+            utils.addFilesPath(msg.data.dst),
+        );
+
+        let destination = msg.data.dst;
+        if (destinationExists || msg.data.src === msg.data.dst) {
+            destination = utils.removeFilesPath(
+                utils.addFilesPath(msg.data.dst),
+            );
+        }
+
+        if (msg.data.type === "cut") {
+            storage.move(msg.data.src, destination);
+        } else if (msg.data.type === "copy") {
+            storage.copy(msg.data.src, destination);
+        }
     },
 };

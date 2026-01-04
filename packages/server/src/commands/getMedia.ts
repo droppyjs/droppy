@@ -1,10 +1,9 @@
 import path from "node:path";
 import { imageSize } from "image-size";
 
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 import { utils } from "../utils/index.js";
-
 import type { CommandHandler } from "./index.js";
 
 interface GetMediaMessage {
@@ -35,18 +34,23 @@ export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
         }
 
         const allExts = exts.img.concat(exts.vid).concat(exts.pdf);
-        const files = filetree.lsFilter(dir, utils.extensionRe(allExts));
-        if (!files) {
+        const files = (
+            await storage.listDir(dir, utils.extensionRe(allExts))
+        ).filter((entry) => entry.type === "file");
+        if (!files.length) {
             return sendError(sid, vId, "No displayable files in directory");
         }
 
         const mediaFiles = await Promise.all(
             files.map((file) => {
                 return new Promise((resolve) => {
-                    if (utils.extensionRe(exts.pdf).test(file)) {
-                        resolve({ pdf: true, src: file });
-                    } else if (utils.extensionRe(exts.img).test(file)) {
-                        const input = path.join(utils.addFilesPath(dir), file);
+                    if (utils.extensionRe(exts.pdf).test(file.name)) {
+                        resolve({ pdf: true, src: file.name });
+                    } else if (utils.extensionRe(exts.img).test(file.name)) {
+                        const input = path.join(
+                            utils.addFilesPath(dir),
+                            file.name,
+                        );
                         imageSize(input, (err, dims) => {
                             let width: number | undefined,
                                 height: number | undefined;
@@ -68,13 +72,13 @@ export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
                             }
 
                             resolve({
-                                src: file,
+                                src: file.name,
                                 w: width ? width : 0,
                                 h: height ? height : 0,
                             });
                         });
                     } else {
-                        resolve({ video: true, src: file });
+                        resolve({ video: true, src: file.name });
                     }
                 });
             }),

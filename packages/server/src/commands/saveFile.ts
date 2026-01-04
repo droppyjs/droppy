@@ -1,6 +1,5 @@
-// @ts-nocheck
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -39,10 +38,14 @@ export const SAVE_FILE: CommandHandler<SaveFileMessage> = {
         log.info(ws, null, `Saving: ${msg.data.to}`);
 
         try {
-            await filetree.save(msg.data.to, msg.data.value);
+            await storage.saveFile(msg.data.to, msg.data.value);
         } catch (err) {
             sendObj(sid, { type: "SAVE_STATUS", vId, status: 1 });
-            sendError(sid, vId, `Error saving: ${err.message}`);
+            sendError(
+                sid,
+                vId,
+                `Error saving: ${err instanceof Error ? err.message : String(err)}`,
+            );
             log.error(err);
             return;
         }

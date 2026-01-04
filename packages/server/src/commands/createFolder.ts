@@ -1,5 +1,5 @@
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -26,7 +26,7 @@ export const CREATE_FOLDER: CommandHandler<CreateFolderMessage> = {
         }
 
         try {
-            await filetree.mkdir(msg.data);
+            await storage.makekDir(msg.data);
         } catch (err) {
             log.error(ws, null, err);
             const error = err instanceof Error ? err : new Error(String(err));

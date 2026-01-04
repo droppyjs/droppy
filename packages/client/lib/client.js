@@ -726,9 +726,9 @@ function uploadBlob(view, blob) {
 
 function upload(view, fd, files) {
     let rename = false;
-    if (view[0].currentData && Object.keys(view[0].currentData).length) {
+    if (view[0].currentData?.length) {
         let conflict = false;
-        const existingFiles = Object.keys(view[0].currentData);
+        const existingFiles = view[0].currentData.map((file) => file.name);
 
         for (const file of files) {
             if (existingFiles.includes(file)) {
@@ -1198,16 +1198,20 @@ function checkPathOverflow(view) {
 
 function getTemplateEntries(view, data) {
     const entries = [];
-    Object.keys(data).forEach((name) => {
-        const split = data[name].split("|");
-        const type = split[0];
-        const mtime = Number(split[1]) * 1e3;
-        const size = Number(split[2]);
+    data.forEach((file) => {
+        const type =
+            file.type === "file"
+                ? "f"
+                : file.type === "directory"
+                  ? "d"
+                  : file.type;
+        const mtime = Number(file.mtime) * 1e3;
+        const size = Number(file.size);
         // Preserve filenames exactly as received from the server (no Unicode normalization).
 
         const entry = {
-            name,
-            sortname: name.replace(/['"]/g, "_").toLowerCase(),
+            name: file.name,
+            sortname: file.name.replace(/['"]/g, "_").toLowerCase(),
             type,
             mtime,
             age: timeDifference(mtime),
@@ -1216,25 +1220,25 @@ function getTemplateEntries(view, data) {
             id:
                 (view[0].currentFolder === "/"
                     ? "/"
-                    : `${view[0].currentFolder}/`) + name,
-            sprite: getSpriteClass(fileExtension(name)),
+                    : `${view[0].currentFolder}/`) + file.name,
+            sprite: getSpriteClass(fileExtension(file.name)),
             classes: "",
         };
 
-        if (Object.keys(droppy.audioTypes).includes(fileExtension(name))) {
+        if (Object.keys(droppy.audioTypes).includes(fileExtension(file.name))) {
             entry.classes = "playable";
             entry.playable = true;
         } else if (
-            Object.keys(droppy.videoTypes).includes(fileExtension(name))
+            Object.keys(droppy.videoTypes).includes(fileExtension(file.name))
         ) {
             entry.classes = "viewable viewable-video";
             entry.viewableVideo = true;
         } else if (
-            Object.keys(droppy.imageTypes).includes(fileExtension(name))
+            Object.keys(droppy.imageTypes).includes(fileExtension(file.name))
         ) {
             entry.classes = "viewable viewable-image";
             entry.viewableImage = true;
-        } else if (fileExtension(name) === "pdf") {
+        } else if (fileExtension(file.name) === "pdf") {
             entry.classes = "viewable viewable-pdf";
             entry.viewablePdf = true;
         }

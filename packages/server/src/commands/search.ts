@@ -1,4 +1,4 @@
-import filetree from "../services/filetree/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -22,7 +22,7 @@ export const SEARCH: CommandHandler<SearchMessage> = {
             type: "SEARCH_RESULTS",
             vId,
             folder: dir,
-            results: filetree.search(query, dir),
+            results: await storage.search(query, dir),
         });
     },
 };

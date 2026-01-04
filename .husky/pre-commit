@@ -1,4 +1,15 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn exec biome check --staged --write --no-errors-on-unmatched
+# Capture the staged file list *before* running Biome, since Biome writes to the
+# working tree but does not update the Git index.
+STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if [ -n "$STAGED_FILES" ]; then
+    yarn exec biome check --staged --write --no-errors-on-unmatched
+
+    # Re-stage any files Biome modified so the commit includes the auto-fixes.
+    echo "$STAGED_FILES" | while IFS= read -r file; do
+        [ -n "$file" ] && git add -- "$file"
+    done
+fi

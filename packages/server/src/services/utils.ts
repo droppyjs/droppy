@@ -274,7 +274,9 @@ class DroppyUtils {
         return crypto.randomBytes(64).toString("base64").substring(0, 48);
     }
 
-    readJsonBody<TBody extends object = object>(req: DroppyHttpRequest): Promise<TBody> {
+    readJsonBody<TBody extends object = object>(
+        req: DroppyHttpRequest,
+    ): Promise<TBody> {
         return new Promise((resolve, reject) => {
             try {
                 if (req.body) {

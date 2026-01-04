@@ -4,22 +4,20 @@ import path from "node:path";
 import { promisify } from "node:util";
 import vm from "node:vm";
 import { brotliCompress, constants, gzip } from "node:zlib";
-import etag from "etag";
-import jb from "json-buffer";
-
 import autoprefixer from "autoprefixer";
 import CleanCSS from "clean-css";
+import etag from "etag";
 import handlebars from "handlebars";
 import htmlMinifier from "html-minifier";
+import jb from "json-buffer";
 import postcss from "postcss";
 import * as terser from "terser";
-import svg from "./svg.js";
+import pkg from "../../package.json" with { type: "json" };
 
 import log from "./log.js";
 import paths from "./paths.js";
+import svg from "./svg.js";
 import utils from "./utils.js";
-
-import pkg from "../../package.json" with { type: "json" };
 
 const themesPath = path.join(
     paths.get().client,
@@ -284,13 +282,13 @@ async function compile(write, cb) {
     const cache = {
         res: {},
         themes: {
-            droppy: '',
+            droppy: "",
         },
         modes: {},
         lib: {},
         meta: {
-            version: ''
-        }
+            version: "",
+        },
     };
 
     cache.res = await compileAll();
@@ -320,7 +318,7 @@ async function compile(write, cb) {
     }
 
     for (const entries of Object.values(cache)) {
-        if (!('version' in entries)) {
+        if (!("version" in entries)) {
             await Promise.all(
                 Object.values(entries).map(async (props: any) => {
                     props.gzip = await gzipEncode(props.data);
@@ -363,12 +361,19 @@ async function readModes() {
     const modes = {};
 
     // parse meta.js from CM for supported modes
-    const js = String(await readFile(
-        path.join(paths.get().client, "/node_modules/codemirror/mode/meta.js"),
-    ));
+    const js = String(
+        await readFile(
+            path.join(
+                paths.get().client,
+                "/node_modules/codemirror/mode/meta.js",
+            ),
+        ),
+    );
 
     // Extract modes from CodeMirror
-    const sandbox: { CodeMirror: { modeInfo: { mode: string }[] } } = { CodeMirror: { modeInfo: [] } };
+    const sandbox: { CodeMirror: { modeInfo: { mode: string }[] } } = {
+        CodeMirror: { modeInfo: [] },
+    };
     vm.runInNewContext(js, sandbox);
 
     for (const entry of sandbox.CodeMirror.modeInfo) {

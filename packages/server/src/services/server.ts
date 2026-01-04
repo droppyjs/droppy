@@ -21,7 +21,11 @@ import chokidar from "chokidar";
 import yazl from "yazl";
 import pkg from "../../package.json" with { type: "json" };
 import * as commands from "../commands/index.js";
-import type { DroppyHttpRequest, DroppyHttpResponse, DroppyHttpServer } from "../types/http.js";
+import type {
+    DroppyHttpRequest,
+    DroppyHttpResponse,
+    DroppyHttpServer,
+} from "../types/http.js";
 import cfg from "./cfg.js";
 import cookies from "./cookies.js";
 import csrf from "./csrf.js";
@@ -715,7 +719,10 @@ function send(ws, data) {
     })(ws, data, 0);
 }
 
-async function handleGETandHEAD(req: DroppyHttpRequest, res: DroppyHttpResponse) {
+async function handleGETandHEAD(
+    req: DroppyHttpRequest,
+    res: DroppyHttpResponse,
+) {
     if (!req.url) {
         res.statusCode = 400;
         res.end();
@@ -785,8 +792,7 @@ async function handleGETandHEAD(req: DroppyHttpRequest, res: DroppyHttpResponse)
     } else if (/^\/!\/zip\/[\s\S]+/.test(URI)) {
         const zipPath = utils.addFilesPath(URI.substring(6));
 
-        
-        let stats: Stats | null = null;;
+        let stats: Stats | null = null;
 
         try {
             stats = await fs.stat(zipPath);
@@ -1052,7 +1058,8 @@ function handleResourceRequest(req, res, resourceName) {
 
 async function handleFileRequest(req, res, download) {
     const URI = decodeURIComponent(req.url);
-    let shareLink = false, filepath: string;
+    let shareLink = false,
+        filepath: string;
 
     let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
     if (parts?.[1]) {
@@ -1238,11 +1245,21 @@ function handleUploadRequest(req, res) {
                     file.pipe(ws);
                 }
             } catch (err) {
-                if (typeof err === "object" && err !== null && "code" in err && err.code === "ENOENT") {
+                if (
+                    typeof err === "object" &&
+                    err !== null &&
+                    "code" in err &&
+                    err.code === "ENOENT"
+                ) {
                     const ws = createWriteStream(dst, { mode: 0o644 });
                     ws.on("error", onWriteError);
                     file.pipe(ws);
-                } else if (typeof err === "object" && err !== null && "code" in err && err.code === "EACCES") {
+                } else if (
+                    typeof err === "object" &&
+                    err !== null &&
+                    "code" in err &&
+                    err.code === "EACCES"
+                ) {
                     onWriteError(
                         new Error(
                             `Permission denied, cannot upload ${filename} to ${dstDir} (EACCES).`,

@@ -323,7 +323,7 @@ function init() {
     } else {
         // Create new view with initializing
         getLocationsFromHash().forEach((string, index) => {
-            const dest = join(decodeURIComponent(string));
+            const dest = join(string);
             newView(dest, index);
         });
     }
@@ -1016,6 +1016,30 @@ function getViewLocation(view) {
     }
 }
 
+function encodeHashPath(path) {
+    // droppy will keep "/" separators intact by encoding segment by segment.
+    if (typeof path !== "string") return path;
+    return path
+        .split("/")
+        .map((seg) => encodeURIComponent(seg))
+        .join("/");
+}
+
+function decodeHashPath(path) {
+    // and do the reverse here, segment by segment
+    if (typeof path !== "string") return path;
+    return path
+        .split("/")
+        .map((seg) => {
+            try {
+                return decodeURIComponent(seg);
+            } catch {
+                return seg;
+            }
+        })
+        .join("/");
+}
+
 function getLocationsFromHash() {
     const locations = window.location.hash.split("#");
     locations.shift();
@@ -1027,6 +1051,7 @@ function getLocationsFromHash() {
     locations.forEach((part, i) => {
         locations[i] = part.replace(/\/*$/g, "");
         if (locations[i] === "") locations[i] = "/";
+        locations[i] = decodeHashPath(locations[i]);
     });
     return locations;
 }
@@ -1036,9 +1061,9 @@ function getHashPaths(modview, dest) {
     droppy.views.forEach((view) => {
         view = $(view);
         if (modview?.is(view)) {
-            path += `/#${dest}`;
+            path += `/#${encodeHashPath(dest)}`;
         } else {
-            path += `/#${getViewLocation(view)}`;
+            path += `/#${encodeHashPath(getViewLocation(view))}`;
         }
     });
     return path.replace(/\/+/g, "/");

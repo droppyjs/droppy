@@ -25,9 +25,10 @@ import type {
     DroppyHttpRequest,
     DroppyHttpResponse,
     DroppyHttpServer,
+    DroppyWebSocket,
 } from "../types/http.js";
 import cfg from "./cfg.js";
-import cookies from "./cookies.js";
+import cookies from "./cookies/index.js";
 import csrf from "./csrf.js";
 import db from "./db.js";
 import filetree from "./filetree.js";
@@ -38,7 +39,10 @@ import resources from "./resources.js";
 import utils from "./utils.js";
 
 let cache: any = {};
-const clients = {};
+const clients: Record<
+    string,
+    { views: any[]; cookie?: string; ws: DroppyWebSocket }
+> = {};
 const clientsPerDir = {};
 let config: any = null;
 let firstRun: boolean | null = null;
@@ -524,28 +528,32 @@ const verifyClient = (info, cb) => {
 };
 
 // WebSocket functions
-function setupWebSocket(server: DroppyHttpServer | false) {
-    if (server !== false) {
-        wss = new ws.WebSocketServer({ server, verifyClient });
-    } else {
-        wss = new ws.WebSocketServer({ noServer: true, verifyClient });
-    }
+function setupWebSocket(server: DroppyHttpServer) {
+    wss = new ws.WebSocketServer({ server, verifyClient });
+
     wss.on("connection", onWebSocketRequest);
     wss.on("error", log.error);
+
     return wss;
 }
 
-function onWebSocketRequest(ws, req) {
-    ws.addr = ws._socket.remoteAddress;
-    ws.port = ws._socket.remotePort;
+function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
+    ws.addr = req.socket.remoteAddress as string;
+    ws.port = req.socket.remotePort as number;
     ws.headers = Object.assign({}, req.headers);
     log.info(ws, null, "WebSocket [", green("connected"), "]");
-    const sid = `${ws._socket.remoteAddress} ${ws._socket.remotePort}`;
-    const cookie = cookies.get(req.headers.cookie);
+    const sid = `${ws.addr} ${ws.port}`;
+    const cookie = req.headers.cookie ? cookies.get(req.headers.cookie) : null;
+    if (!cookie) {
+        ws.close(4001);
+        return;
+    }
+
     clients[sid] = { views: [], cookie, ws };
 
-    ws.on("message", async (msg) => {
-        msg = JSON.parse(msg);
+    ws.on("message", async (data) => {
+        const text = typeof data === "string" ? data : data.toString();
+        const msg = JSON.parse(text);
 
         if (msg.type !== "SAVE_FILE") {
             log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
@@ -647,7 +655,7 @@ function sendFiles(sid, vId) {
         !clients[sid] ||
         !clients[sid].views[vId] ||
         !clients[sid].ws ||
-        !clients[sid].ws._socket
+        clients[sid].ws.readyState !== 1
     )
         return;
     const folder = clients[sid].views[vId].directory;
@@ -730,8 +738,11 @@ async function handleGETandHEAD(
     }
     const URI = decodeURIComponent(req.url);
 
-    if (config.public && !cookies.get(req.headers.cookie)) {
-        cookies.free(req, res, null);
+    const cookie = req.headers.cookie
+        ? cookies.get(req.headers.cookie)
+        : undefined;
+    if (config.public && !cookie) {
+        cookies.free(req, res, {});
     }
 
     // unauthenticated GETs
@@ -739,8 +750,11 @@ async function handleGETandHEAD(
         if (validateRequest(req)) {
             handleResourceRequest(req, res, "main.html");
             const sessions = db.get("sessions");
-            if (sessions[cookies.get(req.headers.cookie)]) {
-                sessions[cookies.get(req.headers.cookie)].lastSeen = Date.now();
+            const sessionId = req.headers.cookie
+                ? cookies.get(req.headers.cookie)
+                : undefined;
+            if (sessionId) {
+                sessions[sessionId].lastSeen = Date.now();
             }
             db.set("sessions", sessions);
         } else if (firstRun) {
@@ -932,7 +946,7 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
     } else if (/^\/!\/logout$/.test(URI)) {
         res.setHeader("Content-Type", "text/plain");
         utils
-            .readJsonBody(req)
+            .readJsonBody<Record<string, string>>(req)
             .then((postData) => {
                 cookies.unset(req, res, postData);
                 res.statusCode = 200;

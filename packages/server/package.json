@@ -59,7 +59,7 @@
         "strip-ansi": "6.0.0",
         "terser": "5.2.1",
         "untildify": "^6.0.0",
-        "ws": "7.4.6",
+        "ws": "8.18.3",
         "yazl": "2.5.1"
     },
     "devDependencies": {

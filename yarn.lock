@@ -2760,7 +2760,7 @@ __metadata:
     terser: "npm:5.2.1"
     untildify: "npm:^6.0.0"
     updates: "npm:10.3.5"
-    ws: "npm:7.4.6"
+    ws: "npm:8.18.3"
     yazl: "npm:2.5.1"
   languageName: unknown
   linkType: soft
@@ -5920,7 +5920,6 @@ __metadata:
     typescript: "npm:^5.6.3"
     updates: "npm:12.1.0"
     uppie: "npm:1.1.4"
-    ws: "npm:8.2.1"
     yazl: "npm:2.5.1"
   languageName: unknown
   linkType: soft
@@ -12212,33 +12211,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:7.4.6":
-  version: 7.4.6
-  resolution: "ws@npm:7.4.6"
+"ws@npm:8.18.3":
+  version: 8.18.3
+  resolution: "ws@npm:8.18.3"
   peerDependencies:
     bufferutil: ^4.0.1
-    utf-8-validate: ^5.0.2
+    utf-8-validate: ">=5.0.2"
   peerDependenciesMeta:
     bufferutil:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 10c0/4b44b59bbc0549c852fb2f0cdb48e40e122a1b6078aeed3d65557cbeb7d37dda7a4f0027afba2e6a7a695de17701226d02b23bd15c97b0837808c16345c62f8e
-  languageName: node
-  linkType: hard
-
-"ws@npm:8.2.1":
-  version: 8.2.1
-  resolution: "ws@npm:8.2.1"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ^5.0.2
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/ee9ef4fbc96d3f4451a20445da3d3d92e5b1cab44407bc6d345af48a8bd1f6ce63812b779ddbab65b0236f0745398e4b41663b277a275479fcbb87da9a247712
+  checksum: 10c0/eac918213de265ef7cb3d4ca348b891a51a520d839aa51cdb8ca93d4fa7ff9f6ccb339ccee89e4075324097f0a55157c89fa3f7147bde9d8d7e90335dc087b53
   languageName: node
   linkType: hard
 

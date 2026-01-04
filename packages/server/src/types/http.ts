@@ -1,4 +1,6 @@
 import type http from "node:http";
+import type { IncomingHttpHeaders } from "node:http";
+import type { WebSocket } from "ws";
 
 /**
  * droppy extends Node's request/response objects with a few optional fields.
@@ -32,3 +34,9 @@ export interface DroppyHttpRequest<TBody extends object = object>
 export type DroppyHttpResponse = http.ServerResponse;
 
 export type DroppyHttpServer = http.Server | http.Server;
+
+export interface DroppyWebSocket extends WebSocket {
+    addr: string;
+    port: string | number;
+    headers: IncomingHttpHeaders;
+}

@@ -52,7 +52,6 @@
         "rrdir": "8.2.2",
         "send": "0.17.1",
         "strip-ansi": "7.0.0",
-        "ws": "8.2.1",
         "yazl": "2.5.1"
     },
     "devDependencies": {

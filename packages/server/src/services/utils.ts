@@ -8,7 +8,6 @@ import {
     readdir,
     stat,
 } from "node:fs/promises";
-import http from "node:http";
 import path from "node:path";
 import util from "node:util";
 import cd from "content-disposition";

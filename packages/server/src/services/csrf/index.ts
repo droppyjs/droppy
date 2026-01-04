@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { DroppyHttpRequest } from "../types/http.js";
+import type { DroppyHttpRequest } from "../../types/http.js";
 
 let tokens: string[] = [];
 
@@ -10,7 +10,7 @@ export function create(_req: DroppyHttpRequest) {
     return token;
 }
 
-export function validate(token: string) {
+export function validate(_req: DroppyHttpRequest, token: string) {
     return tokens.some((storedToken) => {
         return storedToken === token;
     });

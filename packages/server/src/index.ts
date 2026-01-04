@@ -2,7 +2,7 @@ import { droppy } from "./services/server.js";
 
 export { default as cfg } from "./services/cfg/index.js";
 export { default as cookies } from "./services/cookies/index.js";
-export { default as csrf } from "./services/csrf.js";
+export { default as csrf } from "./services/csrf/index.js";
 export { default as db } from "./services/db.js";
 export { default as filetree } from "./services/filetree.js";
 export { default as log } from "./services/log.js";

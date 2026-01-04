@@ -30,7 +30,7 @@ import type {
 import cfg from "./cfg/index.js";
 import type { DroppyConfig } from "./cfg/types.js";
 import cookies from "./cookies/index.js";
-import csrf from "./csrf.js";
+import csrf from "./csrf/index.js";
 import db from "./db.js";
 import filetree from "./filetree.js";
 import log from "./log.js";
@@ -560,7 +560,7 @@ function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
             log.debug(ws, null, magenta("RECV "), utils.pretty(msg));
         }
 
-        if (!csrf.validate(msg.token)) {
+        if (!csrf.validate(req, msg.token)) {
             ws.close(1011);
             return;
         }

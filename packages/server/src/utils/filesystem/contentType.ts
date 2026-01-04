@@ -1,4 +1,5 @@
 import mimeTypes from "mime-types";
+
 import isBinary from "./isBinary.js";
 
 const overrideMimeTypes = {
@@ -7,11 +8,12 @@ const overrideMimeTypes = {
 
 export default function contentType(p) {
     const type = mimeTypes.lookup(p);
-    if (overrideMimeTypes[type]) {
-        return overrideMimeTypes[type];
-    }
 
     if (type) {
+        if (overrideMimeTypes[type]) {
+            return overrideMimeTypes[type];
+        }
+
         const charset = mimeTypes.charsets.lookup(type);
         return type + (charset ? `; charset=${charset}` : "");
     } else {

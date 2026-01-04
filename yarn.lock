@@ -2747,7 +2747,7 @@ __metadata:
     json-buffer: "npm:3.0.1"
     lodash.debounce: "npm:4.0.8"
     lodash.throttle: "npm:4.1.1"
-    mime-types: "npm:2.1.27"
+    mime-types: "npm:3.0.2"
     minimist: "npm:1.2.8"
     mv: "npm:2.1.1"
     original-url: "npm:1.2.3"
@@ -4003,6 +4003,13 @@ __metadata:
   dependencies:
     "@types/istanbul-lib-report": "npm:*"
   checksum: 10c0/e147f0db9346a0cae9a359220bc76f7c78509fb6979a2597feb24d64b6e8328d2d26f9d152abbd59c6bca721e4ea2530af20116d01df50815efafd1e151fd777
+  languageName: node
+  linkType: hard
+
+"@types/mime-types@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@types/mime-types@npm:3.0.1"
+  checksum: 10c0/61c2056529dc5bc73c25b2a053e21f063fd547c21e12a2be94ca78b89b0f83c9a75afed9a8bda3c78592ee880acc82778302651527f7882cf5ba8e58ab320e29
   languageName: node
   linkType: hard
 
@@ -5885,6 +5892,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.28.5"
     "@biomejs/biome": "npm:2.3.10"
     "@types/busboy": "npm:^1.5.4"
+    "@types/mime-types": "npm:^3.0.1"
     "@types/node": "npm:^22.10.6"
     "@types/ps-node": "npm:^0.1.3"
     "@types/which": "npm:^3.0.4"
@@ -5905,7 +5913,6 @@ __metadata:
     lerna: "npm:^7"
     lodash.debounce: "npm:4.0.8"
     lodash.throttle: "npm:4.1.1"
-    mime-types: "npm:2.1.32"
     minimist: "npm:1.2.8"
     mv: "npm:2.1.1"
     nx: "npm:^16.2.2"
@@ -8602,13 +8609,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-db@npm:1.44.0":
-  version: 1.44.0
-  resolution: "mime-db@npm:1.44.0"
-  checksum: 10c0/40479d676ff00e5acbd00abeaf3f0d948ef83b88d1d118f4fccce80a15f452f252a92ea4aff26e9841a6a8710f56d9123c6bb1a6e6630aba04346116bda8a085
-  languageName: node
-  linkType: hard
-
 "mime-db@npm:1.46.0":
   version: 1.46.0
   resolution: "mime-db@npm:1.46.0"
@@ -8616,28 +8616,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-db@npm:1.49.0":
-  version: 1.49.0
-  resolution: "mime-db@npm:1.49.0"
-  checksum: 10c0/31110e507af3e37bbcdc3b391d33f87e7ff464a6d602f6b664bb690cfd435ae0003abec856c6f2ee41cafa63c20729c6cef1465136a64336104eedb1471c0b83
+"mime-db@npm:^1.54.0":
+  version: 1.54.0
+  resolution: "mime-db@npm:1.54.0"
+  checksum: 10c0/8d907917bc2a90fa2df842cdf5dfeaf509adc15fe0531e07bb2f6ab15992416479015828d6a74200041c492e42cce3ebf78e5ce714388a0a538ea9c53eece284
   languageName: node
   linkType: hard
 
-"mime-types@npm:2.1.27":
-  version: 2.1.27
-  resolution: "mime-types@npm:2.1.27"
+"mime-types@npm:3.0.2":
+  version: 3.0.2
+  resolution: "mime-types@npm:3.0.2"
   dependencies:
-    mime-db: "npm:1.44.0"
-  checksum: 10c0/6ead19fd7cd6594e6b2d070fe14381c92a45c489dc5c5b342be41d1d573ac6870c71f7c4f1153a3a08f29ece2dea95c895ad914855b4ecd20575f4393360d802
-  languageName: node
-  linkType: hard
-
-"mime-types@npm:2.1.32":
-  version: 2.1.32
-  resolution: "mime-types@npm:2.1.32"
-  dependencies:
-    mime-db: "npm:1.49.0"
-  checksum: 10c0/26e48e64c91ea9554b851cfc62f6147bb1decfd077cc340c0c2cfefc39d88db9d99876fa7065c577e2225a624d087a09a9d9523e6a00dfe62b6bc96225862082
+    mime-db: "npm:^1.54.0"
+  checksum: 10c0/35a0dd1035d14d185664f346efcdb72e93ef7a9b6e9ae808bd1f6358227010267fab52657b37562c80fc888ff76becb2b2938deb5e730818b7983bf8bd359767
   languageName: node
   linkType: hard
 

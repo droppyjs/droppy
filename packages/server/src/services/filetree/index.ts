@@ -527,7 +527,7 @@ class DroppyFileTree extends EventEmitter {
         readDirs
             .sort((a, b) => utils.naturalSort(a.path, b.path))
             .forEach((d) => {
-                const path = utils.removeFilesPath(d.path);
+                const path = utils.removeFilesPath(d.path).normalize();
                 readDirObj[path] = d.stats;
                 readDirKeys[path] = path;
             });
@@ -558,12 +558,14 @@ class DroppyFileTree extends EventEmitter {
                 return utils.naturalSort(a.path, b.path);
             })
             .forEach((f) => {
-                const parentDir = utils.removeFilesPath(path.dirname(f.path));
+                const parentDir = utils
+                    .removeFilesPath(path.dirname(f.path))
+                    .normalize();
                 const size = f.stats?.size ? f.stats.size : 0;
                 const mtime = f.stats?.mtime?.getTime
                     ? f.stats.mtime.getTime()
                     : 0;
-                dirs[parentDir].files[path.basename(f.path)] = {
+                dirs[parentDir].files[path.basename(f.path).normalize()] = {
                     size,
                     mtime,
                 };

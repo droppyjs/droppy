@@ -7,7 +7,6 @@ import busboy from "busboy";
 import { blue, cyan, green, magenta, red } from "colorette";
 import etag from "etag";
 import throttle from "lodash.throttle";
-import { rrdirAsync } from "rrdir";
 import sendFile from "send";
 import ut from "untildify";
 import * as ws from "ws";
@@ -509,11 +508,11 @@ function createListener(handler, opts, callback) {
     }
 }
 
-const verifyClient = (info, cb) => {
+const verifyClient = async (info, cb) => {
     // In public mode we still rely on having an actual session cookie for WS,
     // because we can't set cookies from a WebSocket upgrade response.
     const wsCookieHeader = info.req.headers.cookie;
-    const wsSid = wsCookieHeader ? cookies.get(wsCookieHeader) : null;
+    const wsSid = wsCookieHeader ? await cookies.get(wsCookieHeader) : null;
     if (config.public && !wsSid) {
         log.info(
             info.req,
@@ -523,7 +522,7 @@ const verifyClient = (info, cb) => {
         cb(false, 401, "Unauthorized");
         return;
     }
-    if (validateRequest(info.req)) return cb(true);
+    if (await validateRequest(info.req)) return cb(true);
     log.info(
         info.req,
         { statusCode: 401 },
@@ -755,7 +754,7 @@ async function handleGETandHEAD(
 
     // unauthenticated GETs
     if (URI === "/") {
-        if (validateRequest(req)) {
+        if (await validateRequest(req)) {
             handleResourceRequest(req, res, "main.html");
             const sessionId = req.headers.cookie
                 ? await cookies.get(req.headers.cookie)
@@ -790,7 +789,7 @@ async function handleGETandHEAD(
     }
 
     // validate requests below
-    if (!validateRequest(req)) {
+    if (!(await validateRequest(req))) {
         res.statusCode = 401;
         res.end();
         log.info(req, res);
@@ -1125,7 +1124,7 @@ async function handleFileRequest(req, res, download) {
     let shareLink = false,
         filepath: string;
 
-    let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
+    const parts = /^\/\$\/([a-z0-9]+)(?:\.[a-z0-9.]+)?$/i.exec(URI);
     if (parts?.[1]) {
         // check for sharelink
         const linkName = parts[1];
@@ -1140,24 +1139,42 @@ async function handleFileRequest(req, res, download) {
         filepath = utils.addFilesPath(link.location);
     } else {
         // it's a direct file request
-        if (!validateRequest(req)) {
+        if (!(await validateRequest(req))) {
             return redirectToRoot(req, res);
         }
-        parts = /^\/!\/(.+?)\/(.+)$/.exec(URI);
-        if (!parts || !parts[1] || !parts[2] || !utils.isPathSane(parts[2])) {
+        const directPrefix = "/!/";
+        if (!URI.startsWith(directPrefix)) {
             return redirectToRoot(req, res);
         }
-        download = parts[1] === "dl";
-        filepath = utils.addFilesPath(`/${[parts[2]]}`);
+        const rest = URI.slice(directPrefix.length);
+        const splitAt = rest.indexOf("/");
+        const mode = splitAt >= 0 ? rest.slice(0, splitAt) : "";
+        const rawPath = splitAt >= 0 ? rest.slice(splitAt + 1) : "";
+        if (!mode || !rawPath || !utils.isPathSane(rawPath)) {
+            return redirectToRoot(req, res);
+        }
+        download = mode === "dl";
+        filepath = utils.addFilesPath(`/${[rawPath]}`);
     }
 
     try {
         const stats = await fs.stat(filepath);
 
-        if (stats.isDirectory() && shareLink) {
-            streamArchive(req, res, filepath, download, stats, shareLink);
-        } else {
+        if (stats.isDirectory()) {
+            if (shareLink) {
+                streamArchive(req, res, filepath, download, stats, shareLink);
+            } else {
+                // Prevent zipping/streaming of special paths from direct requests.
+                return redirectToRoot(req, res);
+            }
+        } else if (stats.isFile()) {
             streamFile(req, res, filepath, download, stats, shareLink);
+        } else {
+            // Refuse to serve special files (fifo/socket/device), which can block indefinitely.
+            res.statusCode = 404;
+            res.end();
+            log.info(req, res);
+            return;
         }
     } catch (err) {
         if (typeof err === "object" && err !== null && "code" in err) {
@@ -1531,15 +1548,24 @@ function checkETag(req, res, path, mtime) {
 }
 
 // Create a zip file from a directory and stream it to a client
-function streamArchive(req, res, zipPath, download, stats, shareLink) {
+function streamArchive(
+    req: DroppyHttpRequest,
+    res: DroppyHttpResponse,
+    zipPath: string,
+    download: boolean,
+    stats: Stats,
+    shareLink: boolean,
+) {
     const eTag = checkETag(req, res, zipPath, stats.mtime);
-    if (!eTag) return;
+    if (!eTag) {
+        return;
+    }
     const zip = new yazl.ZipFile();
     const relPath = utils.removeFilesPath(zipPath);
     log.info(req, res);
     log.info(req, res, "Streaming zip of ", blue(relPath));
     res.statusCode = 200;
-    res.setHeader("Content-Type", utils.contentType(zip));
+    res.setHeader("Content-Type", "application/zip");
     res.setHeader("Transfer-Encoding", "chunked");
     res.setHeader(
         "Content-Disposition",
@@ -1556,32 +1582,63 @@ function streamArchive(req, res, zipPath, download, stats, shareLink) {
         return;
     }
 
-    rrdirAsync(zipPath, { stats: true })
-        .then((entries) => {
-            for (const entry of entries) {
-                const entryPath =
-                    typeof entry.path === "string"
-                        ? entry.path
-                        : Buffer.from(entry.path).toString("utf8");
-                const pathInZip = path.relative(zipPath, entryPath);
-                const metaData = {
-                    mtime: entry.stats?.mtime ? entry.stats.mtime : new Date(),
-                    mode: entry.stats?.mode ? entry.stats.mode : 0o666,
-                };
+    res.flushHeaders();
 
-                if (entry.directory) {
-                    zip.addEmptyDirectory(pathInZip, metaData);
-                } else {
-                    zip.addFile(entryPath, pathInZip, metaData);
-                }
+    zip.outputStream.pipe(res);
+
+    let aborted = false;
+    req.on("aborted", () => {
+        aborted = true;
+    });
+    res.on("close", () => {
+        aborted = true;
+    });
+
+    const addTreeToZip = async (dir: string) => {
+        let entries: import("node:fs").Dirent[];
+        try {
+            entries = await fs.readdir(dir, { withFileTypes: true });
+        } catch (err) {
+            log.error(err);
+            return;
+        }
+        for (const entry of entries) {
+            if (aborted) return;
+
+            const entryPath = path.join(dir, entry.name);
+            const pathInZip = path.relative(zipPath, entryPath);
+
+            if (entry.isSymbolicLink()) {
+                continue;
             }
 
-            zip.outputStream.pipe(res);
-            zip.end();
+            try {
+                const st = await fs.stat(entryPath);
+                const metaData = { mtime: st.mtime, mode: st.mode };
+
+                if (st.isDirectory()) {
+                    zip.addEmptyDirectory(pathInZip, metaData);
+                    await addTreeToZip(entryPath);
+                } else if (st.isFile()) {
+                    zip.addFile(entryPath, pathInZip, metaData);
+                }
+            } catch (err) {
+                log.error(err);
+            }
+        }
+    };
+
+    addTreeToZip(zipPath)
+        .then(() => {
+            if (!aborted) {
+                zip.end();
+            }
         })
         .catch((err) => {
             log.error(req, res, err);
-            res.statusCode = 500;
+            if (!res.headersSent) {
+                res.statusCode = 500;
+            }
             res.end();
         });
 }
@@ -1648,8 +1705,15 @@ function streamFile(
         .pipe(res);
 }
 
-function validateRequest(req) {
-    return Boolean(cookies.get(req.headers.cookie) || config.public);
+async function validateRequest(req) {
+    if (config.public) {
+        return true;
+    }
+    const cookie = req.headers.cookie;
+    if (!cookie) {
+        return false;
+    }
+    return Boolean(await cookies.get(cookie));
 }
 
 const cbs: ((

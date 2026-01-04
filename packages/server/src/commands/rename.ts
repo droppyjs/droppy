@@ -1,7 +1,6 @@
-// @ts-nocheck
 import db from "../services/db/index.js";
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -43,13 +42,13 @@ export const RENAME: CommandHandler<RenameMessage> = {
         }
 
         try {
-            await filetree.move(rSrc, rDst);
+            await storage.move(rSrc, rDst);
         } catch (err) {
             log.error(ws, null, err);
             sendError(
                 sid,
                 vId,
-                `Error renaming ${rSrc} to ${rDst}: ${err.message}`,
+                `Error renaming ${rSrc} to ${rDst}: ${err instanceof Error ? err.message : String(err)}`,
             );
             return;
         }
@@ -61,6 +60,6 @@ export const RENAME: CommandHandler<RenameMessage> = {
             { location: rDst },
         );
 
-        log.info(ws, null, `Share link updated: ${link} -> ${rDst}`);
+        log.info(ws, null, `Share link updated: ${rSrc} -> ${rDst}`);
     },
 };

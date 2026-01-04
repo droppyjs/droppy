@@ -1,4 +1,4 @@
-import { DbJson } from "./impl/db-json.js";
+import { DbJson } from "./provider/db-json.js";
 import type { DbHandler } from "./types.js";
 
 const db = new DbJson() as DbHandler;

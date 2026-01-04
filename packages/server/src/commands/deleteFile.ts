@@ -1,5 +1,5 @@
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -42,7 +42,7 @@ export const DELETE_FILE: CommandHandler<DeleteFileMessage> = {
             log.info(ws, null, `Deleting: ${path}`);
 
             try {
-                await filetree.del(path);
+                await storage.delete(path);
             } catch (err) {
                 log.info(ws, null, `Error deleting file: ${path}`);
                 log.error(err);

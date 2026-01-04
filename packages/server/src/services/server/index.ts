@@ -32,11 +32,11 @@ import type { DroppyConfig } from "../cfg/types.js";
 import cookies from "../cookies/index.js";
 import csrf from "../csrf/index.js";
 import db from "../db/index.js";
-import filetree from "../filetree/index.js";
 import log from "../log/index.js";
 import manifest from "../manifest/index.js";
 import paths from "../paths/index.js";
 import resources from "../resources/index.js";
+import storage from "../storage/index.js";
 import users from "../users/index.js";
 
 let cache: any = {};
@@ -124,11 +124,7 @@ export async function droppy(
         })();
 
         log.info("Caching files ...");
-        filetree.init(config);
-        await filetree.updateDir(null);
-        if (config.watch) {
-            filetree.watch();
-        }
+        storage.init(config);
 
         log.info("Caching files done");
 
@@ -656,7 +652,7 @@ function validatePaths(paths, type, ws, sid, vId) {
 }
 
 // Send a file list update
-function sendFiles(sid, vId) {
+async function sendFiles(sid: string, vId: number) {
     if (
         !clients[sid] ||
         !clients[sid].views[vId] ||
@@ -669,7 +665,7 @@ function sendFiles(sid, vId) {
         type: "UPDATE_DIRECTORY",
         vId,
         folder,
-        data: filetree.ls(folder),
+        data: await storage.listDir(folder),
     });
 }
 
@@ -1388,7 +1384,7 @@ async function handleUploadRequest(req, res) {
             }),
         );
 
-        filetree.updateDir(dstDir);
+        await storage.refreshDir(dstDir);
         closeConnection();
     });
 
@@ -1403,7 +1399,7 @@ async function handleUploadRequest(req, res) {
                 }),
             );
 
-            filetree.updateDir(dstDir);
+            await storage.refreshDir(dstDir);
             closeConnection();
         }
     });
@@ -1420,7 +1416,7 @@ async function handleUploadRequest(req, res) {
     }
 }
 
-filetree.on("updateall", () => {
+storage.on("updateall", () => {
     Object.keys(clientsPerDir).forEach((dir) => {
         clientsPerDir[dir].forEach((client) => {
             client.update();
@@ -1428,14 +1424,16 @@ filetree.on("updateall", () => {
     });
 });
 
-filetree.on("update", (dir) => {
+storage.on("update", (dir) => {
     while (true) {
         if (clientsPerDir[dir]) {
             clientsPerDir[dir].forEach((client) => {
                 client.update();
             });
         }
-        if (dir === "/") break;
+        if (dir === "/") {
+            break;
+        }
         dir = path.dirname(dir);
     }
 });

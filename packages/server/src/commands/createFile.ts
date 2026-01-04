@@ -1,5 +1,5 @@
-import filetree from "../services/filetree/index.js";
 import log from "../services/log/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -25,7 +25,7 @@ export const CREATE_FILE: CommandHandler<CreateFileMessage> = {
         }
 
         try {
-            await filetree.mk(msg.data);
+            await storage.makeFile(msg.data);
         } catch (err) {
             log.error(ws, null, err);
             const error = err instanceof Error ? err : new Error(String(err));

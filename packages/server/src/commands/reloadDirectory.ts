@@ -1,4 +1,4 @@
-import filetree from "../services/filetree/index.js";
+import storage from "../services/storage/index.js";
 
 import type { CommandHandler } from "./index.js";
 
@@ -15,7 +15,7 @@ export const RELOAD_DIRECTORY: CommandHandler<ReloadDirectoryMessage> = {
             return;
         }
 
-        await filetree.updateDir(msg.data.dir);
+        await storage.refreshDir(msg.data.dir);
 
         sendFiles(sid, vId);
     },

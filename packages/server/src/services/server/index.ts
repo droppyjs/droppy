@@ -19,26 +19,26 @@ import http from "node:http";
 import https from "node:https";
 import chokidar from "chokidar";
 import yazl from "yazl";
-import pkg from "../../package.json" with { type: "json" };
-import * as commands from "../commands/index.js";
+import pkg from "../../../package.json" with { type: "json" };
+import * as commands from "../../commands/index.js";
 import type {
     DroppyHttpRequest,
     DroppyHttpResponse,
     DroppyHttpServer,
     DroppyWebSocket,
-} from "../types/http.js";
-import cfg from "./cfg/index.js";
-import type { DroppyConfig } from "./cfg/types.js";
-import cookies from "./cookies/index.js";
-import csrf from "./csrf/index.js";
-import db from "./db/db.js";
-import filetree from "./filetree/index.js";
-import log from "./log.js";
-import manifest from "./manifest.js";
-import paths from "./paths.js";
-import resources from "./resources.js";
-import users from "./users/index.js";
-import utils from "./utils.js";
+} from "../../types/http.js";
+import { utils } from "../../utils/index.js";
+import cfg from "../cfg/index.js";
+import type { DroppyConfig } from "../cfg/types.js";
+import cookies from "../cookies/index.js";
+import csrf from "../csrf/index.js";
+import db from "../db/index.js";
+import filetree from "../filetree/index.js";
+import log from "../log/index.js";
+import manifest from "../manifest/index.js";
+import paths from "../paths/index.js";
+import resources from "../resources/index.js";
+import users from "../users/index.js";
 
 let cache: any = {};
 const clients: Record<
@@ -882,6 +882,12 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
 
         // Rate-limit login attempts to one attempt every 2 seconds
         const ip = utils.ip(req);
+        if (!ip) {
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
+
         if (rateLimited.includes(ip)) {
             res.statusCode = 429;
             res.end();
@@ -1287,7 +1293,13 @@ async function handleUploadRequest(req, res) {
 
         // store temp names in rootNames for later rename
         const tmpPath = utils.addUploadTempExt(filename);
-        rootNames.add(utils.rootname(tmpPath));
+        const rootName = utils.rootname(tmpPath);
+        if (!rootName) {
+            sendError(req.sid, vId, "Invalid filename");
+            closeConnection(400);
+            return;
+        }
+        rootNames.add(rootName);
 
         const dst = utils.addFilesPath(path.join(dstDir, tmpPath));
 
@@ -1346,7 +1358,7 @@ async function handleUploadRequest(req, res) {
                     path.join(dstDir, utils.removeUploadTempExt(p)),
                 );
 
-                await promisify(utils.move)(srcPath, dstPath);
+                await utils.move(srcPath, dstPath);
             }),
         );
 
@@ -1361,9 +1373,7 @@ async function handleUploadRequest(req, res) {
             // remove all uploaded temp files on cancel
             await Promise.all(
                 [...rootNames].map(async (p) => {
-                    await promisify(utils.rm)(
-                        utils.addFilesPath(path.join(dstDir, p)),
-                    );
+                    await fs.unlink(utils.addFilesPath(path.join(dstDir, p)));
                 }),
             );
 

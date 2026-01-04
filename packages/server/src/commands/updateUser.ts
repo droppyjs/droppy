@@ -1,6 +1,6 @@
 import { magenta } from "colorette";
-import db from "../services/db/db.js";
-import log from "../services/log.js";
+import db from "../services/db/index.js";
+import log from "../services/log/index.js";
 import users from "../services/users/index.js";
 import type { CommandHandler } from "./index.js";
 

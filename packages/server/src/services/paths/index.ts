@@ -19,38 +19,36 @@ const clientPath = path.normalize(
     `${path.dirname(require.resolve("@droppyjs/client"))}/../`,
 );
 
-class DroppyPaths {
-    get() {
-        return {
-            homedir,
+export function get() {
+    return {
+        homedir,
 
-            files: resolve(filesDir),
-            config: resolve(configDir),
+        files: resolve(filesDir),
+        config: resolve(configDir),
 
-            pid: resolve(configDir, "droppy.pid"),
-            temp: resolve(configDir, "temp"),
-            cfgFile: resolve(configDir, "config.json"),
-            db: resolve(configDir, "db.json"),
-            tlsKey: resolve(configDir, "tls.key"),
-            tlsCert: resolve(configDir, "tls.cert"),
-            tlsCA: resolve(configDir, "tls.ca"),
+        pid: resolve(configDir, "droppy.pid"),
+        temp: resolve(configDir, "temp"),
+        cfgFile: resolve(configDir, "config.json"),
+        db: resolve(configDir, "db.json"),
+        tlsKey: resolve(configDir, "tls.key"),
+        tlsCert: resolve(configDir, "tls.cert"),
+        tlsCA: resolve(configDir, "tls.ca"),
 
-            mod: resolve(__dirname, ".."),
-            server: resolve(__dirname, "..", "server"),
-            client: clientPath,
-            templates: resolve(clientPath, "lib", "templates"),
-            svg: resolve(clientPath, "lib", "svg"),
-        };
+        mod: resolve(__dirname, ".."),
+        server: resolve(__dirname, "..", "server"),
+        client: clientPath,
+        templates: resolve(clientPath, "lib", "templates"),
+        svg: resolve(clientPath, "lib", "svg"),
+    };
+}
+
+export function seed(config, files) {
+    if (config) {
+        configDir = config;
     }
 
-    seed(config, files) {
-        if (config) {
-            configDir = config;
-        }
-
-        if (files) {
-            filesDir = files;
-        }
+    if (files) {
+        filesDir = files;
     }
 }
 
@@ -65,4 +63,7 @@ function resolve(...args) {
     return p; // Return the resolved path
 }
 
-export default new DroppyPaths();
+export default {
+    get,
+    seed,
+};

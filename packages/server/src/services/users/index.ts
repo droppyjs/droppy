@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import db from "../db/db.js";
+import db from "../db/index.js";
 
 export async function addOrUpdateUser(
     user: string,

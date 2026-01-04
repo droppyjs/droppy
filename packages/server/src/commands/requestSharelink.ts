@@ -1,8 +1,8 @@
 import path from "node:path";
 
-import db from "../services/db/db.js";
-import log from "../services/log.js";
-import utils from "../services/utils.js";
+import db from "../services/db/index.js";
+import log from "../services/log/index.js";
+import { utils } from "../utils/index.js";
 
 import type { CommandHandler } from "./index.js";
 

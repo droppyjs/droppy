@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import util from "node:util";
 
-import log from "../services/log.js";
-import utils from "../services/utils.js";
+import log from "../services/log/index.js";
+import { utils } from "../utils/index.js";
 
 const stat = util.promisify(fs.stat);
 

@@ -1,7 +1,7 @@
 // @ts-nocheck
-import db from "../services/db/db.js";
+import db from "../services/db/index.js";
 import filetree from "../services/filetree/index.js";
-import log from "../services/log.js";
+import log from "../services/log/index.js";
 
 import type { CommandHandler } from "./index.js";
 

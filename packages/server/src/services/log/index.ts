@@ -1,14 +1,13 @@
-// @ts-nocheck
 import fs from "node:fs";
 import { isIPv6 } from "node:net";
 import { blue, cyan, green, magenta, red, reset, yellow } from "colorette";
 import stripAnsi from "strip-ansi";
 
-import utils from "./utils.js";
+import { utils } from "../../utils/index.js";
 
 const logColors = [reset, red, yellow, cyan];
 const logLabels = ["", "ERROR", "INFO", "DEBG"];
-let opts: any, logfile: string;
+let opts: any, logfile: number;
 
 const log = (req, res, logLevel, ...elems) => {
     if (opts && opts.logLevel < logLevel) return;
@@ -64,7 +63,11 @@ const log = (req, res, logLevel, ...elems) => {
     });
 
     if (logfile) {
-        fs.write(logfile, `${stripAnsi(elems.join(" "))}\n`);
+        fs.write(logfile, `${stripAnsi(elems.join(" "))}\n`, (err) => {
+            if (err) {
+                console.error(err);
+            }
+        });
     } else {
         console.info(...elems);
     }
@@ -74,7 +77,7 @@ log.init = (o) => {
     opts = o;
 };
 
-log.setLogFile = (fd) => {
+log.setLogFile = (fd: number) => {
     logfile = fd;
 };
 
@@ -124,24 +127,9 @@ log.plain = (...args) => {
     log(null, null, 0, args.join(""));
 };
 
-log.timestamp = () => {
-    const now = new Date();
-    let day = now.getDate();
-    let month = now.getMonth() + 1;
-    const year = now.getFullYear();
-    let hrs = now.getHours();
-    let mins = now.getMinutes();
-    let secs = now.getSeconds();
+log.timestamp = () => new Date().toISOString().replace("T", " ").slice(0, 19);
 
-    if (month < 10) month = `0${month}`;
-    if (day < 10) day = `0${day}`;
-    if (hrs < 10) hrs = `0${hrs}`;
-    if (mins < 10) mins = `0${mins}`;
-    if (secs < 10) secs = `0${secs}`;
-    return `${year}-${month}-${day} ${hrs}:${mins}:${secs}`;
-};
-
-log.logo = (line1, line2, line3) => {
+log.logo = (line1: string, line2: string, line3: string) => {
     log.plain(
         blue(
             [
@@ -172,7 +160,7 @@ log.formatHostPort = (hostname, port, proto?: string) => {
 log.formatError = (err) => {
     let output: string;
     if (err instanceof Error) {
-        output = err.stack;
+        output = err.stack ?? "";
     } else if (!err) {
         output = `${
             new Error("Error handler called without an argument").stack

@@ -12,12 +12,11 @@ import htmlMinifier from "html-minifier";
 import jb from "json-buffer";
 import postcss from "postcss";
 import * as terser from "terser";
-import pkg from "../../package.json" with { type: "json" };
-
-import log from "./log.js";
-import paths from "./paths.js";
-import svg from "./svg.js";
-import utils from "./utils.js";
+import pkg from "../../../package.json" with { type: "json" };
+import { utils } from "../../utils/index.js";
+import log from "../log/index.js";
+import paths from "../paths/index.js";
+import svg from "../svg/index.js";
 
 const themesPath = path.join(
     paths.get().client,

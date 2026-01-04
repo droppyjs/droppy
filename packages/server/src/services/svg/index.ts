@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import svgstore from "@droppyjs/svgstore";
-import paths from "./paths.js";
+import paths from "../paths/index.js";
 
 export default function svg() {
     const sprites = svgstore({

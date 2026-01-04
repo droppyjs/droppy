@@ -1,5 +1,5 @@
 import originalUrl from "original-url";
-import pkg from "../../package.json" with { type: "json" };
+import pkg from "../../../package.json" with { type: "json" };
 
 export default function manifest(req) {
     return JSON.stringify({

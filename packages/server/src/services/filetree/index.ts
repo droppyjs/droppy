@@ -7,10 +7,10 @@ import escRe from "escape-string-regexp";
 import debounce from "lodash.debounce";
 import rfdc from "rfdc";
 import { type Entry, rrdirAsync } from "rrdir";
+import { utils } from "../../utils/index.js";
 import type { DroppyConfig } from "../cfg/types.js";
-import log from "../log.js";
-import paths from "../paths.js";
-import utils from "../utils.js";
+import log from "../log/index.js";
+import paths from "../paths/index.js";
 
 const clone = rfdc();
 
@@ -146,16 +146,16 @@ class DroppyFileTree extends EventEmitter {
 
         // TODO: remove new promise, change to async when utils.rm is async
         return new Promise<void>((resolve, reject) => {
-            utils.rm(utils.addFilesPath(dir), (err) => {
-                if (err) {
+            fs.unlink(utils.addFilesPath(dir))
+                .then(() => {
+                    delete dirs[path.dirname(dir)].files[path.basename(dir)];
+                    this.update(path.dirname(dir));
+                    resolve();
+                })
+                .catch((err) => {
                     log.error(err);
                     reject(err);
-                }
-
-                delete dirs[path.dirname(dir)].files[path.basename(dir)];
-                this.update(path.dirname(dir));
-                resolve();
-            });
+                });
         });
     }
 
@@ -164,22 +164,21 @@ class DroppyFileTree extends EventEmitter {
 
         // TODO: remove new promise, change to async when utils.rmdir is async
         return new Promise<void>((resolve, reject) => {
-            utils.rmdir(utils.addFilesPath(dir), (err) => {
-                if (err) {
+            fs.rm(utils.addFilesPath(dir), { recursive: true })
+                .then(() => {
+                    delete dirs[dir];
+                    Object.keys(dirs).forEach((d) => {
+                        if (new RegExp(`^${escRe(dir)}/`).test(d)) {
+                            delete dirs[d];
+                        }
+                    });
+                    this.update(path.dirname(dir));
+                    resolve();
+                })
+                .catch((err) => {
                     log.error(err);
                     reject(err);
-                }
-
-                delete dirs[dir];
-                Object.keys(dirs).forEach((d) => {
-                    if (new RegExp(`^${escRe(dir)}/`).test(d)) {
-                        delete dirs[d];
-                    }
                 });
-
-                this.update(path.dirname(dir));
-                resolve();
-            });
         });
     }
 
@@ -287,18 +286,9 @@ class DroppyFileTree extends EventEmitter {
 
         return new Promise<void>((resolve, reject) => {
             // TODO: asjust to async/await when utils.move is async
-            utils.move(
-                utils.addFilesPath(src),
-                utils.addFilesPath(dst),
-                (err) => {
-                    if (err) {
-                        log.error(err);
-
-                        reject(err);
-
-                        return;
-                    }
-
+            utils
+                .move(utils.addFilesPath(src), utils.addFilesPath(dst))
+                .then(() => {
                     dirs[path.dirname(dst)].files[path.basename(dst)] =
                         dirs[path.dirname(src)].files[path.basename(src)];
 
@@ -308,8 +298,11 @@ class DroppyFileTree extends EventEmitter {
                     this.update(path.dirname(dst));
 
                     resolve();
-                },
-            );
+                })
+                .catch((err) => {
+                    log.error(err);
+                    reject(err);
+                });
         });
     }
 
@@ -318,17 +311,9 @@ class DroppyFileTree extends EventEmitter {
 
         return new Promise<void>((resolve, reject) => {
             // TODO: asjust to async/await when utils.move is async
-            utils.move(
-                utils.addFilesPath(src),
-                utils.addFilesPath(dst),
-                (err) => {
-                    if (err) {
-                        log.error(err);
-
-                        reject(err);
-                        return;
-                    }
-
+            utils
+                .move(utils.addFilesPath(src), utils.addFilesPath(dst))
+                .then(() => {
                     dirs[dst] = dirs[src];
                     delete dirs[src];
 
@@ -352,8 +337,12 @@ class DroppyFileTree extends EventEmitter {
                     this.update(path.dirname(dst));
 
                     resolve();
-                },
-            );
+                })
+                .catch((err) => {
+                    log.error(err);
+
+                    reject(err);
+                });
         });
     }
 

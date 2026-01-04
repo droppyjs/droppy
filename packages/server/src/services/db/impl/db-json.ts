@@ -3,7 +3,7 @@ import path from "node:path";
 import chokidar from "chokidar";
 import { log } from "../../../index.js";
 import type { DroppyConfig } from "../../cfg/types.js";
-import paths from "../../paths.js";
+import paths from "../../paths/index.js";
 import type {
     DbHandler,
     TableInputRow,

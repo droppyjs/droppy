@@ -495,15 +495,6 @@ function openSocket() {
 
 function sendMessage(vId, type, data) {
     const sendObject = { vId, type, data, token: droppy.token };
-    if (typeof sendObject.data === "string") {
-        sendObject.data = normalize(sendObject.data);
-    } else if (typeof sendObject.data === "object") {
-        Object.keys(sendObject.data).forEach((key) => {
-            if (typeof sendObject.data[key] === "string") {
-                sendObject.data[key] = normalize(sendObject.data[key]);
-            }
-        });
-    }
     const json = JSON.stringify(sendObject);
 
     if (droppy.socket.readyState === 1) {
@@ -1212,7 +1203,7 @@ function getTemplateEntries(view, data) {
         const type = split[0];
         const mtime = Number(split[1]) * 1e3;
         const size = Number(split[2]);
-        name = normalize(name);
+        // Preserve filenames exactly as received from the server (no Unicode normalization).
 
         const entry = {
             name,

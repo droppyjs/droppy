@@ -18,7 +18,11 @@ if (!("DROPPY_CACHE_PATH" in process.env)) {
             process.env.DROPPY_CACHE_PATH = cachePath;
         }
     } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        if (
+            error instanceof Error &&
+            "code" in error &&
+            error.code === "ENOENT"
+        ) {
             // ignore, no cache found, it will be created on first use
         } else {
             console.error(error);

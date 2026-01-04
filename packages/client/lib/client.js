@@ -425,12 +425,12 @@ function openSocket() {
                         msg.link,
                     );
                 } else {
-                    showLink(view, msg.link, msg.attachement);
+                    showLink(view, msg.link, msg.isAttachment);
                 }
                 break;
             }
             case "USER_LIST": {
-                updateUsers(msg.users);
+                updateUsers(msg.userList);
                 break;
             }
             case "SAVE_STATUS": {
@@ -2724,8 +2724,9 @@ function openDoc(view, entryId) {
     }
 }
 
-function updateUsers(userlist) {
-    if (Object.keys(userlist).length === 0) {
+function updateUsers(users) {
+    console.log("updateUsers", users);
+    if (users.length === 0) {
         toggleCatcher(false);
         render("login", { first: true });
         initAuthPage(true);
@@ -2733,7 +2734,7 @@ function updateUsers(userlist) {
     }
     const box = $("#prefs-box");
     box.find(".list-user").remove();
-    box.append(Handlebars.templates["list-user"]({ users: userlist }));
+    box.append(Handlebars.templates["list-user"]({ users }));
     box.find(".add-user")
         .off("click")
         .on("click", () => {
@@ -2752,8 +2753,17 @@ function updateUsers(userlist) {
         .off("click")
         .on("click", function (event) {
             event.stopPropagation();
+            const name =
+                $(this).closest("li").data("username") ??
+                $(this).parents("li").children(".username").text().trim();
+
+            const confirm = window.confirm(
+                `Are you sure you want to delete the user ${name}?`,
+            );
+            if (!confirm) return;
+
             sendMessage(null, "UPDATE_USER", {
-                name: $(this).parents("li").children(".username").text().trim(),
+                name,
                 pass: "",
             });
         });
@@ -3535,12 +3545,12 @@ function initVariables() {
     };
 }
 
-function requestLink(view, location, attachement) {
+function requestLink(view, location, isAttachment) {
     view[0].sharelinkId = location;
     showSpinner(view);
     sendMessage(view[0].vId, "REQUEST_SHARELINK", {
         location,
-        attachement,
+        isAttachment,
     });
 }
 
@@ -3685,14 +3695,14 @@ function showError(view, text) {
     }, 5000);
 }
 
-function showLink(view, link, attachement) {
+function showLink(view, link, isAttachment) {
     toggleCatcher(true);
     clearTimeout(droppy.errorTimer);
     const box = view.find(".info-box");
     const out = box.find(".link-out");
     const copy = box.find(".copy-link");
     const dl = box.find(".dl-link");
-    dl[attachement ? "addClass" : "removeClass"]("checked");
+    dl[isAttachment ? "addClass" : "removeClass"]("checked");
 
     const select = () => {
         const range = document.createRange(),

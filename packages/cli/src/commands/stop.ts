@@ -8,9 +8,7 @@ export async function stop(pkg: Pkg, _argv: Argv) {
             log.error(err);
             process.exit(1);
         } else {
-            procs = procs.filter(
-                (proc) => Number(proc.pid) !== process.pid,
-            );
+            procs = procs.filter((proc) => Number(proc.pid) !== process.pid);
             if (!procs.length) {
                 log.info("No processes found");
                 process.exit(0);
@@ -36,5 +34,4 @@ export async function stop(pkg: Pkg, _argv: Argv) {
             process.exit(0);
         }
     });
-    
 }

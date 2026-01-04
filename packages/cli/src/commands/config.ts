@@ -1,9 +1,8 @@
-import fs from 'node:fs';
-import * as path from "node:path";
 import { spawn } from "node:child_process";
-import which from "which";
-
+import fs from "node:fs";
+import * as path from "node:path";
 import { cfg, paths } from "@droppyjs/server";
+import which from "which";
 
 import type { Argv, Pkg } from "../types.js";
 
@@ -59,8 +58,12 @@ async function findEditor() {
             if (editorPath) {
                 return editorPath;
             }
-        } catch(error: unknown) {
-            if (error instanceof Error && 'code' in error && error.code === "ENOENT") {
+        } catch (error: unknown) {
+            if (
+                error instanceof Error &&
+                "code" in error &&
+                error.code === "ENOENT"
+            ) {
                 continue;
             }
             throw error;

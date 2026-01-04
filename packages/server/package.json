@@ -5,20 +5,42 @@
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
     "license": "BSD-2-Clause",
-    "main": "lib/index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "type": "module",
     "directories": {
         "lib": "lib",
+        "src": "src",
         "test": "__tests__"
     },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./services/db": {
+            "import": "./dist/services/db/index.js",
+            "types": "./dist/services/db/index.d.ts"
+        },
+        "./services/db/struct": {
+            "import": "./dist/services/db/struct.js",
+            "types": "./dist/services/db/struct.d.ts"
+        },
+        "./services/db/types": {
+            "import": "./dist/services/db/types.js",
+            "types": "./dist/services/db/types.d.ts"
+        }
+    },
     "files": [
-        "lib"
+        "dist"
     ],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/droppyjs/droppy.git"
     },
     "scripts": {
+        "build:ts": "node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "build": "yarn build:ts",
         "test": "echo \"Error: run tests from root\" && exit 1"
     },
     "bugs": {
@@ -47,15 +69,15 @@
         "minimist": "1.2.8",
         "mv": "2.1.1",
         "original-url": "1.2.3",
-        "postcss": "8.2.15",
+        "postcss": "8.5.6",
         "ps-node": "0.1.6",
         "rfdc": "1.1.4",
-        "rrdir": "8.1.1",
+        "rrdir": "14.0.2",
         "send": "0.17.1",
         "strip-ansi": "6.0.0",
         "terser": "5.2.1",
         "untildify": "^6.0.0",
-        "ws": "7.4.6",
+        "ws": "8.18.3",
         "yazl": "2.5.1"
     },
     "devDependencies": {

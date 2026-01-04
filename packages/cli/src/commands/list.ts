@@ -3,7 +3,6 @@ import type { Argv, Pkg } from "../types.js";
 import { printUsers } from "../util/printUsers.js";
 
 export async function list(_pkg: Pkg, _argv: Argv) {
-    db.load(() => {
-        printUsers(db.get("users"));
-    });
+    await db.load();
+    printUsers(await db.getRecordsWhere("users", {}));
 }

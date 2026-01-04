@@ -1,13 +1,13 @@
 <ul class="list-user">
   {{#each users}}
-  <li>
+  <li data-username="{{name}}">
     <div class="username">
-      {{#if this}}
+      {{#if privileged}}
       {{{svg "user-cog"}}}
       {{else}}
       {{{svg "user"}}}
       {{/if}}
-      {{@key}}
+      {{name}}
     </div>
     <div class="delete-user tip tip-w" aria-label="Delete user">{{{svg "trash"}}}</div>
   </li>

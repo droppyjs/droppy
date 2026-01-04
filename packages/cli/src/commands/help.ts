@@ -29,5 +29,4 @@ export async function help(pkg: Pkg, _argv: Argv) {
 
     console.info(help);
     process.exit();
-
 }

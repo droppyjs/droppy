@@ -28,12 +28,12 @@ export const commands: Record<string, Command> = {
     },
     add: {
         description: "Add a user",
-        args: ['<user>', '<pass>', '[p]'],
+        args: ["<user>", "<pass>", "[p]"],
         execute: add,
     },
     del: {
         description: "Delete a user",
-        args: ['<user>'],
+        args: ["<user>"],
         execute: del,
     },
     build: {
@@ -47,8 +47,8 @@ export const commands: Record<string, Command> = {
     help: {
         description: "Print help",
         execute: help,
-    }
-}
+    },
+};
 
 export const opts: Record<string, string> = {
     configdir:

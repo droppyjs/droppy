@@ -519,6 +519,19 @@ function createListener(handler, opts, callback) {
 }
 
 const verifyClient = (info, cb) => {
+    // In public mode we still rely on having an actual session cookie for WS,
+    // because we can't set cookies from a WebSocket upgrade response.
+    const wsCookieHeader = info.req.headers.cookie;
+    const wsSid = wsCookieHeader ? cookies.get(wsCookieHeader) : null;
+    if (config.public && !wsSid) {
+        log.info(
+            info.req,
+            { statusCode: 401 },
+            "Unauthorized WebSocket connection rejected (missing session).",
+        );
+        cb(false, 401, "Unauthorized");
+        return;
+    }
     if (validateRequest(info.req)) return cb(true);
     log.info(
         info.req,
@@ -790,11 +803,43 @@ async function handleGETandHEAD(
 
     if (/^\/!\/token$/.test(URI)) {
         if (req.headers["x-app"] === "droppy") {
+            // Ensure a session exists for public mode; CSRF is session-bound.
+            const tokenCookieHeader = req.headers.cookie;
+            const tokenSid = tokenCookieHeader
+                ? cookies.get(tokenCookieHeader)
+                : null;
+            if (config.public && !tokenSid) {
+                cookies.free(req, res, {});
+                const setCookie = res.getHeader("Set-Cookie");
+                // Use the new session id for this request's CSRF binding.
+                if (typeof setCookie === "string") {
+                    const sid = cookies.parse(setCookie).s;
+                    if (sid) {
+                        req.headers.cookie = `s=${sid}`;
+                    }
+                } else if (Array.isArray(setCookie)) {
+                    for (const c of setCookie) {
+                        const sid = cookies.parse(String(c)).s;
+                        if (sid) {
+                            req.headers.cookie = `s=${sid}`;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const token = csrf.create(req);
+            if (!token) {
+                res.statusCode = 401;
+                res.end();
+                log.info(req, res);
+                return;
+            }
             res.writeHead(200, {
                 "Cache-Control": "private, no-store, max-age=0",
                 "Content-Type": "text/plain; charset=utf-8",
             });
-            res.end(csrf.create(req));
+            res.end(token);
         } else {
             res.statusCode = 401;
             res.end();

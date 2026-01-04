@@ -6,7 +6,7 @@ import type { CommandHandler } from "./index.js";
 interface CreateFoldersMessage {
     data: {
         folders: string[];
-    }
+    };
     type: string;
 }
 

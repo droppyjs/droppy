@@ -5,7 +5,7 @@ import type { CommandHandler } from "./index.js";
 interface ReloadDirectoryMessage {
     data: {
         dir: string;
-    }
+    };
     type: string;
 }
 

@@ -9,7 +9,7 @@ import type { CommandHandler } from "./index.js";
 interface CreateFilesMessage {
     data: {
         files: string[];
-    }
+    };
     type: string;
 }
 export const CREATE_FILES: CommandHandler<CreateFilesMessage> = {

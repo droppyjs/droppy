@@ -25,11 +25,17 @@ export type CommandHandler<T = any> = {
         updateClientLocation: (dir: any, sid: any, vId: any) => void;
         sendFiles: (sid: string, vId: any) => void;
         sendError: (sid: string, vId: any, text: string) => void;
-        validatePaths: (paths: any, type: any, ws: any, sid: any, vId: any) => boolean;
+        validatePaths: (
+            paths: any,
+            type: any,
+            ws: any,
+            sid: any,
+            vId: any,
+        ) => boolean;
         sendUsers: (sid: string) => void;
         pkg: {
-            name: string,
-            version: string,
+            name: string;
+            version: string;
             tag: string;
         };
         config: any;

@@ -6,7 +6,7 @@ interface SearchMessage {
     data: {
         query: string;
         dir: string;
-    }
+    };
     type: string;
 }
 

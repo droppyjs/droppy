@@ -51,7 +51,7 @@
         "minimist": "1.2.8",
         "mv": "2.1.1",
         "original-url": "1.2.3",
-        "postcss": "8.2.15",
+        "postcss": "8.5.6",
         "ps-node": "0.1.6",
         "rfdc": "1.1.4",
         "rrdir": "8.1.1",

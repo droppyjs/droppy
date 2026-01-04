@@ -49,10 +49,7 @@ export function create(_req, res, postData) {
     const sessions = db.get("sessions");
     const sid = utils.createSid();
     const expires = postData.remember ? inOneYear() : null;
-    res.setHeader(
-        "Set-Cookie",
-        cookieHeaders(sid, postData.path, expires),
-    );
+    res.setHeader("Set-Cookie", cookieHeaders(sid, postData.path, expires));
     sessions[sid] = {
         privileged: db.get("users")[postData.username].privileged,
         username: postData.username,
@@ -74,10 +71,7 @@ export function unset(req, res, postData) {
     const sessions = db.get("sessions");
     delete sessions[session];
     db.set("sessions", sessions);
-    res.setHeader(
-        "Set-Cookie",
-        cookieHeaders("gone", postData.path, epoch()),
-    );
+    res.setHeader("Set-Cookie", cookieHeaders("gone", postData.path, epoch()));
 }
 
 function inOneYear() {

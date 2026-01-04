@@ -1,4 +1,4 @@
-import { createWriteStream, Stats } from "node:fs";
+import { createWriteStream, type Stats } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -12,7 +12,7 @@ import sendFile from "send";
 import ut from "untildify";
 import * as ws from "ws";
 
-const Wss = ws.WebSocket;
+let wss: ws.WebSocketServer;
 
 import http from "node:http";
 
@@ -21,6 +21,7 @@ import chokidar from "chokidar";
 import yazl from "yazl";
 import pkg from "../../package.json" with { type: "json" };
 import * as commands from "../commands/index.js";
+import type { DroppyHttpRequest, DroppyHttpResponse, DroppyHttpServer } from "../types/http.js";
 import cfg from "./cfg.js";
 import cookies from "./cookies.js";
 import csrf from "./csrf.js";
@@ -31,7 +32,6 @@ import manifest from "./manifest.js";
 import paths from "./paths.js";
 import resources from "./resources.js";
 import utils from "./utils.js";
-import type { DroppyHttpRequest, DroppyHttpResponse } from "../types/http.js";
 
 let cache: any = {};
 const clients = {};
@@ -45,7 +45,12 @@ const setView = (sid, vId, view) => {
     clients[sid].views[vId] = view;
 };
 
-export async function droppy(opts, isStandalone: boolean, dev: boolean, callback: (err?: Error) => void) {
+export async function droppy(
+    opts,
+    isStandalone: boolean,
+    dev: boolean,
+    callback: (err?: Error) => void,
+) {
     if (isStandalone) {
         log.logo(
             [
@@ -191,7 +196,12 @@ async function startListeners(callback) {
         );
     }
 
-    const targets: { host?: string; port?: number; socket?: string; opts: { proto: string; key?: string; cert?: string;  index: number } }[] = [];
+    const targets: {
+        host?: string;
+        port?: number;
+        socket?: string;
+        opts: { proto: string; key?: string; cert?: string; index: number };
+    }[] = [];
     for (const [i, listener] of config.listeners.entries()) {
         if (listener.protocol === undefined) {
             listener.protocol = "http";
@@ -246,7 +256,11 @@ async function startListeners(callback) {
             try {
                 fs.unlink(socket);
             } catch (err) {
-                if (err instanceof Error && 'code' in err && err.code !== "ENOENT") {
+                if (
+                    err instanceof Error &&
+                    "code" in err &&
+                    err.code !== "ENOENT"
+                ) {
                     callback(
                         new Error(
                             `Unable to write to unix socket '${socket}': ${err.code}`,
@@ -282,154 +296,177 @@ async function startListeners(callback) {
     await Promise.all(
         targets.map((target) => {
             return new Promise<void>((resolve) => {
-                createListener(onRequest, target.opts, (err, server) => {
-                    if (err) {
-                        log.error(
-                            "Error creating listener",
-                            `${
-                                target.opts.proto +
-                                (target.socket ? "+unix://" : "://") +
-                                log.formatHostPort(
-                                    target.host,
-                                    target.port,
-                                    target.opts.proto,
-                                )
-                            }: ${err.message}`,
-                        );
-                        return resolve();
-                    }
+                createListener(
+                    onRequest,
+                    target.opts,
+                    (err, server: DroppyHttpServer) => {
+                        /**
+                         * Server address is only available after the server is listening.
+                         */
+                        let serverAddress: ws.AddressInfo;
 
-                    server.on("listening", async () => {
-                        server.removeAllListeners("error");
-                        listenerCount++;
-                        setupWebSocket(server);
-                        const proto = target.opts.proto?.toLowerCase();
-
-                        if (target.socket) {
-                            // socket
-                            await fs.chmod(target.socket, 0o666); // make it rw
-                            // a unix socket URL should normally percent-encode the path, but
-                            // we're printing a path-less URL so pretty-print it with slashes.
-                            log.info(
-                                "Listening on ",
-                                blue(`${proto}+unix://`) +
-                                    cyan(server.address()),
+                        if (err) {
+                            log.error(
+                                "Error creating listener",
+                                `${
+                                    target.opts.proto +
+                                    (target.socket ? "+unix://" : "://") +
+                                    log.formatHostPort(
+                                        target.host,
+                                        target.port,
+                                        target.opts.proto,
+                                    )
+                                }: ${err.message}`,
                             );
-                        } else {
-                            // host + port
-                            const addr = server.address().address;
-                            const port = server.address().port;
+                            return resolve();
+                        }
 
-                            const addrs = [];
-                            if (addr === "::" || addr === "0.0.0.0") {
-                                const interfaces = os.networkInterfaces();
-                                Object.keys(interfaces).forEach((name) => {
-                                    interfaces[name].forEach((intf) => {
-                                        if (addr === "::" && intf.address) {
-                                            addrs.push(intf.address);
-                                        } else if (
-                                            addr === "0.0.0.0" &&
-                                            intf.family === "IPv4" &&
-                                            intf.address
-                                        ) {
-                                            addrs.push(intf.address);
-                                        }
-                                    });
-                                });
-                            } else {
-                                addrs.push(addr);
-                            }
+                        server.on("listening", async () => {
+                            serverAddress = server.address() as ws.AddressInfo;
 
-                            if (!addrs.length) {
-                                addrs.push(addr);
-                            }
+                            server.removeAllListeners("error");
+                            listenerCount++;
+                            setupWebSocket(server);
+                            const proto = target.opts.proto?.toLowerCase();
 
-                            addrs.sort();
-
-                            addrs.forEach((addr) => {
+                            if (target.socket) {
+                                // socket
+                                await fs.chmod(target.socket, 0o666); // make it rw
+                                // a unix socket URL should normally percent-encode the path, but
+                                // we're printing a path-less URL so pretty-print it with slashes.
                                 log.info(
                                     "Listening on ",
-                                    blue(`${proto}://`) +
-                                        log.formatHostPort(addr, port, proto),
+                                    blue(`${proto}+unix://`) +
+                                        cyan(serverAddress.address),
                                 );
-                            });
-                        }
-                        resolve();
-                    });
+                            } else {
+                                const { address: addr, port } =
+                                    serverAddress as ws.AddressInfo;
 
-                    server.on("error", (err) => {
-                        if (target.host && target.port) {
-                            // check for other listeners on the same port and surpress misleading errors
-                            // from being printed because of Node's weird dual-stack behaviour.
-                            let otherListenerFound = false;
-                            if (
-                                target.host === "::" ||
-                                target.host === "0.0.0.0"
-                            ) {
-                                otherListenerFound = targets.some(
-                                    (t) =>
-                                        target.port === t.port &&
-                                        target.host !== t.host &&
-                                        target.host,
-                                );
+                                const addrs =
+                                    addr === "::" || addr === "0.0.0.0"
+                                        ? Object.values(os.networkInterfaces())
+                                              .flatMap((list) => list ?? [])
+                                              .filter((intf) => {
+                                                  if (!intf?.address)
+                                                      return false;
+
+                                                  return (
+                                                      addr === "::" ||
+                                                      (addr === "0.0.0.0" &&
+                                                          intf.family ===
+                                                              "IPv4")
+                                                  );
+                                              })
+                                              .map((intf) => intf.address)
+                                        : [addr];
+
+                                if (!addrs.length) {
+                                    addrs.push(addr);
+                                }
+
+                                addrs.sort();
+
+                                addrs.forEach((addr) => {
+                                    log.info(
+                                        "Listening on ",
+                                        blue(`${proto}://`) +
+                                            log.formatHostPort(
+                                                addr,
+                                                port,
+                                                proto,
+                                            ),
+                                    );
+                                });
+                            }
+                            resolve();
+                        });
+
+                        server.on("error", (err) => {
+                            if (target.host && target.port) {
+                                // check for other listeners on the same port and surpress misleading errors
+                                // from being printed because of Node's weird dual-stack behaviour.
+                                let otherListenerFound = false;
+                                if (
+                                    target.host === "::" ||
+                                    target.host === "0.0.0.0"
+                                ) {
+                                    otherListenerFound = targets.some(
+                                        (t) =>
+                                            target.port === t.port &&
+                                            target.host !== t.host &&
+                                            target.host,
+                                    );
+                                }
+
+                                if (err instanceof Error && "code" in err) {
+                                    if (err.code === "EADDRINUSE") {
+                                        if (!otherListenerFound) {
+                                            log.info(
+                                                red("Failed to listen on "),
+                                                log.formatHostPort(
+                                                    target.host,
+                                                    target.port,
+                                                ),
+                                                red(
+                                                    ". Address already in use.",
+                                                ),
+                                            );
+                                        }
+                                    } else if (err.code === "EACCES") {
+                                        log.info(
+                                            red("Failed to listen on "),
+                                            log.formatHostPort(
+                                                target.host,
+                                                target.port,
+                                            ),
+                                            red(
+                                                ". Need permission to bind to ports < 1024.",
+                                            ),
+                                        );
+                                    } else if (err.code === "EAFNOSUPPORT") {
+                                        if (!otherListenerFound) {
+                                            log.info(
+                                                red("Failed to listen on "),
+                                                log.formatHostPort(
+                                                    target.host,
+                                                    target.port,
+                                                ),
+                                                red(
+                                                    ". Protocol unsupported. Are you trying to " +
+                                                        "listen on IPv6 while the protocol is disabled?",
+                                                ),
+                                            );
+                                        }
+                                    } else if (err.code === "EADDRNOTAVAIL") {
+                                        log.info(
+                                            red("Failed to listen on "),
+                                            log.formatHostPort(
+                                                target.host,
+                                                target.port,
+                                            ),
+                                            red(". Address not available."),
+                                        );
+                                    } else {
+                                        log.error(err);
+                                    }
+                                } else {
+                                    log.error(err);
+                                }
+                            } else {
+                                log.error(err);
                             }
 
-                            if (err.code === "EADDRINUSE") {
-                                if (!otherListenerFound) {
-                                    log.info(
-                                        red("Failed to listen on "),
-                                        log.formatHostPort(
-                                            target.host,
-                                            target.port,
-                                        ),
-                                        red(". Address already in use."),
-                                    );
-                                }
-                            } else if (err.code === "EACCES") {
-                                log.info(
-                                    red("Failed to listen on "),
-                                    log.formatHostPort(
-                                        target.host,
-                                        target.port,
-                                    ),
-                                    red(
-                                        ". Need permission to bind to ports < 1024.",
-                                    ),
-                                );
-                            } else if (err.code === "EAFNOSUPPORT") {
-                                if (!otherListenerFound) {
-                                    log.info(
-                                        red("Failed to listen on "),
-                                        log.formatHostPort(
-                                            target.host,
-                                            target.port,
-                                        ),
-                                        red(
-                                            ". Protocol unsupported. Are you trying to " +
-                                                "listen on IPv6 while the protocol is disabled?",
-                                        ),
-                                    );
-                                }
-                            } else if (err.code === "EADDRNOTAVAIL") {
-                                log.info(
-                                    red("Failed to listen on "),
-                                    log.formatHostPort(
-                                        target.host,
-                                        target.port,
-                                    ),
-                                    red(". Address not available."),
-                                );
-                            } else log.error(err);
-                        } else log.error(err);
-                        return resolve();
-                    });
+                            return resolve();
+                        });
 
-                    if (target.socket) {
-                        server.listen(target.socket);
-                    } else {
-                        server.listen(target.port, target.host);
-                    }
-                });
+                        if (target.socket) {
+                            server.listen(target.socket);
+                        } else {
+                            server.listen(target.port, target.host);
+                        }
+                    },
+                );
             });
         }),
     );
@@ -451,7 +488,7 @@ function tlsError(err, socket) {
 }
 
 function createListener(handler, opts, callback) {
-    let server: http.Server | https.Server;
+    let server: DroppyHttpServer;
     if (opts.proto === "http") {
         server = http.createServer(handler);
         callback(null, server);
@@ -483,8 +520,7 @@ const verifyClient = (info, cb) => {
 };
 
 // WebSocket functions
-function setupWebSocket(server) {
-    let wss: ws.WebSocketServer;
+function setupWebSocket(server: DroppyHttpServer | false) {
     if (server !== false) {
         wss = new ws.WebSocketServer({ server, verifyClient });
     } else {
@@ -554,7 +590,7 @@ function onWebSocketRequest(ws, req) {
     });
 
     ws.on("close", (code) => {
-        let reason: string;
+        let reason: string | undefined;
         if (code === 4001) {
             reason = "(Logged out)";
             const sessions = db.get("sessions");
@@ -669,7 +705,9 @@ function send(ws, data) {
                 log.debug(ws, null, green("SEND "), utils.pretty(debugData));
             }
             ws.send(data, (err) => {
-                if (err) log.err(err);
+                if (err) {
+                    log.error(err);
+                }
             });
         } else {
             setTimeout(queue, 50, ws, data, time + 50);
@@ -677,11 +715,16 @@ function send(ws, data) {
     })(ws, data, 0);
 }
 
-async function handleGETandHEAD(req, res) {
+async function handleGETandHEAD(req: DroppyHttpRequest, res: DroppyHttpResponse) {
+    if (!req.url) {
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
     const URI = decodeURIComponent(req.url);
 
     if (config.public && !cookies.get(req.headers.cookie)) {
-        cookies.free(req, res);
+        cookies.free(req, res, null);
     }
 
     // unauthenticated GETs
@@ -742,10 +785,8 @@ async function handleGETandHEAD(req, res) {
     } else if (/^\/!\/zip\/[\s\S]+/.test(URI)) {
         const zipPath = utils.addFilesPath(URI.substring(6));
 
-        /**
-         * @type {import("fs").Stats}
-         */
-        let stats = null;
+        
+        let stats: Stats | null = null;;
 
         try {
             stats = await fs.stat(zipPath);
@@ -765,13 +806,13 @@ async function handleGETandHEAD(req, res) {
     }
 }
 
-const rateLimited = [];
+const rateLimited: string[] = [];
 
 function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
     if (!req.url) {
         res.statusCode = 400;
         res.end();
-}
+    }
     const URI = decodeURIComponent(req.url as string);
     // unauthenticated POSTs
     if (/^\/!\/login/.test(URI)) {
@@ -794,7 +835,7 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
         }
 
         utils
-            .readJsonBody(req)
+            .readJsonBody<{ username: string; password: string }>(req)
             .then((postData) => {
                 if (db.authUser(postData.username, postData.password)) {
                     cookies.create(req, res, postData);
@@ -833,7 +874,7 @@ function handlePOST(req: DroppyHttpRequest, res: DroppyHttpResponse) {
     } else if (firstRun && /^\/!\/adduser/.test(URI)) {
         res.setHeader("Content-Type", "text/plain");
         utils
-            .readJsonBody(req)
+            .readJsonBody<{ username: string; password: string }>(req)
             .then((postData) => {
                 if (
                     postData.username &&
@@ -925,7 +966,7 @@ function handleResourceRequest(req, res, resourceName) {
     }
 
     // Regular resource handling
-    const headers = {};
+    const headers: Record<string, string> = {};
     let status = 200;
     let data: any;
 
@@ -1011,7 +1052,7 @@ function handleResourceRequest(req, res, resourceName) {
 
 async function handleFileRequest(req, res, download) {
     const URI = decodeURIComponent(req.url);
-    let shareLink: boolean, filepath: string;
+    let shareLink = false, filepath: string;
 
     let parts = /^\/\$\/([a-z0-9]+)\.?([a-z0-9.]+)?$/i.exec(URI);
     if (parts?.[1]) {
@@ -1043,10 +1084,14 @@ async function handleFileRequest(req, res, download) {
             streamFile(req, res, filepath, download, stats, shareLink);
         }
     } catch (err) {
-        if (err.code === "ENOENT") {
-            res.statusCode = 404;
-        } else if (err.code === "EACCES") {
-            res.statusCode = 403;
+        if (typeof err === "object" && err !== null && "code" in err) {
+            if (err.code === "ENOENT") {
+                res.statusCode = 404;
+            } else if (err.code === "EACCES") {
+                res.statusCode = 403;
+            } else {
+                res.statusCode = 500;
+            }
         } else {
             res.statusCode = 500;
         }
@@ -1124,7 +1169,7 @@ function handleUploadRequest(req, res) {
 
     log.info(req, res, "Upload started");
 
-    const opts = {
+    const opts: busboy.BusboyConfig = {
         preservePath: true,
         headers: req.headers,
         fileHwm: 1024 * 1024,
@@ -1133,11 +1178,14 @@ function handleUploadRequest(req, res) {
     };
 
     if (config.maxFileSize > 0) {
-        opts.limits.fileSize = config.maxFileSize;
+        opts.limits = {
+            ...opts.limits,
+            fileSize: config.maxFileSize,
+        };
     }
 
     const bb = busboy(opts);
-    const rootNames = new Set();
+    const rootNames = new Set<string>();
 
     bb.on("error", (err) => {
         log.error(err);
@@ -1180,21 +1228,21 @@ function handleUploadRequest(req, res) {
 
                 if (req.query.rename === "1") {
                     utils.getNewPath(dst, (newDst) => {
-                        const ws = createWriteStream(newDst, { mode: "644" });
+                        const ws = createWriteStream(newDst, { mode: 0o644 });
                         ws.on("error", onWriteError);
                         file.pipe(ws);
                     });
                 } else {
-                    const ws = createWriteStream(dst, { mode: "644" });
+                    const ws = createWriteStream(dst, { mode: 0o644 });
                     ws.on("error", onWriteError);
                     file.pipe(ws);
                 }
             } catch (err) {
-                if (err && err.code === "ENOENT") {
-                    const ws = createWriteStream(dst, { mode: "644" });
+                if (typeof err === "object" && err !== null && "code" in err && err.code === "ENOENT") {
+                    const ws = createWriteStream(dst, { mode: 0o644 });
                     ws.on("error", onWriteError);
                     file.pipe(ws);
-                } else if (err && err.code === "EACCES") {
+                } else if (typeof err === "object" && err !== null && "code" in err && err.code === "EACCES") {
                     onWriteError(
                         new Error(
                             `Permission denied, cannot upload ${filename} to ${dstDir} (EACCES).`,
@@ -1247,9 +1295,11 @@ function handleUploadRequest(req, res) {
 
     req.pipe(bb);
 
-    function closeConnection(status) {
-        if (res.finished) return;
-        res.statusCode = status || 200;
+    function closeConnection(status = 200) {
+        if (res.finished) {
+            return;
+        }
+        res.statusCode = status;
         res.setHeader("Connection", "close");
         res.end();
     }
@@ -1294,7 +1344,7 @@ function updateClientLocation(dir, sid, vId) {
     });
 }
 
-function removeClientPerDir(sid, vId) {
+function removeClientPerDir(sid, vId?: number) {
     Object.keys(clientsPerDir).forEach((dir) => {
         const removeAt: number[] = [];
         clientsPerDir[dir].forEach((client, i) => {
@@ -1459,7 +1509,14 @@ function streamArchive(req, res, zipPath, download, stats, shareLink) {
         });
 }
 
-function streamFile(req: Request, res: http.ServerResponse, filepath: string, download: boolean, stats: Stats, shareLink: boolean) {
+function streamFile(
+    req: DroppyHttpRequest,
+    res: DroppyHttpResponse,
+    filepath: string,
+    download: boolean,
+    stats: Stats,
+    shareLink: boolean,
+) {
     const eTag = checkETag(req, res, filepath, stats.mtime);
     if (!eTag) {
         return;
@@ -1518,7 +1575,10 @@ function validateRequest(req) {
     return Boolean(cookies.get(req.headers.cookie) || config.public);
 }
 
-const cbs: ((err: Error | null, tlsData: { cert: string; key: string } | null) => void)[][] = [];
+const cbs: ((
+    err: Error | null,
+    tlsData: { cert: string; key: string } | null,
+) => void)[][] = [];
 
 function tlsInit(opts, cb) {
     if (!cbs[opts.index]) {

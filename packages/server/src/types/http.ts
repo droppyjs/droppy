@@ -4,7 +4,8 @@ import type http from "node:http";
  * droppy extends Node's request/response objects with a few optional fields.
  * Keep those extensions local to droppy code instead of globally augmenting `node:http`.
  */
-export interface DroppyHttpRequest<TBody = unknown> extends http.IncomingMessage {
+export interface DroppyHttpRequest<TBody extends object = object>
+    extends http.IncomingMessage {
     /**
      * May be added by middleware/frameworks (e.g. body parsing) or by droppy.
      */
@@ -30,4 +31,4 @@ export interface DroppyHttpRequest<TBody = unknown> extends http.IncomingMessage
 
 export type DroppyHttpResponse = http.ServerResponse;
 
-
+export type DroppyHttpServer = http.Server | http.Server;

@@ -1,4 +1,3 @@
-import http from "node:http";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import {
@@ -9,6 +8,7 @@ import {
     readdir,
     stat,
 } from "node:fs/promises";
+import http from "node:http";
 import path from "node:path";
 import util from "node:util";
 import cd from "content-disposition";
@@ -77,7 +77,7 @@ class DroppyUtils {
             fs.statSync(dst);
             throw new Error("Destination already exists");
         } catch (e) {
-            if (e instanceof Error && 'code' in e && e.code !== "ENOENT") {
+            if (e instanceof Error && "code" in e && e.code !== "ENOENT") {
                 throw e;
             }
         }
@@ -220,7 +220,7 @@ class DroppyUtils {
         );
     }
 
-    isPathSane(p, isURL) {
+    isPathSane(p, isURL?: boolean) {
         if (isURL) {
             // Navigating up/down the tree
             if (/(?:^|[\\/])\.\.(?:[\\/]|$)/.test(p)) {
@@ -274,22 +274,22 @@ class DroppyUtils {
         return crypto.randomBytes(64).toString("base64").substring(0, 48);
     }
 
-    readJsonBody(req: DroppyHttpRequest) {
+    readJsonBody<TBody extends object = object>(req: DroppyHttpRequest): Promise<TBody> {
         return new Promise((resolve, reject) => {
             try {
                 if (req.body) {
                     // This is needed if the express application is using body-parser
                     if (typeof req.body === "object") {
-                        resolve(req.body);
+                        resolve(req.body as TBody);
                     } else {
                         resolve(JSON.parse(req.body));
                     }
                 } else {
-                    let body: Buffer[] | string = [];
+                    const collectedChunks: Buffer[] = [];
                     req.on("data", (chunk) => {
-                        body.push(chunk);
+                        collectedChunks.push(chunk);
                     }).on("end", () => {
-                        body = String(Buffer.concat(body));
+                        const body = String(Buffer.concat(collectedChunks));
                         resolve(JSON.parse(body));
                     });
                 }
@@ -322,7 +322,7 @@ class DroppyUtils {
         return `${(num / 1000 ** exp).toPrecision(3)} ${units[exp]}`;
     }
 
-    ip(req) {
+    ip(req): string {
         // TODO: https://tools.ietf.org/html/rfc7239
 
         return (

@@ -10,7 +10,7 @@ interface RequestSharelinkMessage {
     data: {
         location: string;
         attachement: string;
-    }
+    };
     type: string;
 }
 

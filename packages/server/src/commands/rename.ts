@@ -9,7 +9,7 @@ interface RenameMessage {
     data: {
         src: string;
         dst: string;
-    }
+    };
     type: string;
 }
 

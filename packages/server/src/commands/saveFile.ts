@@ -8,7 +8,7 @@ interface SaveFileMessage {
     data: {
         to: string;
         value: string;
-    }
+    };
     type: string;
 }
 

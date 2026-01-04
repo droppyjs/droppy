@@ -1,6 +1,3 @@
-// @ts-nocheck
-const resources: any = {};
-
 import fs from "node:fs";
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,9 +7,19 @@ import { brotliCompress, constants, gzip } from "node:zlib";
 import etag from "etag";
 import jb from "json-buffer";
 
+import autoprefixer from "autoprefixer";
+import CleanCSS from "clean-css";
+import handlebars from "handlebars";
+import htmlMinifier from "html-minifier";
+import postcss from "postcss";
+import * as terser from "terser";
+import svg from "./svg.js";
+
 import log from "./log.js";
 import paths from "./paths.js";
 import utils from "./utils.js";
+
+import pkg from "../../package.json" with { type: "json" };
 
 const themesPath = path.join(
     paths.get().client,
@@ -25,8 +32,6 @@ const modesPath = path.join(
 const cachePath =
     process.env.DROPPY_CACHE_PATH ??
     path.join(paths.get().homedir, "/.droppy/cache/cache.json");
-
-import pkg from "../../package.json" with { type: "json" };
 
 const gzipEncode = (data) =>
     promisify(gzip)(data, { level: constants.Z_BEST_COMPRESSION });
@@ -102,17 +107,9 @@ const opts = {
     },
 };
 
-import autoprefixer from "autoprefixer";
-import CleanCSS from "clean-css";
-import handlebars from "handlebars";
-import htmlMinifier from "html-minifier";
-import postcss from "postcss";
-import * as terser from "terser";
-import svg from "./svg.js";
-
 const cleanCSS = new CleanCSS(opts.cleanCSS);
 
-resources.files = {
+export const files = {
     css: [
         `${paths.get().client}/lib/style.css`,
         `${paths.get().client}/lib/sprites.css`,
@@ -182,7 +179,10 @@ const libs = {
     "pdf.worker.js": ["node_modules/pdfjs-dist/build/pdf.worker.js"],
 };
 
-resources.load = (dev, cb) => {
+export const load = (
+    dev: boolean,
+    cb: (err?: Error | null, cache?: any) => void,
+) => {
     minify = !dev;
 
     if (dev) return compile(false, cb);
@@ -210,7 +210,7 @@ resources.load = (dev, cb) => {
     });
 };
 
-resources.build = (cb) => {
+export const build = (cb: (err?: Error | null) => void) => {
     isCacheFresh((fresh) => {
         if (fresh) {
             fs.readFile(cachePath, (err, data) => {
@@ -229,7 +229,7 @@ resources.build = (cb) => {
     });
 };
 
-async function isCacheFresh(cb) {
+async function isCacheFresh(cb: (fresh: boolean) => void) {
     let stats: fs.Stats;
     try {
         stats = await stat(cachePath);
@@ -237,9 +237,9 @@ async function isCacheFresh(cb) {
         return cb(false);
     }
 
-    const files = [];
-    for (const type of Object.keys(resources.files)) {
-        resources.files[type].forEach((file) => {
+    const files: string[] = [];
+    for (const type of Object.keys(files)) {
+        files[type].forEach((file) => {
             if (fs.existsSync(path.join(paths.get().client, file))) {
                 files.push(path.join(paths.get().client, file));
             } else {
@@ -283,9 +283,14 @@ async function compile(write, cb) {
 
     const cache = {
         res: {},
-        themes: {},
+        themes: {
+            droppy: '',
+        },
         modes: {},
         lib: {},
+        meta: {
+            version: ''
+        }
     };
 
     cache.res = await compileAll();
@@ -315,9 +320,9 @@ async function compile(write, cb) {
     }
 
     for (const entries of Object.values(cache)) {
-        if (!entries.version) {
+        if (!('version' in entries)) {
             await Promise.all(
-                Object.values(entries).map(async (props) => {
+                Object.values(entries).map(async (props: any) => {
                     props.gzip = await gzipEncode(props.data);
                     props.brotli = await brotliEncode(props.data);
                 }),
@@ -337,7 +342,7 @@ async function compile(write, cb) {
 }
 
 async function readThemes() {
-    const themes = {};
+    const themes: Record<string, Buffer> = {};
 
     for (const name of await readdir(themesPath)) {
         const data = await readFile(path.join(themesPath, name));
@@ -358,12 +363,12 @@ async function readModes() {
     const modes = {};
 
     // parse meta.js from CM for supported modes
-    const js = await readFile(
+    const js = String(await readFile(
         path.join(paths.get().client, "/node_modules/codemirror/mode/meta.js"),
-    );
+    ));
 
     // Extract modes from CodeMirror
-    const sandbox = { CodeMirror: {} };
+    const sandbox: { CodeMirror: { modeInfo: { mode: string }[] } } = { CodeMirror: { modeInfo: [] } };
     vm.runInNewContext(js, sandbox);
 
     for (const entry of sandbox.CodeMirror.modeInfo) {
@@ -473,9 +478,9 @@ function templates() {
     );
 }
 
-resources.compileJS = async () => {
+export const compileJS = async () => {
     let js = "";
-    resources.files.js.forEach((file) => {
+    files.js.forEach((file) => {
         if (fs.existsSync(path.join(paths.get().client, file))) {
             js += `${fs.readFileSync(path.join(paths.get().client, file), "utf8")};`;
         } else {
@@ -496,9 +501,9 @@ resources.compileJS = async () => {
     };
 };
 
-resources.compileCSS = async () => {
+export const compileCSS = async () => {
     let css = "";
-    resources.files.css.forEach((file) => {
+    files.css.forEach((file) => {
         css += `${fs.readFileSync(path.join(file), "utf8")}\n`;
     });
 
@@ -514,7 +519,7 @@ resources.compileCSS = async () => {
     };
 };
 
-resources.compileHTML = async (res) => {
+export const compileHTML = async (res) => {
     let html = fs.readFileSync(
         path.join(paths.get().client, "lib", "index.html"),
         "utf8",
@@ -550,12 +555,12 @@ resources.compileHTML = async (res) => {
 async function compileAll() {
     let res = {};
 
-    res["client.js"] = await resources.compileJS();
-    res["style.css"] = await resources.compileCSS();
-    res = await resources.compileHTML(res);
+    res["client.js"] = await compileJS();
+    res["style.css"] = await compileCSS();
+    res = await compileHTML(res);
 
     // Read misc files
-    for (const file of resources.files.other) {
+    for (const file of files.other) {
         const name = path.basename(file);
         const fullPath = path.join(paths.get().client, file);
         const data = fs.readFileSync(fullPath);
@@ -564,5 +569,11 @@ async function compileAll() {
 
     return res;
 }
-
-export default resources;
+export default {
+    files,
+    compileJS,
+    compileCSS,
+    compileHTML,
+    build,
+    load,
+};

@@ -14,8 +14,8 @@ interface GetMediaMessage {
             img: string[];
             vid: string[];
             pdf: string[];
-        }
-    }
+        };
+    };
     type: string;
 }
 export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
@@ -48,7 +48,8 @@ export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
                     } else if (utils.extensionRe(exts.img).test(file)) {
                         const input = path.join(utils.addFilesPath(dir), file);
                         imageSize(input, (err, dims) => {
-                            let width: number | undefined, height: number | undefined;
+                            let width: number | undefined,
+                                height: number | undefined;
                             if (err) {
                                 log.error(err);
                             }
@@ -64,7 +65,6 @@ export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
                                     width = dims.width;
                                     height = dims.height;
                                 }
-
                             }
 
                             resolve({

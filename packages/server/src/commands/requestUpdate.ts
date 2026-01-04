@@ -30,7 +30,8 @@ export const REQUEST_UPDATE: CommandHandler<RequestUpdateMessage> = {
             return;
         }
 
-        let clientDir: string, clientFile: string | null = null;
+        let clientDir: string,
+            clientFile: string | null = null;
         try {
             const stats = await stat(utils.addFilesPath(msg.data));
             if (stats.isFile()) {

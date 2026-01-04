@@ -1,22 +1,28 @@
 import fs from "node:fs";
 
-export default function copyFile(src: string, dst: string, cb) {
-    let cbCalled = false;
-    const read = fs.createReadStream(src);
-    const write = fs.createWriteStream(dst);
+export default function copyFile(src: string, dst: string) {
+    return new Promise<void>((resolve, reject) => {
+        let isDoneCalled = false;
+        const read = fs.createReadStream(src);
+        const write = fs.createWriteStream(dst);
 
-    function done(err?: Error) {
-        if (cbCalled) {
-            return;
-        }
-        cbCalled = true;
-        if (cb) {
-            cb(err);
-        }
-    }
+        function done(err?: Error) {
+            if (isDoneCalled) {
+                return;
+            }
+            isDoneCalled = true;
 
-    read.on("error", done);
-    write.on("error", done);
-    write.on("close", done);
-    read.pipe(write);
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve();
+        }
+
+        read.on("error", done);
+        write.on("error", done);
+        write.on("close", done);
+
+        read.pipe(write);
+    });
 }

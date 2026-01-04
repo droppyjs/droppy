@@ -1375,7 +1375,7 @@ async function handleUploadRequest(req, res) {
                     path.join(dstDir, utils.removeUploadTempExt(p)),
                 );
 
-                await utils.move(srcPath, dstPath);
+                await utils.move(srcPath, dstPath, true);
             }),
         );
 

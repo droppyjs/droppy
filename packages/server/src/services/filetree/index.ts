@@ -281,99 +281,87 @@ class DroppyFileTree extends EventEmitter {
         }
     }
 
-    mv(src: string, dst: string) {
+    async mv(src: string, dst: string) {
         this.lookAway();
 
-        return new Promise<void>((resolve, reject) => {
-            // TODO: asjust to async/await when utils.move is async
-            utils
-                .move(utils.addFilesPath(src), utils.addFilesPath(dst))
-                .then(() => {
-                    dirs[path.dirname(dst)].files[path.basename(dst)] =
-                        dirs[path.dirname(src)].files[path.basename(src)];
-
-                    delete dirs[path.dirname(src)].files[path.basename(src)];
-
-                    this.update(path.dirname(src));
-                    this.update(path.dirname(dst));
-
-                    resolve();
-                })
-                .catch((err) => {
-                    log.error(err);
-                    reject(err);
-                });
-        });
-    }
-
-    mvdir(src: string, dst: string) {
-        this.lookAway();
-
-        return new Promise<void>((resolve, reject) => {
-            // TODO: asjust to async/await when utils.move is async
-            utils
-                .move(utils.addFilesPath(src), utils.addFilesPath(dst))
-                .then(() => {
-                    dirs[dst] = dirs[src];
-                    delete dirs[src];
-
-                    Object.keys(dirs).forEach((dir) => {
-                        if (
-                            new RegExp(`^${escRe(src)}/`).test(dir) &&
-                            dir !== src &&
-                            dir !== dst
-                        ) {
-                            dirs[
-                                dir.replace(
-                                    new RegExp(`^${escRe(src)}/`),
-                                    `${dst}/`,
-                                )
-                            ] = dirs[dir];
-                            delete dirs[dir];
-                        }
-                    });
-
-                    this.update(path.dirname(src));
-                    this.update(path.dirname(dst));
-
-                    resolve();
-                })
-                .catch((err) => {
-                    log.error(err);
-
-                    reject(err);
-                });
-        });
-    }
-
-    cp(src: string, dst: string) {
-        this.lookAway();
-
-        return new Promise<void>((resolve, reject) => {
-            utils.copyFile(
+        try {
+            await utils.move(
                 utils.addFilesPath(src),
                 utils.addFilesPath(dst),
-                (err) => {
-                    if (err) {
-                        log.error(err);
-
-                        reject(err);
-                        return;
-                    }
-
-                    dirs[path.dirname(dst)].files[path.basename(dst)] = clone(
-                        dirs[path.dirname(src)].files[path.basename(src)],
-                    );
-
-                    dirs[path.dirname(dst)].files[path.basename(dst)].mtime =
-                        Date.now();
-
-                    this.update(path.dirname(dst));
-
-                    resolve();
-                },
+                true,
             );
-        });
+
+            dirs[path.dirname(dst)].files[path.basename(dst)] =
+                dirs[path.dirname(src)].files[path.basename(src)];
+
+            delete dirs[path.dirname(src)].files[path.basename(src)];
+
+            this.update(path.dirname(src));
+            this.update(path.dirname(dst));
+        } catch (err) {
+            log.error(err);
+
+            throw err;
+        }
+    }
+
+    async mvdir(src: string, dst: string) {
+        this.lookAway();
+
+        try {
+            await utils.move(
+                utils.addFilesPath(src),
+                utils.addFilesPath(dst),
+                true,
+            );
+
+            dirs[dst] = dirs[src];
+            delete dirs[src];
+
+            Object.keys(dirs).forEach((dir) => {
+                if (
+                    new RegExp(`^${escRe(src)}/`).test(dir) &&
+                    dir !== src &&
+                    dir !== dst
+                ) {
+                    dirs[
+                        dir.replace(new RegExp(`^${escRe(src)}/`), `${dst}/`)
+                    ] = dirs[dir];
+                    delete dirs[dir];
+                }
+            });
+
+            this.update(path.dirname(src));
+            this.update(path.dirname(dst));
+        } catch (err) {
+            log.error(err);
+
+            throw err;
+        }
+    }
+
+    async cp(src: string, dst: string) {
+        this.lookAway();
+
+        try {
+            await utils.copyFile(
+                utils.addFilesPath(src),
+                utils.addFilesPath(dst),
+            );
+
+            dirs[path.dirname(dst)].files[path.basename(dst)] = clone(
+                dirs[path.dirname(src)].files[path.basename(src)],
+            );
+
+            dirs[path.dirname(dst)].files[path.basename(dst)].mtime =
+                Date.now();
+
+            this.update(path.dirname(dst));
+        } catch (err) {
+            log.error(err);
+
+            throw err;
+        }
     }
 
     async cpdir(src: string, dst: string) {

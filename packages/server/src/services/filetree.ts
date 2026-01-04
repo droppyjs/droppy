@@ -7,6 +7,7 @@ import escRe from "escape-string-regexp";
 import debounce from "lodash.debounce";
 import rfdc from "rfdc";
 import rrdir from "rrdir";
+import type { DroppyConfig } from "./cfg/types.js";
 import log from "./log.js";
 import paths from "./paths.js";
 import utils from "./utils.js";
@@ -18,7 +19,7 @@ let todoDirs = [];
 let initial = true;
 let watching = true;
 let timer = null;
-let cfg = null;
+let cfg: DroppyConfig = null;
 
 const WATCHER_DELAY = 3000;
 

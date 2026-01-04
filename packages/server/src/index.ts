@@ -1,6 +1,6 @@
 import { droppy } from "./services/server.js";
 
-export { default as cfg } from "./services/cfg.js";
+export { default as cfg } from "./services/cfg/index.js";
 export { default as cookies } from "./services/cookies/index.js";
 export { default as csrf } from "./services/csrf.js";
 export { default as db } from "./services/db.js";

@@ -27,7 +27,8 @@ import type {
     DroppyHttpServer,
     DroppyWebSocket,
 } from "../types/http.js";
-import cfg from "./cfg.js";
+import cfg from "./cfg/index.js";
+import type { DroppyConfig } from "./cfg/types.js";
 import cookies from "./cookies/index.js";
 import csrf from "./csrf.js";
 import db from "./db.js";
@@ -44,7 +45,7 @@ const clients: Record<
     { views: any[]; cookie?: string; ws: DroppyWebSocket }
 > = {};
 const clientsPerDir = {};
-let config: any = null;
+let config: DroppyConfig;
 let firstRun: boolean | null = null;
 let ready = false;
 let dieOnError = true;
@@ -110,7 +111,7 @@ export async function droppy(
             }
             log.info("Configuration: ", utils.pretty(config));
             log.info("Loading resources ...");
-            resources.load(config.dev, (err, c) => {
+            resources.load(config.dev ?? false, (err, c) => {
                 log.info("Loading resources done");
                 cache = c;
                 cb(err, null);

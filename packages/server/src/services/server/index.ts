@@ -55,7 +55,7 @@ const setView = (sid, vId, view) => {
 };
 
 export async function droppy(
-    opts,
+    opts: DroppyConfig | null,
     isStandalone: boolean,
     dev: boolean,
     callback: (err?: Error) => void,

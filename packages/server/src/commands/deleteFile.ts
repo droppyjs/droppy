@@ -1,23 +1,15 @@
+import { createCommand } from "../command/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface DeleteFileMessage {
     data: string[];
     type: string;
 }
 
-export const DELETE_FILE: CommandHandler<DeleteFileMessage> = {
-    handler: async ({
-        validatePaths,
-        sid,
-        config,
-        msg,
-        ws,
-        vId,
-        sendError,
-    }) => {
+export default createCommand<DeleteFileMessage>(
+    "DELETE_FILE",
+    async ({ validatePaths, sid, config, msg, ws, vId, sendError }) => {
         if (!Array.isArray(msg.data)) {
             sendError(sid, vId, "Invalid data");
             return;
@@ -50,4 +42,4 @@ export const DELETE_FILE: CommandHandler<DeleteFileMessage> = {
             }
         }
     },
-};
+);

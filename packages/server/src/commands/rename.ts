@@ -1,8 +1,7 @@
+import { createCommand } from "../command/index.js";
 import db from "../services/db/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface RenameMessage {
     data: {
@@ -12,16 +11,9 @@ interface RenameMessage {
     type: string;
 }
 
-export const RENAME: CommandHandler<RenameMessage> = {
-    handler: async ({
-        validatePaths,
-        sid,
-        config,
-        sendError,
-        msg,
-        ws,
-        vId,
-    }) => {
+export default createCommand<RenameMessage>(
+    "RENAME",
+    async ({ validatePaths, sid, config, sendError, msg, ws, vId }) => {
         if (config.readOnly) {
             return sendError(sid, vId, "Files are read-only");
         }
@@ -62,4 +54,4 @@ export const RENAME: CommandHandler<RenameMessage> = {
 
         log.info(ws, null, `Share link updated: ${rSrc} -> ${rDst}`);
     },
-};
+);

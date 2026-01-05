@@ -7,15 +7,16 @@ import { utils } from "../utils/index.js";
 
 const stat = util.promisify(fs.stat);
 
-import type { CommandHandler } from "./index.js";
+import { createCommand } from "../command/index.js";
 
 interface RequestUpdateMessage {
     data: string;
     type: string;
 }
 
-export const REQUEST_UPDATE: CommandHandler<RequestUpdateMessage> = {
-    handler: async ({
+export default createCommand<RequestUpdateMessage>(
+    "REQUEST_UPDATE",
+    async ({
         sid,
         sendObj,
         msg,
@@ -66,4 +67,4 @@ export const REQUEST_UPDATE: CommandHandler<RequestUpdateMessage> = {
             sendFiles(sid, vId);
         }
     },
-};
+);

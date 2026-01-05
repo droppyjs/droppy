@@ -1,10 +1,8 @@
 import path from "node:path";
-
+import { createCommand } from "../command/index.js";
 import db from "../services/db/index.js";
 import log from "../services/log/index.js";
 import { utils } from "../utils/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface RequestSharelinkMessage {
     data: {
@@ -14,8 +12,9 @@ interface RequestSharelinkMessage {
     type: string;
 }
 
-export const REQUEST_SHARELINK: CommandHandler<RequestSharelinkMessage> = {
-    handler: async ({ validatePaths, sid, sendObj, config, msg, ws, vId }) => {
+export default createCommand<RequestSharelinkMessage>(
+    "REQUEST_SHARELINK",
+    async ({ validatePaths, sid, sendObj, config, msg, ws, vId }) => {
         if (!validatePaths(msg.data.location, msg.type, ws, sid, vId)) {
             return;
         }
@@ -62,4 +61,4 @@ export const REQUEST_SHARELINK: CommandHandler<RequestSharelinkMessage> = {
             isAttachment: isAttachment,
         });
     },
-};
+);

@@ -1,10 +1,9 @@
 import path from "node:path";
 import { imageSize } from "image-size";
-
+import { createCommand } from "../command/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
 import { utils } from "../utils/index.js";
-import type { CommandHandler } from "./index.js";
 
 interface GetMediaMessage {
     data: {
@@ -17,16 +16,10 @@ interface GetMediaMessage {
     };
     type: string;
 }
-export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
-    handler: async ({
-        validatePaths,
-        sid,
-        msg,
-        ws,
-        vId,
-        sendError,
-        sendObj,
-    }) => {
+
+export default createCommand<GetMediaMessage>(
+    "GET_MEDIA",
+    async ({ validatePaths, sid, msg, ws, vId, sendError, sendObj }) => {
         const dir = msg.data.dir;
         const exts = msg.data.exts;
         if (!validatePaths(dir, msg.type, ws, sid, vId)) {
@@ -85,4 +78,4 @@ export const GET_MEDIA: CommandHandler<GetMediaMessage> = {
         );
         sendObj(sid, { type: "MEDIA_FILES", vId, files: mediaFiles });
     },
-};
+);

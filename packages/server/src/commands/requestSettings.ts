@@ -1,12 +1,13 @@
-import type { CommandHandler } from "./index.js";
+import { createCommand } from "../command/index.js";
 
 interface RequestSettingsMessage {
     vId: string;
     type: string;
 }
 
-export const REQUEST_SETTINGS: CommandHandler<RequestSettingsMessage> = {
-    handler: async ({ pkg, sid, sendObj, msg, priv, config, cache }) => {
+export default createCommand<RequestSettingsMessage>(
+    "REQUEST_SETTINGS",
+    async ({ pkg, sid, sendObj, msg, priv, config, cache }) => {
         sendObj(sid, {
             type: "SETTINGS",
             vId: msg.vId,
@@ -28,4 +29,4 @@ export const REQUEST_SETTINGS: CommandHandler<RequestSettingsMessage> = {
             },
         });
     },
-};
+);

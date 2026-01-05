@@ -1,6 +1,5 @@
+import { createCommand } from "../command/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface ReloadDirectoryMessage {
     data: {
@@ -9,8 +8,9 @@ interface ReloadDirectoryMessage {
     type: string;
 }
 
-export const RELOAD_DIRECTORY: CommandHandler<ReloadDirectoryMessage> = {
-    handler: async ({ validatePaths, sid, sendFiles, msg, ws, vId }) => {
+export default createCommand<ReloadDirectoryMessage>(
+    "RELOAD_DIRECTORY",
+    async ({ validatePaths, sid, sendFiles, msg, ws, vId }) => {
         if (!validatePaths(msg.data.dir, msg.type, ws, sid, vId)) {
             return;
         }
@@ -19,4 +19,4 @@ export const RELOAD_DIRECTORY: CommandHandler<ReloadDirectoryMessage> = {
 
         sendFiles(sid, vId);
     },
-};
+);

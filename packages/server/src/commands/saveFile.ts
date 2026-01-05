@@ -1,7 +1,6 @@
+import { createCommand } from "../command/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface SaveFileMessage {
     data: {
@@ -11,8 +10,9 @@ interface SaveFileMessage {
     type: string;
 }
 
-export const SAVE_FILE: CommandHandler<SaveFileMessage> = {
-    handler: async ({
+export default createCommand<SaveFileMessage>(
+    "SAVE_FILE",
+    async ({
         validatePaths,
         sendObj,
         sid,
@@ -52,4 +52,4 @@ export const SAVE_FILE: CommandHandler<SaveFileMessage> = {
 
         sendObj(sid, { type: "SAVE_STATUS", vId, status: 0 });
     },
-};
+);

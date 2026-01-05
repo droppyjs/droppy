@@ -1,7 +1,5 @@
-import type { CommandHandler } from "./index.js";
+import { createCommand } from "../command/index.js";
 
-export const DESTROY_VIEW: CommandHandler = {
-    handler: async ({ sid, vId, setView }) => {
-        setView(sid, vId, null);
-    },
-};
+export default createCommand("DESTROY_VIEW", async ({ sid, vId, setView }) => {
+    setView(sid, vId, null);
+});

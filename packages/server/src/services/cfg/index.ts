@@ -63,7 +63,7 @@ export async function init(config: DroppyConfig | null = null) {
     }
 }
 
-export async function write(configFile, config) {
+export async function write(configFile: string, config: DroppyConfig) {
     await fs.writeFile(configFile, JSON.stringify(config, null, 2));
 }
 

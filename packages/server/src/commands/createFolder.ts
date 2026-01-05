@@ -1,23 +1,15 @@
+import { createCommand } from "../command/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface CreateFolderMessage {
     data: string;
     type: string;
 }
 
-export const CREATE_FOLDER: CommandHandler<CreateFolderMessage> = {
-    handler: async ({
-        validatePaths,
-        sid,
-        config,
-        msg,
-        ws,
-        vId,
-        sendError,
-    }) => {
+export default createCommand<CreateFolderMessage>(
+    "CREATE_FOLDER",
+    async ({ validatePaths, sid, config, msg, ws, vId, sendError }) => {
         if (config.readOnly) {
             return sendError(sid, vId, "Files are read-only");
         }
@@ -33,4 +25,4 @@ export const CREATE_FOLDER: CommandHandler<CreateFolderMessage> = {
             sendError(sid, vId, `Error creating folder: ${error.message}`);
         }
     },
-};
+);

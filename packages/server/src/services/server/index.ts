@@ -19,7 +19,7 @@ import https from "node:https";
 import chokidar from "chokidar";
 import yazl from "yazl";
 import pkg from "../../../package.json" with { type: "json" };
-import * as commands from "../../commands/index.js";
+import { getCommand, reloadCommands } from "../../commands/index.js";
 import type {
     DroppyHttpRequest,
     DroppyHttpResponse,
@@ -127,6 +127,8 @@ export async function droppy(
         storage.init(config);
 
         log.info("Caching files done");
+
+        await reloadCommands();
 
         await promisify((cb) => {
             if (typeof config.keepAlive === "number" && config.keepAlive > 0) {
@@ -579,10 +581,9 @@ async function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
             };
         }
 
-        // biome-ignore lint/performance/noDynamicNamespaceImportAccess: by design
-        const command = commands[msg.type];
+        const command = getCommand(msg.type);
         if (command) {
-            command.handler({
+            await command({
                 priv,
                 msg,
                 sendObj,
@@ -592,7 +593,11 @@ async function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
                 sendError,
                 validatePaths,
                 sendUsers,
-                pkg,
+                pkg: {
+                    name: pkg.name,
+                    version: pkg.version,
+                    tag: "tag" in pkg ? String(pkg.tag) : undefined,
+                },
                 config,
                 cache,
                 ws,
@@ -639,7 +644,13 @@ async function onWebSocketRequest(ws: DroppyWebSocket, req: DroppyHttpRequest) {
 }
 
 // Ensure that a given path does not contain invalid file names
-function validatePaths(paths, type, ws, sid, vId) {
+function validatePaths(
+    paths: string | string[],
+    type: string,
+    ws: DroppyWebSocket,
+    sid: string,
+    vId: string,
+): boolean {
     return (Array.isArray(paths) ? paths : [paths]).every((p) => {
         if (!utils.isPathSane(p)) {
             sendError(sid, vId, "Invalid request");
@@ -658,8 +669,10 @@ async function sendFiles(sid: string, vId: number) {
         !clients[sid].views[vId] ||
         !clients[sid].ws ||
         clients[sid].ws.readyState !== 1
-    )
+    ) {
         return;
+    }
+
     const folder = clients[sid].views[vId].directory;
     sendObj(sid, {
         type: "UPDATE_DIRECTORY",

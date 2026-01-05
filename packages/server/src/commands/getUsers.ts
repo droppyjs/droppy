@@ -1,9 +1,10 @@
-import type { CommandHandler } from "./index.js";
+import { createCommand } from "../command/index.js";
 
-export const GET_USERS: CommandHandler = {
-    handler: async ({ priv, sid, config, sendUsers }) => {
+export default createCommand(
+    "GET_USERS",
+    async ({ priv, sid, config, sendUsers }) => {
         if (priv && !config.public) {
             sendUsers(sid);
         }
     },
-};
+);

@@ -1,48 +1,38 @@
-export { CLIPBOARD } from "./clipboard.js";
-export { CREATE_FILE } from "./createFile.js";
-export { CREATE_FILES } from "./createFiles.js";
-export { CREATE_FOLDER } from "./createFolder.js";
-export { CREATE_FOLDERS } from "./createFolders.js";
-export { DELETE_FILE } from "./deleteFile.js";
-export { DESTROY_VIEW } from "./destroyView.js";
-export { GET_MEDIA } from "./getMedia.js";
-export { GET_USERS } from "./getUsers.js";
-export { RELOAD_DIRECTORY } from "./reloadDirectory.js";
-export { RENAME } from "./rename.js";
-export { REQUEST_SETTINGS } from "./requestSettings.js";
-export { REQUEST_SHARELINK } from "./requestSharelink.js";
-export { REQUEST_UPDATE } from "./requestUpdate.js";
-export { SAVE_FILE } from "./saveFile.js";
-export { SEARCH } from "./search.js";
-export { UPDATE_USER } from "./updateUser.js";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-export type CommandHandler<T = any> = {
-    handler: (args: {
-        priv: boolean;
-        msg: T;
-        sendObj: (sid: string, data: any) => void;
-        sid: string;
-        updateClientLocation: (dir: any, sid: any, vId: any) => void;
-        sendFiles: (sid: string, vId: any) => void;
-        sendError: (sid: string, vId: any, text: string) => void;
-        validatePaths: (
-            paths: any,
-            type: any,
-            ws: any,
-            sid: any,
-            vId: any,
-        ) => boolean;
-        sendUsers: (sid: string) => Promise<void>;
-        pkg: {
-            name: string;
-            version: string;
-            tag: string;
-        };
-        config: any;
-        cache: any;
-        ws: WebSocket;
-        setView: (sid: any, vId: any, view: any) => void;
-        vId: string;
-        cookie: string;
-    }) => Promise<void>;
+export const commandList: Record<string, CommandHandler> = {};
+
+export const getCommand = (name: string) => {
+    return commandList[name];
 };
+
+export const reloadCommands = async () => {
+    const thisFileDir = path.dirname(fileURLToPath(import.meta.url));
+    const commandFiles = await fs.readdir(thisFileDir);
+    const commandModules = commandFiles.filter(
+        (file) => file.endsWith(".js") && file !== "index.js",
+    );
+
+    for (const file of commandModules) {
+        const module = await import(
+            pathToFileURL(path.join(thisFileDir, file)).href
+        );
+        if ("name" in module.default && "handler" in module.default) {
+            if (commandList[module.default.name]) {
+                log.error(
+                    null,
+                    `Command ${module.default.name} already loaded, skipped ${file}`,
+                );
+                continue;
+            }
+            commandList[module.default.name] = module.default.handler;
+        } else {
+            log.error(null, `Invalid command module skipped ${file}`);
+        }
+    }
+};
+
+import type { CommandHandler } from "../command/index.js";
+import log from "../services/log/index.js";

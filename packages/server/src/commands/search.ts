@@ -1,6 +1,5 @@
+import { createCommand } from "../command/index.js";
 import storage from "../services/storage/index.js";
-
-import type { CommandHandler } from "./index.js";
 
 interface SearchMessage {
     data: {
@@ -10,8 +9,9 @@ interface SearchMessage {
     type: string;
 }
 
-export const SEARCH: CommandHandler<SearchMessage> = {
-    handler: async ({ validatePaths, sendObj, sid, msg, ws, vId }) => {
+export default createCommand<SearchMessage>(
+    "SEARCH",
+    async ({ validatePaths, sendObj, sid, msg, ws, vId }) => {
         const query = msg.data.query;
         const dir = msg.data.dir;
         if (!validatePaths(dir, msg.type, ws, sid, vId)) {
@@ -25,4 +25,4 @@ export const SEARCH: CommandHandler<SearchMessage> = {
             results: await storage.search(query, dir),
         });
     },
-};
+);

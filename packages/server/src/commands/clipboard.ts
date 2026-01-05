@@ -1,9 +1,8 @@
 import escRe from "escape-string-regexp";
-
+import { createCommand } from "../command/index.js";
 import log from "../services/log/index.js";
 import storage from "../services/storage/index.js";
 import { utils } from "../utils/index.js";
-import type { CommandHandler } from "./index.js";
 
 interface ClipboardMessage {
     data: {
@@ -12,16 +11,9 @@ interface ClipboardMessage {
         type: "cut" | "copy";
     };
 }
-export const CLIPBOARD: CommandHandler<ClipboardMessage> = {
-    handler: async ({
-        validatePaths,
-        sid,
-        config,
-        msg,
-        ws,
-        vId,
-        sendError,
-    }) => {
+export default createCommand<ClipboardMessage>(
+    "CLIPBOARD",
+    async ({ validatePaths, sid, config, msg, ws, vId, sendError }) => {
         const src = msg.data.src;
         const dst = msg.data.dst;
         const type = msg.data.type;
@@ -57,4 +49,4 @@ export const CLIPBOARD: CommandHandler<ClipboardMessage> = {
             storage.copy(msg.data.src, destination);
         }
     },
-};
+);

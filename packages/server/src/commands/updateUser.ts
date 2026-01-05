@@ -1,8 +1,8 @@
 import { magenta } from "colorette";
+import { createCommand } from "../command/index.js";
 import db from "../services/db/index.js";
 import log from "../services/log/index.js";
 import users from "../services/users/index.js";
-import type { CommandHandler } from "./index.js";
 
 interface UpdateUserMessage {
     data: {
@@ -12,8 +12,9 @@ interface UpdateUserMessage {
     };
 }
 
-export const UPDATE_USER: CommandHandler<UpdateUserMessage> = {
-    handler: async ({ priv, cookie, sid, msg, ws, sendUsers, sendError }) => {
+export default createCommand<UpdateUserMessage>(
+    "UPDATE_USER",
+    async ({ priv, cookie, sid, msg, ws, sendUsers, sendError }) => {
         const name = msg.data.name;
         const pass = msg.data.pass;
         if (!priv) {
@@ -52,4 +53,4 @@ export const UPDATE_USER: CommandHandler<UpdateUserMessage> = {
         }
         sendUsers(sid);
     },
-};
+);

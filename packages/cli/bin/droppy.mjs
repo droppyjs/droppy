@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+if (process.versions.node < "20.0.0") {
+    console.error("Node.js version 20 or higher is required");
+    process.exit(1);
+}
+
 import { existsSync, realpathSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -7,6 +12,8 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+process.setSourceMapsEnabled(true);
 
 // Check for DROPPY_CACHE_PATH, otherwise add default.
 if (!("DROPPY_CACHE_PATH" in process.env)) {

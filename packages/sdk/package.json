@@ -1,0 +1,54 @@
+{
+    "name": "@droppyjs/sdk",
+    "version": "2.0.0-alpha.3",
+    "description": "> SDK for droppy.",
+    "author": "droppyjs <hello@droppyjs.com>",
+    "homepage": "https://github.com/droppyjs/droppy#readme",
+    "license": "BSD-2-Clause",
+    "type": "module",
+    "exports": {
+        "./shared": {
+            "import": "./dist/shared/index.js",
+            "types": "./dist/shared/index.d.ts"
+        },
+        "./client": {
+            "import": "./dist/client/index.js",
+            "types": "./dist/client/index.d.ts"
+        },
+        "./server": {
+            "import": "./dist/server/index.js",
+            "types": "./dist/server/index.d.ts"
+        },
+        "./global.min": {
+            "import": "./droppy.global.min.js",
+            "types": "./droppy.global.min.d.ts"
+        },
+        "./esm.min": {
+            "import": "./droppy.esm.min.js",
+            "types": "./droppy.esm.min.d.ts"
+        }
+    },
+    "files": [
+        "dist",
+        "droppy.global.min.js",
+        "droppy.esm.min.js",
+        "droppy.global.min.js.map",
+        "droppy.esm.min.js.map"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/droppyjs/droppy.git"
+    },
+    "bugs": {
+        "url": "https://github.com/droppyjs/droppy/issues"
+    },
+    "scripts": {
+        "build:ts": "node ../../node_modules/typescript/bin/tsc -p tsconfig.server.json && node ../../node_modules/typescript/bin/tsc -p tsconfig.client.json",
+        "build:client:min": "node ./scripts/build-client-min.mjs",
+        "build": "yarn build:ts && yarn build:client:min",
+        "test": "echo \"Error: run tests from root\" && exit 1"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

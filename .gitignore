@@ -16,3 +16,8 @@ coverage/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+packages/sdk/droppy.global.min.js
+packages/sdk/droppy.global.min.js.map
+packages/sdk/droppy.esm.min.js
+packages/sdk/droppy.esm.min.js.map

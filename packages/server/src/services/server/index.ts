@@ -1302,11 +1302,11 @@ async function handleUploadRequest(req, res) {
         const { filename: rawFilename } = info;
         // Normalize uploaded filenames so Linux servers don't end up with macOS-style NFD
         // names that later get referenced in NFC by browsers/clients.
-        // NFKC is a practical choice to reduce visually-identical variants while staying
+        // NFC is a practical choice to reduce visually-identical variants while staying
         // interoperable across platforms.
         const filename =
             rawFilename && typeof rawFilename.normalize === "function"
-                ? rawFilename.normalize("NFKC")
+                ? rawFilename.normalize("NFC")
                 : rawFilename;
 
         if (!utils.isPathSane(filename) || !utils.isPathSane(dstDir)) {

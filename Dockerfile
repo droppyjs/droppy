@@ -46,7 +46,8 @@ COPY . /droppy
 RUN rm -rf /droppy/node_modules && \
     cd /droppy && \
     corepack enable && \
-    yarn install --immutable
+    yarn install --immutable && \
+    yarn build
 
 
 # -------------------------------------------------- #

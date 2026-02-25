@@ -9,7 +9,7 @@
     "types": "dist/cli.d.ts",
     "type": "module",
     "dependencies": {
-        "@droppyjs/server": "workspace:^",
+        "@droppyjs/server": "^2.0.0-alpha.4",
         "daemonize-process": "4.1.1",
         "minimist": "^1.2.8",
         "ps-node": "^0.1.6",
@@ -55,5 +55,6 @@
     },
     "publishConfig": {
         "access": "public"
-    }
+    },
+    "gitHead": "52d656a48712623e94c40fc3aeb569e1059c5628"
 }

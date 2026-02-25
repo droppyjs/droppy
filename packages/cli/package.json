@@ -1,6 +1,6 @@
 {
     "name": "@droppyjs/cli",
-    "version": "2.0.0-alpha.4",
+    "version": "2.0.0-alpha.5",
     "description": "> Command Line Interface for droppy.",
     "author": "droppyjs <hello@droppyjs.com>",
     "homepage": "https://github.com/droppyjs/droppy#readme",
@@ -9,7 +9,7 @@
     "types": "dist/cli.d.ts",
     "type": "module",
     "dependencies": {
-        "@droppyjs/server": "^2.0.0-alpha.4",
+        "@droppyjs/server": "2.0.0-alpha.5",
         "daemonize-process": "4.1.1",
         "minimist": "^1.2.8",
         "ps-node": "^0.1.6",

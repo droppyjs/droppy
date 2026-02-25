@@ -2697,7 +2697,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@droppyjs/cli@workspace:packages/cli"
   dependencies:
-    "@droppyjs/server": "workspace:^"
+    "@droppyjs/server": "npm:2.0.0-alpha.5"
     daemonize-process: "npm:4.1.1"
     minimist: "npm:^1.2.8"
     ps-node: "npm:^0.1.6"
@@ -2708,7 +2708,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@droppyjs/client@workspace:^, @droppyjs/client@workspace:packages/client":
+"@droppyjs/client@npm:^2.0.0-alpha.3, @droppyjs/client@workspace:packages/client":
   version: 0.0.0-use.local
   resolution: "@droppyjs/client@workspace:packages/client"
   dependencies:
@@ -2725,12 +2725,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@droppyjs/server@workspace:^, @droppyjs/server@workspace:packages/server":
+"@droppyjs/server@npm:2.0.0-alpha.5, @droppyjs/server@workspace:packages/server":
   version: 0.0.0-use.local
   resolution: "@droppyjs/server@workspace:packages/server"
   dependencies:
-    "@droppyjs/client": "workspace:^"
-    "@droppyjs/svgstore": "workspace:^"
+    "@droppyjs/client": "npm:^2.0.0-alpha.3"
+    "@droppyjs/svgstore": "npm:2.0.0-alpha.5"
     autoprefixer: "npm:10.4.2"
     busboy: "npm:1.6.0"
     chokidar: "npm:3.4.2"
@@ -2765,7 +2765,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@droppyjs/svgstore@workspace:^, @droppyjs/svgstore@workspace:packages/svgstore":
+"@droppyjs/svgstore@npm:2.0.0-alpha.5, @droppyjs/svgstore@workspace:packages/svgstore":
   version: 0.0.0-use.local
   resolution: "@droppyjs/svgstore@workspace:packages/svgstore"
   dependencies:

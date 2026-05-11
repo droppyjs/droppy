@@ -400,7 +400,11 @@ function openSocket() {
                     }
                     view[0].switchRequest = false;
                     view[0].currentData = msg.data;
-                    openDirectory(view, view[0].currentData);
+                    if (hasActiveSearch(view, msg.folder)) {
+                        sendSearch(view);
+                    } else {
+                        openDirectory(view, view[0].currentData);
+                    }
                 } else if (view[0].dataset.type === "media") {
                     view[0].currentData = msg.data;
                     // TODO: Update media array
@@ -481,6 +485,7 @@ function openSocket() {
                 break;
             }
             case "SEARCH_RESULTS": {
+                if (!hasActiveSearch(view, msg.folder, msg.query)) break;
                 openDirectory(view, msg.results, true);
                 break;
             }
@@ -523,6 +528,38 @@ function sendMessage(vId, type, data) {
             openSocket();
         }
     }
+}
+
+function hasActiveSearch(view, folder, query) {
+    const search = view[0].activeSearch;
+    if (!search?.query) return false;
+    if (folder !== undefined && search.folder !== folder) return false;
+    if (query !== undefined && search.query !== query) return false;
+    return true;
+}
+
+function sendSearch(view, query) {
+    query = query ?? view[0].activeSearch?.query;
+    if (!query || !String(query).trim()) return false;
+
+    view[0].activeSearch = {
+        folder: view[0].currentFolder,
+        query,
+    };
+
+    sendMessage(view[0].vId, "SEARCH", {
+        query,
+        dir: view[0].currentFolder,
+    });
+    return true;
+}
+
+function restoreSearch(view) {
+    const input = view.find(".search input")[0];
+    if (!input || !hasActiveSearch(view, view[0].currentFolder)) return;
+
+    view.find(".search").removeClass("toggled-off").addClass("toggled-on");
+    input.value = view[0].activeSearch.query;
 }
 
 // ============================================================================
@@ -1253,7 +1290,11 @@ function openDirectory(view, data, isSearch) {
     let entries = getTemplateEntries(view, data ?? []);
     view[0].templateEntries = entries;
 
-    clearSearch(view);
+    if (isSearch) {
+        restoreSearch(view);
+    } else {
+        clearSearch(view);
+    }
 
     // sorting
     const sortings = droppy.get("sortings");
@@ -1910,10 +1951,7 @@ function initButtons(view) {
     // Search Box
     function doSearch(e) {
         if (e.target.value && String(e.target.value).trim()) {
-            sendMessage(view[0].vId, "SEARCH", {
-                query: e.target.value,
-                dir: view[0].currentFolder,
-            });
+            sendSearch(view, e.target.value);
         } else {
             openDirectory(view, view[0].currentData);
         }
@@ -2137,7 +2175,8 @@ function saveFile(text, filename) {
     setTimeout(() => document.body.removeChild(a), 0);
 }
 
-function clearSearch(view) {
+function clearSearch(view, options) {
+    if (!options?.keepState) view[0].activeSearch = null;
     if (!view.find(".search-input").is(":focus")) {
         view.find(".search").removeClass("toggled-on").addClass("toggled-off");
         view.find(".search input")[0].value = null;
@@ -2205,7 +2244,7 @@ function closeDoc(view) {
 
 function openFile(view, newFolder, file, opts) {
     opts = opts || {};
-    clearSearch(view);
+    clearSearch(view, { keepState: true });
     const e = fileExtension(file);
 
     // Fix newFolder and file variables if file includes the dir path

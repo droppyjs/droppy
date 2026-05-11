@@ -22,6 +22,7 @@ export default createCommand<SearchMessage>(
             type: "SEARCH_RESULTS",
             vId,
             folder: dir,
+            query,
             results: await storage.search(query, dir),
         });
     },

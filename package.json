@@ -72,7 +72,7 @@
         "lerna": "^7",
         "nx": "^16.2.2",
         "postcss": "8.5.6",
-        "terser": "5.7.2",
+        "terser": "5.48.0",
         "typescript": "^5.6.3",
         "updates": "12.1.0",
         "uppie": "1.1.4"

@@ -60,8 +60,8 @@ const opts = {
             reduce_vars: true,
             sequences: true,
             toplevel: true,
-            unsafe: true,
-            unsafe_proto: true,
+            unsafe: false,
+            unsafe_proto: false,
             unused: true,
         },
     },
@@ -436,12 +436,13 @@ async function readLibs() {
 
 async function minifyJS(js) {
     if (!minify) return js;
-    const min = await terser.minify(js, opts.terser);
-    if (min.error) {
-        log.error(min.error);
+    try {
+        const min = await terser.minify(js, opts.terser);
+        return min.code;
+    } catch (err) {
+        log.error(err);
         process.exit(1);
     }
-    return min.code;
 }
 
 async function minifyCSS(css) {
